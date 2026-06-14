@@ -1,0 +1,12 @@
+{
+  "name": "joe-bag-of-tricks",
+  "description": "Joe's engineering workflow toolkit: skills and agents for TDD, systematic debugging, planning, code review, and shipping.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Joe Presley",
+    "email": "mordant23@gmail.com"
+  },
+  "homepage": "https://github.com/jwp23/joe-bag-of-tricks",
+  "repository": "https://github.com/jwp23/joe-bag-of-tricks",
+  "license": "MIT"
+}

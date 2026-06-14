@@ -1,0 +1,117 @@
+# joe-bag-of-tricks
+
+A personal [Claude Code](https://code.claude.com) plugin — a curated bag of engineering-workflow **skills** and **agents** that travel with Joe across every machine and project.
+
+This repository is **both** a plugin marketplace and the plugin it ships. Add the marketplace once on each machine, install the plugin, and keep it in sync through git.
+
+## What's inside
+
+A single plugin, `joe-bag-of-tricks`, bundling:
+
+**Skills** (`skills/`)
+
+| Skill | Use it when… |
+|-------|--------------|
+| `test-driven-development` | Implementing any feature or bugfix — write the failing test first |
+| `systematic-debugging` | Investigating why something is broken, slow, or surprising |
+| `verification-before-completion` | About to claim work is done, fixed, or passing |
+| `using-skills` | Starting a conversation — discover and invoke relevant skills |
+| `brainstorming` | Starting creative/design work before implementation |
+| `writing-plans` | Turning a spec into a bd (beads) issue hierarchy |
+| `executing-plans` | Executing a bd task hierarchy with review checkpoints |
+| `subagent-driven-development` | Executing independent tasks via dispatched implementer subagents |
+| `dispatching-parallel-agents` | Facing 2+ independent tasks with no shared state |
+| `using-git-worktrees` | Isolating feature work from the current workspace |
+| `requesting-code-review` | Verifying work meets requirements before merge |
+| `receiving-code-review` | Evaluating review feedback before acting on it |
+| `security-review` | Auditing changes for vulnerabilities before a PR |
+| `finishing-a-development-branch` | Push → PR → CI → CodeRabbit → cleanup |
+| `record-decision` | Capturing a technical decision (ADR or decision doc) |
+| `readme-sync` | Keeping docs in sync after user-facing changes |
+| `writing-skills` | Creating, editing, or verifying skills |
+| `writing-agents` | Creating or editing subagents |
+
+**Agents** (`agents/`)
+
+| Agent | Model | Role |
+|-------|-------|------|
+| `code-reviewer` | inherit | Reviews completed work against plan and standards |
+| `coderabbit-reviewer` | sonnet | Evaluates and applies/rejects CodeRabbit PR comments |
+| `pr-creator` | haiku | Pushes branch, opens PR, watches CI |
+| `pr-merger` | haiku | Squash-merges, watches CI on main, cleans up |
+
+## Workflow assumptions
+
+These skills encode an opinionated workflow. They assume:
+
+- **beads (`bd`)** for issue tracking — planning and execution skills create/claim/close `bd` issues.
+- **ADRs in `docs/adr/`** and decision docs in `docs/decisions/` for recording decisions.
+- **`gh` CLI + a PR-based GitHub workflow** — feature branches, CI gates, squash merges.
+- **TDD by default** and root-cause debugging.
+
+They are language-agnostic where it matters (test/build commands are detected per project), so they work on non-Rust projects.
+
+## Repository layout
+
+```
+joe-bag-of-tricks/
+├── .claude-plugin/
+│   └── marketplace.json          # marketplace catalog
+└── plugins/
+    └── joe-bag-of-tricks/
+        ├── .claude-plugin/
+        │   └── plugin.json       # plugin manifest (semver version)
+        ├── skills/               # 18 skills
+        ├── agents/               # 4 agents
+        └── docs/adr/             # design rationale carried with the skills
+```
+
+## Install on a machine
+
+```text
+/plugin marketplace add jwp23/joe-bag-of-tricks
+/plugin install joe-bag-of-tricks@joe-bag-of-tricks
+```
+
+Plugins install at **user scope** by default, so the skills and agents are available in every project on that machine. Skills auto-trigger by description; you can also invoke them explicitly as `/joe-bag-of-tricks:<skill-name>`.
+
+## Keep it in sync across machines
+
+On the machine where you make changes:
+
+```text
+# edit skills/agents, then bump the version in plugins/joe-bag-of-tricks/.claude-plugin/plugin.json
+git add -A
+git commit -m "feat: <what changed>"
+git push
+```
+
+On every other machine:
+
+```text
+/plugin marketplace update joe-bag-of-tricks
+```
+
+This git-pulls the marketplace and, because the plugin **version changed**, installs the update.
+
+> **Versioning is explicit semver.** Bump `version` in `plugin.json` on every change you want to propagate. If the version string doesn't change, other machines keep their cached copy and won't update.
+
+## Local development
+
+Test changes against your live setup before pushing:
+
+```text
+/plugin marketplace add /home/mordant23/workspace/jwp23/joe-bag-of-tricks
+/plugin install joe-bag-of-tricks@joe-bag-of-tricks
+/plugin validate /home/mordant23/workspace/jwp23/joe-bag-of-tricks
+```
+
+Use `/reload-plugins` to pick up local edits without restarting.
+
+## Provenance & license
+
+Licensed under the [MIT License](LICENSE).
+
+Thirteen of the eighteen skills are adapted from the [Superpowers](https://github.com/obra/superpowers) project by Jesse Vincent (MIT-licensed): `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
+
+The remaining skills (`readme-sync`, `record-decision`, `security-review`, `using-skills`, `writing-agents`) and all four agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
