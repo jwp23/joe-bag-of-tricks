@@ -1,0 +1,15 @@
+{
+  "name": "joe-bag-of-tricks",
+  "owner": {
+    "name": "Joe Presley",
+    "email": "REDACTED"
+  },
+  "description": "Joe's personal Claude Code plugins.",
+  "plugins": [
+    {
+      "name": "joe-bag-of-tricks",
+      "source": "./plugins/joe-bag-of-tricks",
+      "description": "Engineering workflow toolkit: skills and agents for TDD, systematic debugging, planning, code review, and shipping."
+    }
+  ]
+}
