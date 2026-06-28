@@ -1,0 +1,36 @@
+# Agent Instructions
+This project uses **bd** (beads) for issue tracking. Run `bd prime` for workflow context.
+## Quick Reference
+```bash
+bd ready              # Find available work
+bd show <id>          # View issue details
+bd update <id> --claim  # Claim work atomically
+bd close <id>         # Complete work
+bd dolt push          # Push beads data to remote
+```
+## Non-Interactive Shell Commands
+**ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.
+Shell commands like `cp`, `mv`, and `rm` may be aliased to include `-i` (interactive) mode on some systems, causing the agent to hang indefinitely waiting for y/n input.
+**Use these forms instead:**
+```bash
+# Force overwrite without prompting
+cp -f source dest           # NOT: cp source dest
+mv -f source dest           # NOT: mv source dest
+rm -f file                  # NOT: rm file
+# For recursive operations
+rm -rf directory            # NOT: rm -r directory
+cp -rf source dest          # NOT: cp -r source dest
+```
+**Other commands that may prompt:**
+- `scp` - use `-o BatchMode=yes` for non-interactive
+- `ssh` - use `-o BatchMode=yes` to fail instead of prompting
+- `apt-get` - use `-y` flag
+- `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
+<!-- BEGIN BEADS INTEGRATION profile:minimal -->
+## Issue Tracking with bd (beads)
+This project uses **bd (beads)** for ALL issue tracking — never markdown TODOs or external trackers. Run `bd prime` for the full bd issue-tracking workflow. Always use `--json`, and link discovered work with `--deps discovered-from:<id>`. See the Quick Reference above for common commands.
+<!-- END BEADS INTEGRATION -->
+## bd vs TodoWrite
+This project permits TodoWrite as a transient, in-session checklist, overriding bd's blanket prohibition — but it is never a substitute for bd, which is the durable, cross-session, authoritative issue tracker.
+## Session Completion Override
+This project uses a PR-based workflow. See `.claude/rules/git-workflow.md` for the authoritative procedure.

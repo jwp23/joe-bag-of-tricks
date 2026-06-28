@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude plugin validate)",
+      "Bash(claude --plugin-dir .)",
+      "Bash(betterleaks git --pre-commit --staged --redact)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git log:*)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "Bash(git worktree:*)",
+      "Bash(bd:*)"
+    ],
+    "deny": [
+      "Bash(git push origin main:*)",
+      "Bash(git push --force:*)"
+    ]
+  }
+}
