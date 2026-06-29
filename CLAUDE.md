@@ -59,10 +59,10 @@ NEVER claim a change works until you've loaded it and observed it — no "should
 Inherited tests/pre-commit suites are kept-or-stripped per @docs/customizations.md.
 
 ## Git Workflow
-- Branches: feat/ fix/ docs/ chore/ refactor/ + short desc; sync/upstream-vX.Y.Z for tag merges
+- Branches: feat/ fix/ docs/ chore/ refactor/ + short desc; sync/upstream-vX.Y.Z for upstream syncs
 - Commits: Conventional Commits, single line, no body
-- Squash-merge feature branches. NEVER squash an upstream sync — merge it as a real merge
-  commit to preserve ancestry, or the next sync re-litigates resolved conflicts
+- Squash-merge all feature branches, upstream syncs included. The fork shares no upstream
+  ancestry, so a sync is an ordinary branch — no merge commit to preserve. See @docs/adr/002-no-remote-upstream-sync.md
 - Never push to main. Complete work via /joe-bag-of-tricks:finishing-a-development-branch.
   Done = PR open + CI green
 See @.claude/rules/git-workflow.md for worktrees and merge policy.
@@ -82,11 +82,59 @@ IMPORTANT: Before starting any task, identify which docs below are relevant and 
 first. Load the full context before making changes.
 - @docs/customizations.md — Read before any sync or before editing an inherited file.
   Per-file manifest: vendored/patched/replaced, with source, license, and reason(s).
-- @docs/upstream-sync.md — Read when syncing an upstream tag. Full merge/port procedure and
-  conflict resolution by manifest state. (The /upstream-sync skill points here.)
+- @docs/upstream-sync.md — Read when syncing an upstream release. Full no-remote tag-diff/port
+  procedure and resolution by manifest state. (The /upstream-sync skill points here.)
 - @docs/architecture.md — Read when unsure where a component belongs (root vs .claude/).
 - @docs/licensing.md — Read before vendoring from any upstream. Compatibility rules and the
   attribution/NOTICE discipline for a public repo.
 
 ## Project Structure
 Plugin layout and the root-vs-.claude/ split: see @docs/architecture.md.
+
+
+<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
+## Beads Issue Tracker
+
+This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+
+### Quick Reference
+
+```bash
+bd ready              # Find available work
+bd show <id>          # View issue details
+bd update <id> --claim  # Claim work
+bd close <id>         # Complete work
+```
+
+### Rules
+
+- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
+- Run `bd prime` for detailed command reference and session close protocol
+- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
+
+## Session Completion
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd dolt push
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
+<!-- END BEADS INTEGRATION -->
