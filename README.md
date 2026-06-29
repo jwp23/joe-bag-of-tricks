@@ -57,13 +57,14 @@ They are language-agnostic where it matters (test/build commands are detected pe
 joe-bag-of-tricks/
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace catalog
+├── docs/
+│   └── adr/                      # architecture decision records (maintainer docs)
 └── plugins/
     └── joe-bag-of-tricks/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)
         ├── skills/               # 18 skills
-        ├── agents/               # 4 agents
-        └── docs/adr/             # design rationale carried with the skills
+        └── agents/               # 4 agents
 ```
 
 ## Install on a machine

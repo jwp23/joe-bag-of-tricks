@@ -28,9 +28,7 @@ cp -rf source dest          # NOT: cp -r source dest
 - `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
 <!-- BEGIN BEADS INTEGRATION profile:minimal -->
 ## Issue Tracking with bd (beads)
-This project uses **bd (beads)** for ALL issue tracking — never markdown TODOs or external trackers. Run `bd prime` for the full bd issue-tracking workflow. Always use `--json`, and link discovered work with `--deps discovered-from:<id>`. See the Quick Reference above for common commands.
+Use bd for ALL issue tracking — never TodoWrite, TaskCreate, or markdown TODOs. The SessionStart
+hook runs `bd prime` for the full workflow; always use `--json` and link discovered work with
+`--deps discovered-from:<id>`. Prefer `bd remember` for durable knowledge.
 <!-- END BEADS INTEGRATION -->
-## bd vs TodoWrite
-This project permits TodoWrite as a transient, in-session checklist, overriding bd's blanket prohibition — but it is never a substitute for bd, which is the durable, cross-session, authoritative issue tracker.
-## Session Completion Override
-This project uses a PR-based workflow. See `.claude/rules/git-workflow.md` for the authoritative procedure.

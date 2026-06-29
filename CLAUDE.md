@@ -59,10 +59,10 @@ NEVER claim a change works until you've loaded it and observed it — no "should
 Inherited tests/pre-commit suites are kept-or-stripped per @docs/customizations.md.
 
 ## Git Workflow
-- Branches: feat/ fix/ docs/ chore/ refactor/ + short desc; sync/upstream-vX.Y.Z for tag merges
+- Branches: feat/ fix/ docs/ chore/ refactor/ + short desc; sync/upstream-vX.Y.Z for upstream syncs
 - Commits: Conventional Commits, single line, no body
-- Squash-merge feature branches. NEVER squash an upstream sync — merge it as a real merge
-  commit to preserve ancestry, or the next sync re-litigates resolved conflicts
+- Squash-merge all feature branches, upstream syncs included. The fork shares no upstream
+  ancestry, so a sync is an ordinary branch — no merge commit to preserve. See @docs/adr/002-no-remote-upstream-sync.md
 - Never push to main. Complete work via /joe-bag-of-tricks:finishing-a-development-branch.
   Done = PR open + CI green
 See @.claude/rules/git-workflow.md for worktrees and merge policy.
@@ -82,8 +82,8 @@ IMPORTANT: Before starting any task, identify which docs below are relevant and 
 first. Load the full context before making changes.
 - @docs/customizations.md — Read before any sync or before editing an inherited file.
   Per-file manifest: vendored/patched/replaced, with source, license, and reason(s).
-- @docs/upstream-sync.md — Read when syncing an upstream tag. Full merge/port procedure and
-  conflict resolution by manifest state. (The /upstream-sync skill points here.)
+- @docs/upstream-sync.md — Read when syncing an upstream release. Full no-remote tag-diff/port
+  procedure and resolution by manifest state. (The /upstream-sync skill points here.)
 - @docs/architecture.md — Read when unsure where a component belongs (root vs .claude/).
 - @docs/licensing.md — Read before vendoring from any upstream. Compatibility rules and the
   attribution/NOTICE discipline for a public repo.
