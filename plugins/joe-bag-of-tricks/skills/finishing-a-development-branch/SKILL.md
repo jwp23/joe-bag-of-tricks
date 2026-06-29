@@ -183,4 +183,4 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 - **security-review** - Runs security audit before push (Step 1.5)
 - **using-git-worktrees** - Cleans up worktree created by that skill
 
-**Design rationale:** See `docs/adr/001-haiku-subagents-for-git-operations.md` in this plugin.
+**Design rationale:** See `docs/adr/001-haiku-subagents-for-git-operations.md`.

@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "joe_bag_of_tricks",
+  "project_id": "4b34cab9-3455-46a0-af45-3894489767bc"
+}
