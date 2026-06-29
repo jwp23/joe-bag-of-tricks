@@ -3,7 +3,7 @@
 ## Feature Branches Only
 Never commit directly to main. All changes go through feature branches and pull requests.
 Branch naming: `feat/`, `fix/`, `docs/`, `chore/`, `refactor/` + short description.
-Upstream tag merges use `sync/upstream-vX.Y.Z`.
+Upstream syncs use `sync/upstream-vX.Y.Z`.
 
 ## Worktrees
 For extensive changes, use git worktrees in project-local `.worktrees/` via the
@@ -11,8 +11,8 @@ For extensive changes, use git worktrees in project-local `.worktrees/` via the
 
 ## Merge Policy
 - Squash-merge feature branches; delete the branch on merge.
-- YOU MUST NEVER squash an upstream sync. Merge upstream release tags as real merge commits
-  so ancestry is preserved — squashing a sync makes the next sync re-litigate resolved conflicts.
+- Upstream syncs squash-merge too. The fork shares no ancestry with upstream, so a sync is an
+  ordinary branch — there's no merge commit to preserve. See @docs/adr/002-no-remote-upstream-sync.md.
 
 ## Divergent Workflow
 NEVER edit an upstream file to express a divergent workflow (e.g. beads). Replace the
