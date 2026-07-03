@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when debugging, investigating why something is broken, slow, or not working as expected, or encountering any bug, test failure, performance issue, or unexpected behavior — before proposing fixes
+description: Reach for this the moment something that should work is failing and needs diagnosing or fixing — whether the user reports it or your own command, test, or build fails mid-task: a raised error or exception, a stack trace, a failing or wrong-valued test, a crash, a build or CI/Docker step that won't complete, output that's NaN/null/garbage, or behavior that broke after an upgrade, dependency bump, or code change. It's the default response to any concrete malfunction, and it applies hardest exactly when it feels unnecessary: when the fix looks like an obvious one-liner, when a fix was already proposed or tried and it still breaks, or when a bad value must be chased to its upstream source. Invoke it before editing or theorizing, to find the true root cause instead of patching a symptom. Not for abstract "what does this error/concept mean" questions, refactoring or speeding up code that already works, adding error handling to healthy code, or documenting an already-fixed bug.
 argument-hint: "[symptom or error]"
 ---
 
