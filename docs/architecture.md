@@ -21,7 +21,8 @@ This nesting matters for upstream-sync: an upstream path `<p>` maps to `plugins/
 Under `plugins/joe-bag-of-tricks/`:
 - `skills/<name>/SKILL.md` — workflow skills (inherited + custom), namespaced `/joe-bag-of-tricks:<name>`.
 - `agents/<name>.md` — custom subagents.
-- `hooks/` — shell + Node hooks (inherited).
+- `hooks/` — `hooks.json` + `session-start`: a Claude-only SessionStart hook that injects the
+  `using-skills` skill at session start (auto-discovered via `hooks/hooks.json`; adapted from upstream).
 - `.claude-plugin/plugin.json` — the plugin manifest. The ONLY file inside *that* `.claude-plugin/`.
 
 ## NOT shipped (authoring-only, at the repo root)
