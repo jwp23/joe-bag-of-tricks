@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Extract one bd task's full text (title, description, design, notes) into a
+# file the implementer/reviewer reads in one call, so the task text never has
+# to be pasted through the controller's context.
+#
+# The plan IS the bd hierarchy (see writing-plans) — there is no plan file to
+# extract from, so this reads the task straight out of bd.
+#
+# Usage: task-brief TASK_ID [OUTFILE]
+# Default OUTFILE: <repo-root>/.joe-bag-of-tricks/sdd/task-<TASK_ID>-brief.md
+# (per worktree; concurrent runs in the same working tree share it).
+set -euo pipefail
+
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  echo "usage: task-brief TASK_ID [OUTFILE]" >&2
+  exit 2
+fi
+
+task_id=$1
+
+if ! json=$(bd show "$task_id" --json 2>/dev/null); then
+  echo "no such task: $task_id" >&2
+  exit 2
+fi
+
+task=$(echo "$json" | jq -c '.[0] // empty')
+[ -n "$task" ] || { echo "no such task: $task_id" >&2; exit 2; }
+
+if [ $# -eq 2 ]; then
+  out=$2
+else
+  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
+  out="$dir/task-${task_id}-brief.md"
+fi
+
+{
+  echo "$task" | jq -r '"# Task " + .id + ": " + .title'
+
+  echo
+  echo "## Description"
+  echo
+  echo "$task" | jq -r '.description // "(none)"'
+
+  design=$(echo "$task" | jq -r '.design // empty')
+  if [ -n "$design" ]; then
+    echo
+    echo "## Design"
+    echo
+    echo "$design"
+  fi
+
+  notes=$(echo "$task" | jq -r '.notes // empty')
+  if [ -n "$notes" ]; then
+    echo
+    echo "## Notes"
+    echo
+    echo "$notes"
+  fi
+} > "$out"
+
+echo "wrote ${out}: $(wc -l < "$out" | tr -d ' ') lines"
