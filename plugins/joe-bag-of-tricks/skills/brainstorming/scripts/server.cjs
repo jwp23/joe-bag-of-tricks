@@ -316,10 +316,20 @@ function isAllowedWebSocketOrigin(req) {
   return origin === 'http://' + host;
 }
 
+// Reject same-site / cross-site HTTP requests that ride the ambient cookie. On
+// localhost a different port is "same-site", so SameSite=Strict does not stop a
+// confused-deputy request from another local port. Browsers send Sec-Fetch-Site;
+// legitimate navigations report `none` and the companion's own pages report
+// `same-origin`. Non-browser clients (no header) still need the session key.
+function isAllowedHttpSite(req) {
+  const site = req.headers['sec-fetch-site'];
+  return site !== 'same-site' && site !== 'cross-site';
+}
+
 // ========== HTTP Request Handler ==========
 
 function handleRequest(req, res) {
-  if (!isAuthorized(req)) {
+  if (!isAuthorized(req) || !isAllowedHttpSite(req)) {
     res.writeHead(403, securityHeaders({ 'Content-Type': 'text/html; charset=utf-8' }));
     res.end(FORBIDDEN_PAGE);
     return;
@@ -328,7 +338,8 @@ function handleRequest(req, res) {
 
   // Mirror the key into a cookie so same-origin subresources (/files/*) can
   // authenticate after bootstrap. HttpOnly keeps it away from page scripts; the
-  // WebSocket Origin check below is what blocks cross-origin localhost injection.
+  // Sec-Fetch-Site check (HTTP) and Origin check (WebSocket) block same-site /
+  // cross-origin localhost requests that would otherwise ride this cookie.
   res.setHeader('Set-Cookie',
     COOKIE_NAME + '=' + TOKEN + '; HttpOnly; SameSite=Strict; Path=/');
 
@@ -469,9 +480,13 @@ function maybeOpenBrowser() {
   if (clients.size > 0) return; // the user already opened it
   const url = companionUrl(); // must carry the key or the gate 403s it
   const cp = require('child_process');
-  // Operator-provided launcher: run as given (this env var is trusted operator input).
+  // Operator-provided launcher: whitespace-split into argv and run via execFile
+  // (no shell), so `url` is passed as a distinct argument and never interpolated
+  // into a shell command. Simple `bin --flag` forms work; shell quoting does not.
   if (process.env.BRAINSTORM_OPEN_CMD) {
-    try { cp.exec(process.env.BRAINSTORM_OPEN_CMD + ' ' + JSON.stringify(url), () => {}); } catch (e) { /* best effort */ }
+    const argv = process.env.BRAINSTORM_OPEN_CMD.trim().split(/\s+/);
+    const bin = argv.shift();
+    try { cp.execFile(bin, [...argv, url], () => {}); } catch (e) { /* best effort */ }
     return;
   }
   // Platform launchers: pass the URL as an argv element via execFile (no shell),
