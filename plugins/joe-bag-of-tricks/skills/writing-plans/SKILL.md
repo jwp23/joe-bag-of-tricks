@@ -55,6 +55,17 @@ bd children <epic-id> --json
 
 If the epic covers multiple independent subsystems, it should have been broken into sub-project epics during brainstorming. If it wasn't, suggest breaking this into separate epics — one per subsystem. Each epic should produce working, testable software on its own.
 
+## Global Constraints
+
+Capture the spec's project-wide requirements — version floors, dependency limits, naming and copy rules, platform requirements — on the **epic** so every task inherits them:
+
+```bash
+bd update <epic-id> --design="## Global Constraints
+- <one line each, exact values copied verbatim from the spec>"
+```
+
+Every task's requirements implicitly include these. Implementers and reviewers read the epic's constraints alongside each task, so a plan-mandated rule (e.g. "Node >= 24", "no new dependencies") is enforced without repeating it in every task.
+
 ## File Structure
 
 Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
@@ -65,6 +76,10 @@ Before defining tasks, map out which files will be created or modified and what 
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
+
+## Task Right-Sizing
+
+A task is the smallest unit that carries its own test cycle and is worth a fresh reviewer's gate. When drawing task boundaries in bd: fold setup, configuration, scaffolding, and documentation steps into the task whose deliverable needs them; split only where a reviewer could meaningfully reject one task while approving its neighbor. Each task ends with an independently testable deliverable.
 
 ## Bite-Sized Task Granularity
 
@@ -88,6 +103,10 @@ bd create "<task title>" -t task \
 - Create: `exact/path/to/file.ext`
 - Modify: `exact/path/to/existing.ext:123-145`
 - Test: `tests/exact/path/to/test.ext`
+
+## Interfaces
+- Consumes: [what this task uses from earlier tasks — exact signatures]
+- Produces: [what later tasks rely on — exact function names, parameter and return types. A task's implementer sees only their own task; this block is how they learn the names and types neighboring tasks use.]
 
 ## Steps
 
@@ -133,6 +152,16 @@ Set inter-task dependencies when one task must complete before another can start
 ```bash
 bd dep <blocker-task-id> --blocks <blocked-task-id>
 ```
+
+## No Placeholders
+
+Every task design must contain the actual content an engineer needs. These are **plan failures** — never write them into a bd task:
+- "TBD", "TODO", "implement later", "fill in details"
+- "Add appropriate error handling" / "add validation" / "handle edge cases"
+- "Write tests for the above" (without actual test code)
+- "Similar to Task N" (repeat the code — tasks are dispatched to fresh subagents that may run out of order)
+- Steps that describe what to do without showing how (code blocks required for code steps)
+- References to types, functions, or methods not defined in any task
 
 ## Remember
 - Exact file paths always
