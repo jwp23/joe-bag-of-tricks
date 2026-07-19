@@ -17,12 +17,17 @@ sidecar file) · `replaced` (yours wins; read upstream for ideas and port by han
 `removed` (fork dropped it, following upstream or by choice) · `fork-original` (no upstream
 counterpart).
 
-**Overarching sync policy (set 2026-07-19):** *selective* on pure platform-neutralization — this is a
-Claude-Code-only fork, so skip de-Claude-ification (`Task()`→generic `Subagent`, "CLAUDE.md"→
-"instruction-file", `Claude`→`agents`, `@import`→markdown-link) — but **follow upstream where the
-change is a genuine efficiency or security win**. Independent-subagent **code** review is kept
-everywhere; **plan/spec** review moved to inline self-review (upstream evidence: ~25 min/run overhead,
-no measurable quality gain across 25 trials).
+**Overarching sync policy (set 2026-07-19, revised same day):** **adopt upstream's wording by
+default**, platform-neutralizations included (`Task()`→`Subagent`, "CLAUDE.md"→"instruction-file",
+`Claude`→`agents`, `@import`→markdown-link, etc.). Keep a Claude-specific term only when (a) Joe
+explicitly wants it (e.g. the "Strange things are afoot at the Circle K" signal) or (b) it has a
+*verified* Claude-Code functional effect. Rationale: most "neutralizations" are cosmetic or are
+actually upstream improvements, and keeping Claude-specific prose creates permanent per-line sync
+friction for negligible gain — so the default is *adopt*, not *skip*. This supersedes the initial
+"selective/skip-neutralization" stance. Independent **code** review is still kept everywhere;
+**plan/spec** review moved to inline self-review (see `adr/003-...`; upstream evidence: ~25 min/run
+overhead, no measurable quality gain across 25 trials). **Follow upstream on genuine efficiency or
+security wins.**
 
 ## Repo-level files
 
@@ -56,11 +61,10 @@ no measurable quality gain across 25 trials).
 | Path | State | Source | License | Reason(s) |
 |------|-------|--------|---------|-----------|
 | skills/writing-skills | patched | obra/superpowers | MIT | Anthropic skill-creator + best-practices (sidecar: anthropic-skill-creator.md). v6.1.1: evaluated, **skipped wholesale** (pure `Claude`→`agents` / CSO→SDO neutralization + cosmetic link tweaks); ported persuasion-principles `TodoWrite`→`todos` (removes a banned-tool ref) |
-| skills/systematic-debugging | patched | obra/superpowers | MIT | de-prefixed skill refs + record-decision hook + desc/argument-hint. v6.1.1: skipped `Ultrathink`→`Ultra-think` (Claude thinking trigger) |
-| skills/test-driven-development | patched | obra/superpowers | MIT | fork-added "Choose Test Level" section. v6.1.1: skipped `@testing-anti-patterns.md`→markdown-link (keeps Claude auto-import) |
-| skills/receiving-code-review | patched | obra/superpowers | MIT | KEEPS the "Strange things are afoot at the Circle K" signal + desc. v6.1.1: skipped CLAUDE.md→instruction-file and the Circle-K deletion |
-| skills/using-git-worktrees | patched | obra/superpowers | MIT | `.worktrees/`-always convention (do not ask). v6.1.1: ported Step-0 existing-isolation detection; skipped native-tools/ask-consent |
-| skills/dispatching-parallel-agents | patched | obra/superpowers | MIT | v6.1.1: ported the one-response=parallel clarification; kept Claude `Task()` form (skipped `Task()`→generic `Subagent`) |
+| skills/systematic-debugging | patched | obra/superpowers | MIT | de-prefixed skill refs + record-decision hook + desc/argument-hint. v6.1.1: **adopted** `Ultra-think` |
+| skills/test-driven-development | patched | obra/superpowers | MIT | fork-added "Choose Test Level" section. v6.1.1: **adopted** the `[testing-anti-patterns.md](...)` markdown link (`@`-import is a CLAUDE.md mechanism, not a skill-body one) |
+| skills/receiving-code-review | patched | obra/superpowers | MIT | KEEPS the "Strange things are afoot at the Circle K" signal (skipped that deletion — Joe wants it) + desc. v6.1.1: **adopted** CLAUDE.md→instruction-file |
+| skills/using-git-worktrees | patched | obra/superpowers | MIT | `.worktrees/`-always convention (do not ask). v6.1.1: ported Step-0 existing-isolation detection; skipped native-tools/ask-consent (fork convention, verified-functional) |
 | skills/requesting-code-review | patched | obra/superpowers | MIT | **followed upstream** to general-purpose dispatch + improved template (incl. Read-Only Review guard); only fork adaptation is the `docs/plans/` example path |
 
 ## Agents
@@ -75,12 +79,13 @@ no measurable quality gain across 25 trials).
 `readme-sync`, `record-decision`, `security-review`, `verification-before-completion`,
 `writing-agents` — fork additions; no upstream file to diff against.
 
-## Vendored skills (pristine == base; take upstream head next sync)
+## Vendored skills (== upstream head; take head each sync)
 
-Skills not listed above are vendored. v6.1.1 touched `systematic-debugging/root-cause-tracing.md`
-and `systematic-debugging/CREATION-LOG.md` with cosmetic `/Users/jesse/`→`~/` de-personalization
-only — **skipped** (still pristine == base); `writing-skills/persuasion-principles.md` is covered by
-the writing-skills (patched) row.
+Skills not listed above are vendored. v6.1.1: `dispatching-parallel-agents/SKILL.md`,
+`systematic-debugging/root-cause-tracing.md`, and `systematic-debugging/CREATION-LOG.md` were all
+brought to head and are now byte-identical to v6.1.1 (`dispatching-parallel-agents` dropped from
+patched to vendored under the adopt-by-default policy). `writing-skills/persuasion-principles.md` is
+covered by the writing-skills (patched) row.
 
 ## Dropped upstream paths (never carried; skip on every sync)
 
