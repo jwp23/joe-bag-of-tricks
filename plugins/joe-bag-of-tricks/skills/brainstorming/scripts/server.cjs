@@ -83,7 +83,7 @@ function decodeFrame(buffer) {
 // ========== Configuration ==========
 
 const PORT_FILE = process.env.BRAINSTORM_PORT_FILE || null;
-const randomPort = () => 49152 + Math.floor(Math.random() * 16383);
+const randomPort = () => crypto.randomInt(49152, 65536);
 // Prefer an explicit port, else the port this session last bound (so a restart
 // reuses it and an already-open browser tab reconnects), else a random high port.
 function preferredPort() {
@@ -347,7 +347,9 @@ function handleRequest(req, res) {
   const keyFromQuery = queryKey(req.url);
   if (req.method === 'GET' && pathname === '/' && keyFromQuery && timingSafeEqualStr(keyFromQuery, TOKEN)) {
     res.writeHead(200, securityHeaders({ 'Content-Type': 'text/html; charset=utf-8' }));
-    res.end(bootstrapPage(keyFromQuery));
+    // Emit the validated server secret (equal to keyFromQuery here), not the
+    // echoed request value — keeps user-controlled input out of the response.
+    res.end(bootstrapPage(TOKEN));
   } else if (req.method === 'GET' && pathname === '/') {
     const screenFile = getNewestScreen();
     let html = screenFile
