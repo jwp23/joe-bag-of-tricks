@@ -75,9 +75,10 @@ upstream-merge surface.
 Before commit: `betterleaks git --pre-commit --staged --redact` (hard fail) ·
 `claude plugin validate` · `claude --plugin-dir .` smoke load.
 No markdown/shell/JS linters wired — upstream lints only evals/, which this fork lacks.
-CI on the PR runs `claude plugin validate` **and a blocking SonarCloud quality gate** — a
-security/reliability/maintainability rating drop or an unreviewed hotspot on new code FAILS the PR
-(it is not advisory). On failure, triage the gate: fix genuine issues; for false-positives or
+The **only** PR CI check is a **blocking SonarCloud quality gate** (a GitHub App integration — there
+is no `.github/workflows/`, so `claude plugin validate` runs only *locally* as a pre-commit gate, not
+in CI). A security/reliability/maintainability rating drop or an unreviewed hotspot on new code FAILS
+the PR — it is not advisory. On failure, triage the gate: fix genuine issues; for false-positives or
 accepted-by-design findings, mark them via the `sonarqube` MCP tools
 (`change_sonar_issue_status` accept/falsepositive) with a justification recorded in
 @docs/customizations.md. CodeRabbit is not installed, so that finishing-branch step is a no-op.
