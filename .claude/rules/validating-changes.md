@@ -6,7 +6,11 @@ the changed component triggers, before committing.
 ## Before Every Commit
 - `claude plugin validate` — manifest/structure. Hard fail.
 - `claude --plugin-dir .` — load the plugin locally, then confirm the changed skill/agent
-  loads and triggers as intended.
+  loads and triggers as intended. Non-interactive recipe (drive it from a script/agent, don't
+  eyeball a TUI): run from the **plugin root** (the dir holding `.claude-plugin/plugin.json`) —
+  `claude --plugin-dir plugins/joe-bag-of-tricks -p "Use the Skill tool to load <name>, then
+  reply with a line only that skill's content contains" --allowedTools Skill` — and assert the
+  reply. This is the repeatable "load and observe" for a changed skill.
 - `betterleaks git --pre-commit --staged --redact` — secret scan. Hard fail.
 
 ## When Editing or Creating a Skill
