@@ -87,6 +87,21 @@ brought to head and are now byte-identical to v6.1.1 (`dispatching-parallel-agen
 patched to vendored under the adopt-by-default policy). `writing-skills/persuasion-principles.md` is
 covered by the writing-skills (patched) row.
 
+## SonarCloud (CI gate) — accepted findings on the visual-companion server
+
+The PR CI runs a **blocking** SonarCloud quality gate. The visual-companion server (`brainstorming/
+scripts/server.cjs`, `helper.js`) trips several SECURITY rules that are false-positives or upstream-
+documented design choices — all reviewed and **marked accepted/false-positive in SonarCloud** (2026-07,
+PR #6). If a future `server.cjs` re-port re-raises them, re-accept rather than "fixing" by design change:
+
+- **S5332** `http://` / `ws://` (helper.js, server.cjs) — the companion is a **localhost** server;
+  upstream's explicit non-goal is "no HTTPS/wss". Accepted.
+- **S5443** publicly-writable dir — the `/tmp/brainstorm` default is a **dev-only fallback**; normal
+  launch via `start-server.sh` sets `BRAINSTORM_DIR` to a `umask 077` project-local dir, key file
+  `0600`, realpath-contained. Accepted.
+- **S5131** reflect user data / **S2245** pseudorandom — these two were **fixed in code** (emit the
+  validated `TOKEN` not the echoed request key; `crypto.randomInt` for the port), not accepted.
+
 ## Dropped upstream paths (never carried; skip on every sync)
 
 Intentionally not vendored — record why here so future syncs don't re-litigate:
