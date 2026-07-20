@@ -13,6 +13,26 @@ Git worktrees create isolated workspaces sharing the same repository, allowing w
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
 
+## Step 0: Detect Existing Isolation
+
+**Before creating anything, check whether you are already in a linked worktree** — creating a worktree from inside one nests them and pollutes state.
+
+```bash
+GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
+GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
+```
+
+**Submodule guard:** `GIT_DIR != GIT_COMMON` is also true inside a git submodule. Confirm you are not in one before concluding you're in a worktree:
+
+```bash
+# If this prints a path, you're in a submodule, not a worktree — treat as a normal repo
+git rev-parse --show-superproject-working-tree 2>/dev/null
+```
+
+**If `GIT_DIR != GIT_COMMON` (and not a submodule):** You are already in a linked worktree. Skip worktree creation, go straight to Creation Steps → Run Project Setup, and report: "Already in isolated workspace at `<path>` on branch `<name>`."
+
+**If `GIT_DIR == GIT_COMMON` (or in a submodule):** Normal repo checkout — continue below.
+
 ## Directory Selection Process
 
 Follow this priority order:
@@ -136,6 +156,7 @@ Ready to implement <feature-name>
 
 | Situation | Action |
 |-----------|--------|
+| Already in a linked worktree | Skip creation, run project setup |
 | `.worktrees/` exists | Use it (verify ignored) |
 | `worktrees/` exists | Use it (verify ignored) |
 | Both exist | Use `.worktrees/` |

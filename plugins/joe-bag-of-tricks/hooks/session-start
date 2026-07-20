@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# SessionStart hook for the joe-bag-of-tricks plugin.
+# Injects the using-skills skill at session start so skill discovery happens
+# before the first response. Claude Code only.
+
+set -euo pipefail
+
+# Resolve plugin root from this script's own location.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+using_skills_content=$(cat "${PLUGIN_ROOT}/skills/using-skills/SKILL.md" 2>&1 || echo "Error reading using-skills skill")
+
+# Escape a string for JSON embedding using bash parameter substitution.
+# Each ${s//old/new} is a single C-level pass — far faster than a char loop.
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+using_skills_escaped=$(escape_for_json "$using_skills_content")
+session_context="<EXTREMELY_IMPORTANT>\nBelow is the full content of your 'joe-bag-of-tricks:using-skills' skill — your introduction to using skills. For all other skills, use the 'Skill' tool:\n\n${using_skills_escaped}\n</EXTREMELY_IMPORTANT>"
+
+# Claude Code reads hookSpecificOutput.additionalContext.
+# printf (not heredoc) avoids the bash 5.3+ heredoc hang (see obra/superpowers#571).
+printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$session_context"
+
+exit 0

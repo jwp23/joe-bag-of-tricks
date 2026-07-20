@@ -96,14 +96,22 @@ After escalation, if opus also reports `NEEDS_ESCALATION`, surface the remaining
 
 ### Step 5: Cleanup Worktree
 
-Check if in a worktree:
+Check if the current branch has a worktree:
 ```bash
-git worktree list | grep $(git branch --show-current)
+git worktree list | grep "$(git branch --show-current)"
 ```
 
-If yes:
+Only clean up worktrees this plugin created — those under `.worktrees/`. If the worktree path is
+outside `.worktrees/`, the host environment (harness) owns it; do **not** remove it.
+
+If it is under `.worktrees/`:
 ```bash
+# cd to the main repo root FIRST — `git worktree remove` fails silently when the
+# current directory is inside the worktree being removed.
+MAIN_ROOT=$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -1)
+cd "$MAIN_ROOT"
 git worktree remove <worktree-path>
+git worktree prune   # self-healing: clears any stale registrations
 ```
 
 Report: "PR ready at <URL>. All CI checks passing."
