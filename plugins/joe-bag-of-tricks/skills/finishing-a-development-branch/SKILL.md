@@ -43,11 +43,15 @@ BASE=$(git merge-base HEAD main)
 
 ### Step 2: Determine Base Branch
 
+The base branch is whatever this work forked from — usually named in the plan, the
+conversation, or the branch's upstream:
+
 ```bash
 git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
 ```
 
-Or ask: "This branch split from main - is that correct?"
+If it is not already known, ask: "This branch split from main - is that correct?" Confirm
+before opening the PR — targeting the wrong base is expensive to undo.
 
 ### Step 3: Dispatch pr-creator Agent
 
@@ -141,40 +145,18 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | 5. Cleanup | Remove worktree if applicable |
 | Merge | Dispatch pr-merger agent (on request) |
 
-## Common Mistakes
+## Common Rationalizations
 
-**Skipping test verification**
-- **Problem:** Create a failing PR
-- **Fix:** Always verify tests before pushing
-
-**Not waiting for CI checks**
-- **Problem:** Report "done" before knowing CI status
-- **Fix:** Always `gh pr checks --watch` and fix failures
-
-**Pushing directly to main**
-- **Problem:** Bypasses code review and CI
-- **Fix:** Always use feature branches and PRs
-
-**Including a body in squash merge commit**
-- **Problem:** Clutters git log with PR details in merge commits
-- **Fix:** Always use `--body ""` when merging
-
-## Red Flags
-
-**Never:**
-- Push directly to main
-- Proceed with failing tests
-- Report completion before CI checks pass
-- Force-push without explicit request
-- Include a body in the squash merge commit
-
-**Always:**
-- Verify tests before pushing
-- Create PR with a summary body
-- Wait for CI checks to pass
-- Fix CI failures before reporting done
-- Squash merge with `--body ""` when merging
-- Clean up worktree after PR is created
+| Excuse | Reality |
+|--------|---------|
+| "Tests passed earlier this session" | Run the suite on the tree you are about to push. A green run only proves the tree it ran on. |
+| "The base branch is obviously main" | Confirm the fork point or ask. Targeting the wrong base is expensive to undo. |
+| "The PR is open, so the work is done" | Done means CI green. Report completion only after every check passes. |
+| "The push was rejected — force-push will fix it" | A rejected push means the remote moved. Investigate; force-push only on Joe's explicit request. |
+| "It's a one-line change, I'll just push to main" | Never push to main. Every change goes through a feature branch and a PR. |
+| "A merge body documents the change nicely" | Squash merge with `--body ""`. PR detail belongs in the PR, not in git log. |
+| "This other worktree looks stale — I'll clean it too" | Clean up only worktrees under `.worktrees/`. Everything else belongs to the host. |
+| "CI is probably just flaky" | A red check stops the merge. Investigate the failure before touching the merge button. |
 
 ## Integration
 

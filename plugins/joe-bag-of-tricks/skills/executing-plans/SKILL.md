@@ -16,21 +16,22 @@ Load epic, review tasks critically, execute all tasks, report when complete.
 ## The Process
 
 ### Step 1: Load and Review Tasks
-1. List all tasks under the epic:
+1. Ensure an isolated workspace: use using-git-worktrees to create one or verify the existing one
+2. List all tasks under the epic:
    ```bash
    bd children <epic-id> --json
    ```
-2. For each feature/bug, list its tasks:
+3. For each feature/bug, list its tasks:
    ```bash
    bd children <feature-id> --json
    ```
-3. Read task details (description, acceptance criteria, design steps):
+4. Read task details (description, acceptance criteria, design steps):
    ```bash
    bd show <task-id>
    ```
-4. Review critically - identify any questions or concerns about the tasks
-5. If concerns: Raise them with your human partner before starting
-6. If no concerns: Proceed to execution
+5. Review critically - identify any questions or concerns about the tasks
+6. If concerns: Raise them with your human partner before starting
+7. If no concerns: Proceed to execution
 
 ### Step 2: Execute Tasks
 
@@ -83,9 +84,3 @@ After all tasks complete and verified:
 - Stop when blocked, don't guess
 - Never start implementation on main/master branch without explicit user consent
 
-## Integration
-
-**Required workflow skills:**
-- **using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
-- **writing-plans** - Creates the bd task hierarchy this skill executes
-- **finishing-a-development-branch** - Complete development after all tasks
