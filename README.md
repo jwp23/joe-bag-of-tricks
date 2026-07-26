@@ -35,9 +35,7 @@ A single plugin, `joe-bag-of-tricks`, bundling:
 
 | Agent | Model | Role |
 |-------|-------|------|
-| `code-reviewer` | inherit | Reviews completed work against plan and standards |
 | `coderabbit-reviewer` | sonnet | Evaluates and applies/rejects CodeRabbit PR comments |
-| `pr-creator` | haiku | Pushes branch, opens PR, watches CI |
 | `pr-merger` | haiku | Squash-merges, watches CI on main, cleans up |
 
 ## Workflow assumptions

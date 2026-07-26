@@ -53,28 +53,73 @@ git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
 If it is not already known, ask: "This branch split from main - is that correct?" Confirm
 before opening the PR — targeting the wrong base is expensive to undo.
 
-### Step 3: Dispatch pr-creator Agent
+### Step 3: Open the PR
 
-Dispatch the `joe-bag-of-tricks:pr-creator` agent (model: haiku) with:
+The title MUST be a conventional commit line — `type: description`, optional scope
+(`type(scope): description`). Valid types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`,
+`perf`, `ci`, `style`, `build`. A title that does not match is a stop, not a guess.
 
-- **branch**: current feature branch name
-- **base**: target branch (from Step 2, usually `main`)
-- **title**: conventional commit title based on the branch work
+```bash
+git push -u origin <branch>
+git log <base>..HEAD --oneline
+```
 
-The agent pushes the branch, creates the PR with a brief summary from `git log`, and watches CI checks. It reports back with the PR URL and CI status.
+Write the body from that log — one bullet per logical change, not per commit:
 
-**Can run in background** if you have other work to do while CI runs.
+```
+## Summary
+- <bullets>
+
+## Test Plan
+- CI checks must pass
+```
+
+```bash
+gh pr create --title "<title>" --body "$(cat <<'EOF'
+<body>
+EOF
+)"
+```
+
+Keep the PR number from the output. If the push is rejected, the remote moved — investigate
+rather than force-pushing.
 
 ### Step 4: Handle CI Result
 
-**If pr-creator reports PASSED:** Continue to Step 4.5.
+#### Waiting for CI — always background it
 
-**If pr-creator reports FAILED:**
-1. Read the failure details from the agent's report
+A CI run takes minutes. Blocking the session on it wastes them, so **launch the wait with
+`Bash` using `run_in_background`** and pick up other work. The loop exits on its own once
+every check has settled, and its completion notification brings you back:
+
+```bash
+until gh pr checks <number> --json bucket \
+  --jq 'length > 0 and (map(select(.bucket == "pending")) | length == 0)' 2>/dev/null \
+  | grep -qx true; do sleep 30; done
+```
+
+When the notification arrives, read the results: `gh pr checks <number>`
+
+Three details the loop depends on:
+- `length > 0` covers the window right after a push where no check has registered yet.
+  Without it, an empty check list reads as "everything settled."
+- The pipe into `grep` is deliberate. `gh pr checks` exits non-zero while checks are pending
+  (code 8) and again when one fails; taking the exit code from `grep` instead keeps the loop alive.
+- Poll at 30s. Faster only burns API quota.
+
+#### Acting on the result
+
+Read the settled results with `gh pr checks <number>`. Report the raw status — do not
+classify a check as "blocking" or "non-blocking," and do not decide a failure does not matter.
+
+**If every check passed:** Continue to Step 4.5.
+
+**If any check failed:**
+1. Note every failing check name and its URL
 2. Investigate the root cause (use systematic-debugging if non-obvious)
 3. Fix the issue locally
 4. Commit and push the fix
-5. Watch CI yourself: `gh pr checks <number> --watch`
+5. Wait for CI in the background, per above
 6. Repeat until all checks pass
 7. Continue to Step 4.5
 
@@ -86,7 +131,7 @@ After CI passes, dispatch the `joe-bag-of-tricks:coderabbit-reviewer` agent (mod
 
 The agent waits for CodeRabbit's review, extracts the AI agent prompt from the review body, evaluates each suggestion, auto-applies fixes, and replies to comments on GitHub.
 
-**Can run in background** while reporting CI status to Joe.
+**Dispatch it in the background** and keep working while it runs.
 
 **Handle the result based on status:**
 
@@ -96,7 +141,8 @@ The agent waits for CodeRabbit's review, extracts the AI agent prompt from the r
 
 After escalation, if opus also reports `NEEDS_ESCALATION`, surface the remaining items to Joe for a decision.
 
-**After any applied changes:** Watch CI again (`gh pr checks <number> --watch`) to verify the fixes didn't break anything.
+**After any applied changes:** Wait for CI again to verify the fixes didn't break anything —
+backgrounded by default, using the loop in Step 4.
 
 ### Step 5: Cleanup Worktree
 
@@ -128,7 +174,7 @@ When Joe says to merge or close a PR, dispatch the `joe-bag-of-tricks:pr-merger`
 
 The agent squash merges with no body, checks out main, pulls, watches CI on the merge commit, and cleans up the local branch and worktree. It reports back with the merge SHA and CI status.
 
-**Can run in background** if you have other work to start.
+**Dispatch it in the background** and keep working while it runs.
 
 **If pr-merger reports CI FAILED on main:** Investigate and fix on a new branch.
 
@@ -139,8 +185,8 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | 1. Verify | Run tests, stop if failing |
 | 1.5 Security | Run security review, fix Critical/Important |
 | 2. Base branch | Confirm target branch |
-| 3. pr-creator | Dispatch agent: push, PR, CI watch |
-| 4. CI result | If failed: debug, fix, push, re-watch |
+| 3. Open PR | Push, `gh pr create` with a conventional-commit title |
+| 4. CI result | Background the wait; if failed: debug, fix, push, wait again |
 | 4.5 CodeRabbit | Dispatch coderabbit-reviewer: auto-apply or reject. Escalate to opus if needed |
 | 5. Cleanup | Remove worktree if applicable |
 | Merge | Dispatch pr-merger agent (on request) |
@@ -157,6 +203,8 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | "A merge body documents the change nicely" | Squash merge with `--body ""`. PR detail belongs in the PR, not in git log. |
 | "This other worktree looks stale — I'll clean it too" | Clean up only worktrees under `.worktrees/`. Everything else belongs to the host. |
 | "CI is probably just flaky" | A red check stops the merge. Investigate the failure before touching the merge button. |
+| "It's only a couple of minutes — I'll just watch CI" | Background the wait. Every time. A blocked session cannot be handed the next piece of work. |
+| "There's nothing else to do, so blocking costs nothing" | You cannot know that — Joe can hand you work the moment the wait starts. Background it and stay reachable. |
 
 ## Integration
 
@@ -165,7 +213,6 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 - **executing-plans** (Step 5) - After all batches complete
 
 **Dispatches:**
-- **pr-creator** agent (haiku) - Push, PR creation, CI watch (Step 3)
 - **coderabbit-reviewer** agent (sonnet, escalates to opus) - Auto-apply review suggestions (Step 4.5)
 - **pr-merger** agent (haiku) - Squash merge, CI watch, cleanup (Merging)
 
@@ -173,4 +220,5 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 - **security-review** - Runs security audit before push (Step 1.5)
 - **using-git-worktrees** - Cleans up worktree created by that skill
 
-**Design rationale:** See `docs/adr/001-haiku-subagents-for-git-operations.md`.
+**Design rationale:** See `docs/adr/001-haiku-subagents-for-git-operations.md` and
+`docs/adr/005-retire-pr-creator-single-ci-wait.md` (why PR creation is inline, not an agent).
