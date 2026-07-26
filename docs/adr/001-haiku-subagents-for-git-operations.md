@@ -1,5 +1,8 @@
 # ADR-001: Haiku Subagents for Mechanical Git Operations
 
+> **Partially superseded.** The `pr-creator` decision below was retired on 2026-07-26 — see
+> `005-retire-pr-creator-single-ci-wait.md`. The `pr-merger` decision stands.
+
 ## Context
 
 The main development workflow uses Opus for all git operations: creating commits, pushing branches, creating PRs, watching CI, merging PRs, and cleaning up. These operations are purely mechanical — shell commands with predictable inputs and outputs. Running them in the main Opus context wastes expensive tokens on work that requires no judgment, and blocks the main agent while waiting for CI checks.
