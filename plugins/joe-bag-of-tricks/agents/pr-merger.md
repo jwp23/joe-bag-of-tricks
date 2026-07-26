@@ -1,6 +1,6 @@
 ---
 name: pr-merger
-description: Squash merges a GitHub PR with no body, pulls main, watches CI on the merge commit, and cleans up the local branch and worktree. Dispatched when Joe approves a merge. Reports result without attempting to fix failures.
+description: Squash merges a GitHub PR with no body, pulls main, verifies CI from the PR gate, and cleans up the local branch and worktree. Dispatched when Joe approves a merge. Reports result without attempting to fix failures.
 model: haiku
 tools: Bash, Read
 ---
@@ -25,15 +25,23 @@ If the merge fails, report the error and stop.
 git checkout main && git pull
 ```
 
-### 3. Watch CI on main
+### 3. Verify CI — read the PR gate, do NOT watch the merge commit
 
-The merge commit triggers a CI run. Watch it:
+This repo has no `.github/workflows/`, so there is no Actions run on the merge commit and
+`gh run watch` has nothing to watch. The only check is a SonarCloud GitHub App gate, and it
+computes on **pull requests only**.
+
+Read the PR's gate — that is the authoritative result:
 
 ```bash
-gh run watch
+gh pr checks <number>
 ```
 
-This blocks until the run completes.
+Do NOT poll the merge commit. It permanently reports check-run `conclusion=neutral` /
+"Quality Gate not computed", and GitHub's legacy combined status reports `state=pending` with
+`contexts=0` (zero legacy statuses, not a running job). That is steady state on every merge
+commit — polling it burns minutes and ends in a false "CI incomplete" alarm. Report the PR
+gate's result and move on.
 
 ### 4. Clean up local branch
 
@@ -60,8 +68,8 @@ Report exactly:
 
 - **Merged PR**: #{number}
 - **Merge commit**: the SHA from `git rev-parse HEAD`
-- **CI status on main**: PASSED or FAILED
-- **If FAILED**: paste the failing check names and error output from `gh run view`
+- **CI status**: PASSED or FAILED, from the PR gate (`gh pr checks <number>`)
+- **If FAILED**: paste the failing check names and their URLs from `gh pr checks <number>`
 - **Cleanup**: what was cleaned up (branch, worktree, or nothing)
 
 ## Rules
