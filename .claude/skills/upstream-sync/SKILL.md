@@ -38,7 +38,8 @@ The base defaults to the **Last synced** anchor recorded in `@docs/customization
 5. Update every touched row in `@docs/customizations.md` (state + source + license + reason(s)).
 6. Record the synced **head** ref as the new **Last synced** anchor in `@docs/customizations.md` —
    this replaces git's merge-base memory so the next sync only diffs what changed since.
-7. Validate: `claude plugin validate`. Squash-merge the sync branch via
+7. Validate: `claude plugin validate plugins/joe-bag-of-tricks` (path required; `.` would check
+   only the marketplace manifest). Squash-merge the sync branch via
    `/joe-bag-of-tricks:finishing-a-development-branch`, like any other branch.
 
 ## Path Translation

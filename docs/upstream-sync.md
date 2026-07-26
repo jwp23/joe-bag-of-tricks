@@ -51,6 +51,8 @@ in `customizations.md`. Refuse anything unknown or incompatible.
 ## Finishing
 - Update every touched row in `customizations.md`, and set **Last synced** to the head ref — this
   explicit anchor is what keeps the next sync's diff small; it replaces git's merge-base memory.
-- Run `claude plugin validate` and a `claude --plugin-dir .` smoke load.
+- Run `claude plugin validate plugins/joe-bag-of-tricks` and a
+  `claude --plugin-dir plugins/joe-bag-of-tricks` smoke load. Both take the plugin root — the repo
+  root is the marketplace, and passing `.` silently checks/loads nothing of the plugin's skills.
 - Squash-merge the `sync/upstream-vX.Y.Z` branch via `finishing-a-development-branch`, like any
   other feature branch. There is no upstream ancestry to preserve, so no special merge handling.

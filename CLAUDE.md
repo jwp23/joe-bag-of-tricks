@@ -32,7 +32,8 @@ Plugin spec: https://code.claude.com/docs/en/plugins · Upstream: github.com/obr
   .claude-plugin/ — only plugin.json goes there
 - Authoring-only tooling (the upstream-sync skill, team rules) lives in .claude/ and is NOT
   shipped in the plugin
-- Test locally: `claude --plugin-dir .` · Validate before distributing: `claude plugin validate`
+- Test locally: `claude --plugin-dir plugins/joe-bag-of-tricks` · Validate before distributing:
+  `claude plugin validate plugins/joe-bag-of-tricks`. Both take the PLUGIN root, not the repo root
 - Manifest schema and /joe-bag-of-tricks: namespacing: see the plugin spec above
 
 ## Upstream Sync
@@ -52,8 +53,11 @@ IMPORTANT: When your preference conflicts with upstream's existing style, match 
 
 ## Validation
 No TDD and no automated evals for this repo yet. Before any commit:
-- `claude plugin validate` — manifest/structure. Always.
-- `claude --plugin-dir .` — load locally; confirm the changed skill/agent loads and triggers.
+- `claude plugin validate plugins/joe-bag-of-tricks` — plugin manifest + skill frontmatter. Always.
+  The path argument is REQUIRED. `claude plugin validate .` validates only the *marketplace*
+  manifest and will NOT catch a broken skill.
+- `claude --plugin-dir plugins/joe-bag-of-tricks` — load locally; confirm the changed skill/agent
+  loads and triggers. `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace.
 - Editing/creating a skill: follow /joe-bag-of-tricks:writing-skills.
 NEVER claim a change works until you've loaded it and observed it — no "should work."
 Inherited tests/pre-commit suites are kept-or-stripped per docs/customizations.md.
@@ -73,7 +77,8 @@ upstream-merge surface.
 
 ## Pre-commit & CI
 Before commit: `betterleaks git --pre-commit --staged --redact` (hard fail) ·
-`claude plugin validate` · `claude --plugin-dir .` smoke load.
+`claude plugin validate plugins/joe-bag-of-tricks` ·
+`claude --plugin-dir plugins/joe-bag-of-tricks` smoke load.
 No markdown/shell/JS linters wired — upstream lints only evals/, which this fork lacks.
 The **only** PR CI check is a **blocking SonarCloud quality gate** (a GitHub App integration — there
 is no `.github/workflows/`, so `claude plugin validate` runs only *locally* as a pre-commit gate, not
