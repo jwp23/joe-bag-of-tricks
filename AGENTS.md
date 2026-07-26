@@ -1,13 +1,5 @@
 # Agent Instructions
-This project uses **bd** (beads) for issue tracking. Run `bd prime` for workflow context.
-## Quick Reference
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work atomically
-bd close <id>         # Complete work
-bd dolt push          # Push beads data to remote
-```
+This project uses **bd** (beads) for issue tracking.
 ## Non-Interactive Shell Commands
 **ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.
 Shell commands like `cp`, `mv`, and `rm` may be aliased to include `-i` (interactive) mode on some systems, causing the agent to hang indefinitely waiting for y/n input.

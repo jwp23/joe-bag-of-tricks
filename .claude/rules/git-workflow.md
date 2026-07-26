@@ -16,11 +16,11 @@ Isolate without asking, and always use `.worktrees/`. Prefer a native worktree t
 ## Merge Policy
 - Squash-merge feature branches; delete the branch on merge.
 - Upstream syncs squash-merge too. The fork shares no ancestry with upstream, so a sync is an
-  ordinary branch — there's no merge commit to preserve. See @docs/adr/002-no-remote-upstream-sync.md.
+  ordinary branch — there's no merge commit to preserve. See docs/adr/002-no-remote-upstream-sync.md.
 
 ## Divergent Workflow
 NEVER edit an upstream file to express a divergent workflow (e.g. beads). Replace the
-component and record it in `@docs/customizations.md`. See `@.claude/rules/upstream-sync.md`.
+component and record it in `docs/customizations.md`. See `@.claude/rules/upstream-sync.md`.
 
 ## Completing Work
 When implementation is complete and validation passes, YOU MUST invoke the

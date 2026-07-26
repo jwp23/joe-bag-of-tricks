@@ -22,4 +22,4 @@ For "is it actually fixed" confirmation, invoke `/joe-bag-of-tricks:verification
 
 ## Inherited Suites
 Upstream `tests/` and `.pre-commit-config.yaml` are kept-or-stripped per
-`@docs/customizations.md`. If retained, run them; otherwise the floor above stands.
+`docs/customizations.md`. If retained, run them; otherwise the floor above stands.

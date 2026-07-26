@@ -24,7 +24,7 @@ Plugin spec: https://code.claude.com/docs/en/plugins · Upstream: github.com/obr
 - NOT composable. Skills/agents cross-reference; ships and installs as ONE unit. Do not split
   it into separate plugins or rework skills to be standalone
 - NEVER vendor content whose license is unknown or incompatible. Preserve upstream
-  copyright/license notices; record source + license in @docs/customizations.md
+  copyright/license notices; record source + license in docs/customizations.md
 - Ships skills, subagents, hooks. No commands/ — that pattern merged into skills
 
 ## Plugin Authoring
@@ -37,7 +37,7 @@ Plugin spec: https://code.claude.com/docs/en/plugins · Upstream: github.com/obr
 
 ## Upstream Sync
 IMPORTANT: NEVER edit an upstream file to express a divergent workflow. Classify every
-modified file in @docs/customizations.md as vendored / patched / replaced.
+modified file in docs/customizations.md as vendored / patched / replaced.
 - Sync a release: invoke /upstream-sync (tag-merge, diff-driven classification, resolution)
 - `patched` files diff-merge; `replaced` files are watch-and-port-by-hand, never auto-merged
 - Classify by the git diff, NOT memory — a file may diverge for more than one reason
@@ -56,13 +56,13 @@ No TDD and no automated evals for this repo yet. Before any commit:
 - `claude --plugin-dir .` — load locally; confirm the changed skill/agent loads and triggers.
 - Editing/creating a skill: follow /joe-bag-of-tricks:writing-skills.
 NEVER claim a change works until you've loaded it and observed it — no "should work."
-Inherited tests/pre-commit suites are kept-or-stripped per @docs/customizations.md.
+Inherited tests/pre-commit suites are kept-or-stripped per docs/customizations.md.
 
 ## Git Workflow
 - Branches: feat/ fix/ docs/ chore/ refactor/ + short desc; sync/upstream-vX.Y.Z for upstream syncs
 - Commits: Conventional Commits, single line, no body
 - Squash-merge all feature branches, upstream syncs included. The fork shares no upstream
-  ancestry, so a sync is an ordinary branch — no merge commit to preserve. See @docs/adr/002-no-remote-upstream-sync.md
+  ancestry, so a sync is an ordinary branch — no merge commit to preserve. See docs/adr/002-no-remote-upstream-sync.md
 - Never push to main. Complete work via /joe-bag-of-tricks:finishing-a-development-branch.
   Done = PR open + CI green
 See @.claude/rules/git-workflow.md for worktrees and merge policy.
@@ -81,18 +81,18 @@ in CI). A security/reliability/maintainability rating drop or an unreviewed hots
 the PR — it is not advisory. On failure, triage the gate: fix genuine issues; for false-positives or
 accepted-by-design findings, mark them via the `sonarqube` MCP tools
 (`change_sonar_issue_status` accept/falsepositive) with a justification recorded in
-@docs/customizations.md. CodeRabbit is not installed, so that finishing-branch step is a no-op.
+docs/customizations.md. CodeRabbit is not installed, so that finishing-branch step is a no-op.
 
 ## Reference Documents
 IMPORTANT: Before starting any task, identify which docs below are relevant and read them
 first. Load the full context before making changes.
-- @docs/customizations.md — Read before any sync or before editing an inherited file.
+- docs/customizations.md — Read before any sync or before editing an inherited file.
   Per-file manifest: vendored/patched/replaced, with source, license, and reason(s).
-- @docs/upstream-sync.md — Read when syncing an upstream release. Full no-remote tag-diff/port
+- docs/upstream-sync.md — Read when syncing an upstream release. Full no-remote tag-diff/port
   procedure and resolution by manifest state. (The /upstream-sync skill points here.)
-- @docs/architecture.md — Read when unsure where a component belongs (root vs .claude/).
-- @docs/licensing.md — Read before vendoring from any upstream. Compatibility rules and the
+- docs/architecture.md — Read when unsure where a component belongs (root vs .claude/).
+- docs/licensing.md — Read before vendoring from any upstream. Compatibility rules and the
   attribution/NOTICE discipline for a public repo.
 
 ## Project Structure
-Plugin layout and the root-vs-.claude/ split: see @docs/architecture.md.
+Plugin layout and the root-vs-.claude/ split: see docs/architecture.md.
