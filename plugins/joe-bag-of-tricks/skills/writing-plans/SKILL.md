@@ -163,13 +163,7 @@ Every task design must contain the actual content an engineer needs. These are *
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
 
-## Remember
-- Exact file paths always
-- Complete code in task designs (not "add validation")
-- Exact commands with expected output
-- Reference relevant skills with @ syntax
-- DRY, YAGNI, TDD, frequent commits
-- When making technical choices (tool selection, patterns, library choices), invoke **record-decision**
+When a task involves a technical choice (tool selection, patterns, library choices), invoke **record-decision**.
 
 ## Self-Review
 
