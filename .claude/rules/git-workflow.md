@@ -7,7 +7,11 @@ Upstream syncs use `sync/upstream-vX.Y.Z`.
 
 ## Worktrees
 For extensive changes, use git worktrees in project-local `.worktrees/` via the
-`/joe-bag-of-tricks:using-git-worktrees` skill. Always use this location — do not ask.
+`/joe-bag-of-tricks:using-git-worktrees` skill.
+
+This is a **declared worktree preference** — the skill's consent prompt does not apply here.
+Isolate without asking, and always use `.worktrees/`. Prefer a native worktree tool
+(`EnterWorktree`) over `git worktree add` when one is available, per that skill's Step 1a.
 
 ## Merge Policy
 - Squash-merge feature branches; delete the branch on merge.
