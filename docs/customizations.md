@@ -64,7 +64,6 @@ security wins.**
 | skills/systematic-debugging | patched | obra/superpowers | MIT | de-prefixed skill refs + record-decision hook + desc/argument-hint. v6.1.1: **adopted** `Ultra-think`. v6.2.0: **adopted** all hunks — overview trim, the Phase-4 verification-before-completion step (de-prefixed), Related-skills + Real-World-Impact removal |
 | skills/test-driven-development | patched | obra/superpowers | MIT | fork-added "Choose Test Level" section. v6.1.1: **adopted** the `[testing-anti-patterns.md](...)` markdown link (`@`-import is a CLAUDE.md mechanism, not a skill-body one). v6.2.0: **adopted** all hunks — `testing-anti-patterns.md` deleted and replaced by vendored `writing-good-tests.md`, Why-Order-Matters folded into the Common Rationalizations table |
 | skills/receiving-code-review | patched | obra/superpowers | MIT | KEEPS the "Strange things are afoot at the Circle K" signal (skipped that deletion — Joe wants it) + desc. v6.1.1: **adopted** CLAUDE.md→instruction-file. v6.2.0: **adopted** the Bottom Line deletion |
-| skills/using-git-worktrees | patched | obra/superpowers | MIT | `.worktrees/`-always convention (do not ask). v6.1.1: ported Step-0 existing-isolation detection; skipped native-tools/ask-consent (fork convention, verified-functional). v6.2.0: ported the Common Rationalizations table over the fork's Common Mistakes + Red Flags, minus the native-tool row (fork skipped native-tools) and with the fork's directory-priority wording |
 | skills/verification-before-completion | patched | obra/superpowers | MIT | **Reclassified at v6.2.0 — previously (wrongly) listed as fork-original; it has had an upstream counterpart all along.** Fork delta: shortened description + a fork-added Visual Verification section. v6.2.0: **adopted** all hunks — overview trim, Why-This-Matters and Bottom Line removal |
 | skills/requesting-code-review | patched | obra/superpowers | MIT | **followed upstream** to general-purpose dispatch + improved template (incl. Read-Only Review guard); only fork adaptation is the `docs/plans/` example path. v6.2.0: **adopted** both hunks — intro trim and Integration-with-Workflows → Common Rationalizations |
 
@@ -87,6 +86,16 @@ Skills not listed above are vendored. v6.1.1: `dispatching-parallel-agents/SKILL
 brought to head and are now byte-identical to v6.1.1 (`dispatching-parallel-agents` dropped from
 patched to vendored under the adopt-by-default policy). `writing-skills/persuasion-principles.md` is
 covered by the writing-skills (patched) row.
+
+v6.2.0: `using-git-worktrees/SKILL.md` **dropped from patched to vendored** — taken to head
+wholesale (byte-identical to v6.2.0). The fork had been carrying upstream's pre-v6.1.1 spine with
+only Step-0 detection ported in, which left a Quick Reference row (`Neither exists | Check CLAUDE.md
+→ Ask user`) contradicting both the fork's own `.worktrees/`-always convention and the section above
+it, and declined the native-tool deferral (`EnterWorktree`) that upstream calls the #1 mistake to
+skip. Joe's call (2026-07-26): follow upstream. The remaining tension — upstream's consent prompt vs
+the fork's do-not-ask convention — is resolved *outside* the skill: upstream's own wording honors an
+existing declared preference without asking, and `.claude/rules/git-workflow.md` now declares it
+explicitly. See `adr/004-vendor-using-git-worktrees.md`.
 
 v6.2.0: `dispatching-parallel-agents/SKILL.md` taken to head again (byte-identical to v6.2.0).
 `test-driven-development/testing-anti-patterns.md` was byte-identical to v6.1.1 and follows
