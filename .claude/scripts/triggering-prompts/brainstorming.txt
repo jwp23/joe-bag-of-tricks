@@ -1,0 +1,1 @@
+I want to add a feature to this project that lets people define their own custom slug rules. Let's build it.

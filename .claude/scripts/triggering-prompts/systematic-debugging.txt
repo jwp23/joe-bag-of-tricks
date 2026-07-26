@@ -1,0 +1,1 @@
+npm test just started failing with "TypeError: Cannot read properties of undefined (reading 'toLowerCase')" coming from src/utils.js. Fix it.

@@ -52,12 +52,14 @@ Cross-reference skills/agents by namespace: /joe-bag-of-tricks:<name>.
 IMPORTANT: When your preference conflicts with upstream's existing style, match upstream.
 
 ## Validation
-No TDD and no automated evals for this repo yet. Before any commit:
+No TDD and no behavioral evals — deferred by docs/adr/006-defer-behavioral-evals.md. Before any commit:
 - `claude plugin validate plugins/joe-bag-of-tricks` — plugin manifest + skill frontmatter. Always.
   The path argument is REQUIRED. `claude plugin validate .` validates only the *marketplace*
   manifest and will NOT catch a broken skill.
-- `claude --plugin-dir plugins/joe-bag-of-tricks` — load locally; confirm the changed skill/agent
-  loads and triggers. `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace.
+- `.claude/scripts/verify-skills-load.sh` — loads every skill and asserts it resolved, divergent
+  skills first; also asserts the SessionStart hook injected using-skills. `--only <name>` while
+  iterating. One billed model call per skill. Proves a skill LOADS, not that it TRIGGERS.
+  `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace.
 - Editing/creating a skill: follow /joe-bag-of-tricks:writing-skills.
 NEVER claim a change works until you've loaded it and observed it — no "should work."
 Inherited tests/pre-commit suites are kept-or-stripped per docs/customizations.md.
@@ -78,8 +80,9 @@ upstream-merge surface.
 ## Pre-commit & CI
 Before commit: `betterleaks git --pre-commit --staged --redact` (hard fail) ·
 `claude plugin validate plugins/joe-bag-of-tricks` ·
-`claude --plugin-dir plugins/joe-bag-of-tricks` smoke load.
-No markdown/shell/JS linters wired — upstream lints only evals/, which this fork lacks.
+`.claude/scripts/verify-skills-load.sh` (every skill loads; billed, so run it deliberately).
+No markdown/shell/JS linters wired — upstream lints only its evals/, which is a gitignored clone
+of a separate repo this fork does not carry (docs/adr/006-defer-behavioral-evals.md).
 The **only** PR CI check is a **blocking SonarCloud quality gate** (a GitHub App integration — there
 is no `.github/workflows/`, so `claude plugin validate` runs only *locally* as a pre-commit gate, not
 in CI). A security/reliability/maintainability rating drop or an unreviewed hotspot on new code FAILS

@@ -1,0 +1,1 @@
+Here's the spec for splitting src/utils.js: extract slugify into src/text.js, add a src/dates.js with an ISO-8601 validator, and have src/index.js re-export both as the only public entry point. Existing importers of src/utils.js must keep working. Turn this into something I can execute step by step.
