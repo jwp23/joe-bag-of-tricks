@@ -1,7 +1,8 @@
 # Validation Rules
 
-No TDD and no automated evals for this repo yet. Validation = prove the plugin still loads and
-the changed component triggers, before committing.
+No TDD and no behavioral evals for this repo — deferred by
+`docs/adr/006-defer-behavioral-evals.md`. Validation = prove the plugin still loads and every
+skill still resolves, before committing.
 
 ## Before Every Commit
 - `claude plugin validate plugins/joe-bag-of-tricks` — plugin manifest + skill frontmatter. Hard
@@ -9,14 +10,25 @@ the changed component triggers, before committing.
   'path'`), and it MUST be the **plugin root** — the dir holding `.claude-plugin/plugin.json`.
   `claude plugin validate .` resolves to the repo-root *marketplace* manifest instead and passes
   without ever reading a skill, so it will NOT catch broken skill frontmatter.
-- `claude --plugin-dir plugins/joe-bag-of-tricks` — load the plugin locally, then confirm the
-  changed skill/agent loads and triggers as intended. Same plugin-root rule: `--plugin-dir .`
-  silently loads no skills. Non-interactive recipe (drive it from a script/agent, don't eyeball a
-  TUI), run from the repo root —
-  `claude --plugin-dir plugins/joe-bag-of-tricks -p "Use the Skill tool to load <name>, then
-  reply with a line only that skill's content contains" --allowedTools Skill` — and assert the
-  reply. This is the repeatable "load and observe" for a changed skill.
+- `.claude/scripts/verify-skills-load.sh` — the scripted "load and observe". One non-interactive
+  session per skill; asserts a `Skill` tool_use for the namespaced name, a successful terminal
+  result, and that the SessionStart hook injected `using-skills`. Hard fail (non-zero exit, with
+  the stream tail for each failure). Runs `replaced` skills first, then `patched`, then the rest,
+  per the `State` column of `docs/customizations.md`. Use `--only <name>` while iterating on one
+  skill and `--tier diverged` for the 12 fork-owned ones; the bare command covers all 18.
+  **One model call per skill — it is billed**, which is why it is an explicitly-run gate and not
+  a git pre-commit hook.
+  The plugin-root rule still applies to anything you run by hand: `--plugin-dir .` silently loads
+  no skills; it must be `--plugin-dir plugins/joe-bag-of-tricks`.
+  This proves a skill **loads when named**. It does NOT prove a skill **triggers** from a natural
+  prompt — see `docs/adr/006-defer-behavioral-evals.md`. It is not an eval; don't call it one.
 - `betterleaks git --pre-commit --staged --redact` — secret scan. Hard fail.
+
+## After an Upstream Sync (advisory, not a gate)
+`.claude/scripts/probe-skill-triggering.sh` — sends natural prompts in a throwaway fixture repo
+and reports which skill fired. **Always exits 0 by design.** Measured 1/2 hit rates on identical
+prompts for some skills, so it is a signal to go read a description, never a pass/fail. Run it
+where description drift is the real risk: after a sync.
 
 ## When Editing or Creating a Skill
 Follow the `/joe-bag-of-tricks:writing-skills` skill — it carries the skill-testing method.

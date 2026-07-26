@@ -39,7 +39,10 @@ The base defaults to the **Last synced** anchor recorded in `@docs/customization
 6. Record the synced **head** ref as the new **Last synced** anchor in `@docs/customizations.md` —
    this replaces git's merge-base memory so the next sync only diffs what changed since.
 7. Validate: `claude plugin validate plugins/joe-bag-of-tricks` (path required; `.` would check
-   only the marketplace manifest). Squash-merge the sync branch via
+   only the marketplace manifest), then `.claude/scripts/verify-skills-load.sh` — a sync touches
+   many skills at once, and this is the only check that every one of them still resolves and
+   loads. It proves loading, not triggering; description drift that breaks *triggering* is not
+   covered (`@docs/adr/006-defer-behavioral-evals.md`). Squash-merge the sync branch via
    `/joe-bag-of-tricks:finishing-a-development-branch`, like any other branch.
 
 ## Path Translation
