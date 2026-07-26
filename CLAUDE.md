@@ -87,6 +87,11 @@ the PR — it is not advisory. On failure, triage the gate: fix genuine issues; 
 accepted-by-design findings, mark them via the `sonarqube` MCP tools
 (`change_sonar_issue_status` accept/falsepositive) with a justification recorded in
 docs/customizations.md. CodeRabbit is not installed, so that finishing-branch step is a no-op.
+The gate computes on **pull requests only**. A merge commit on `main` permanently reports check-run
+`conclusion=neutral` / "Quality Gate not computed", and GitHub's legacy combined status reports
+`state=pending` with `contexts=0` — an artifact of there being zero legacy statuses, NOT a running
+job. This is steady state (identical on every merge commit), so never treat it as a failure and
+never poll a merge commit waiting for it to settle — it will not. Judge CI by the PR's gate.
 
 ## Reference Documents
 IMPORTANT: Before starting any task, identify which docs below are relevant and read them
