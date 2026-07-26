@@ -67,6 +67,29 @@ The agent pushes the branch, creates the PR with a brief summary from `git log`,
 
 ### Step 4: Handle CI Result
 
+#### Waiting for CI — always background it
+
+A CI run takes minutes. Blocking the session on it wastes them, so **launch the wait with
+`Bash` using `run_in_background`** and pick up other work. The loop exits on its own once
+every check has settled, and its completion notification brings you back:
+
+```bash
+until gh pr checks <number> --json bucket \
+  --jq 'length > 0 and (map(select(.bucket == "pending")) | length == 0)' 2>/dev/null \
+  | grep -qx true; do sleep 30; done
+```
+
+When the notification arrives, read the results: `gh pr checks <number>`
+
+Three details the loop depends on:
+- `length > 0` covers the window right after a push where no check has registered yet.
+  Without it, an empty check list reads as "everything settled."
+- The pipe into `grep` is deliberate. `gh pr checks` exits non-zero while checks are pending
+  (code 8) and again when one fails; taking the exit code from `grep` instead keeps the loop alive.
+- Poll at 30s. Faster only burns API quota.
+
+#### Acting on the result
+
 **If pr-creator reports PASSED:** Continue to Step 4.5.
 
 **If pr-creator reports FAILED:**
@@ -74,7 +97,7 @@ The agent pushes the branch, creates the PR with a brief summary from `git log`,
 2. Investigate the root cause (use systematic-debugging if non-obvious)
 3. Fix the issue locally
 4. Commit and push the fix
-5. Watch CI yourself: `gh pr checks <number> --watch`
+5. Wait for CI in the background, per above
 6. Repeat until all checks pass
 7. Continue to Step 4.5
 
@@ -96,7 +119,8 @@ The agent waits for CodeRabbit's review, extracts the AI agent prompt from the r
 
 After escalation, if opus also reports `NEEDS_ESCALATION`, surface the remaining items to Joe for a decision.
 
-**After any applied changes:** Watch CI again (`gh pr checks <number> --watch`) to verify the fixes didn't break anything.
+**After any applied changes:** Wait for CI again to verify the fixes didn't break anything —
+backgrounded by default, using the loop in Step 4.
 
 ### Step 5: Cleanup Worktree
 
@@ -140,7 +164,7 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | 1.5 Security | Run security review, fix Critical/Important |
 | 2. Base branch | Confirm target branch |
 | 3. pr-creator | Dispatch agent: push, PR, CI watch |
-| 4. CI result | If failed: debug, fix, push, re-watch |
+| 4. CI result | Background the wait; if failed: debug, fix, push, wait again |
 | 4.5 CodeRabbit | Dispatch coderabbit-reviewer: auto-apply or reject. Escalate to opus if needed |
 | 5. Cleanup | Remove worktree if applicable |
 | Merge | Dispatch pr-merger agent (on request) |
@@ -157,6 +181,8 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | "A merge body documents the change nicely" | Squash merge with `--body ""`. PR detail belongs in the PR, not in git log. |
 | "This other worktree looks stale — I'll clean it too" | Clean up only worktrees under `.worktrees/`. Everything else belongs to the host. |
 | "CI is probably just flaky" | A red check stops the merge. Investigate the failure before touching the merge button. |
+| "It's only a couple of minutes — I'll just watch CI" | Background the wait. Every time. A blocked session cannot be handed the next piece of work. |
+| "There's nothing else to do, so blocking costs nothing" | You cannot know that — Joe can hand you work the moment the wait starts. Background it and stay reachable. |
 
 ## Integration
 
