@@ -153,6 +153,48 @@ step in the plan needs unpacking.
 
 ---
 
+## Install & sync — what goes in your plugin’s README
+
+Prompt 2 writes this for you (step 7), but here’s the exact content so you can
+review it or hand-write it. Plugins install at **user scope**, so they’re
+available in every project; skills auto-trigger by description and can also be
+invoked explicitly as `/plugin:skill`.
+
+**Public repo:**
+
+```text
+## Install
+/plugin marketplace add owner/repo
+/plugin install my-plugin@my-marketplace
+```
+
+**Private repo** (SSH is the most reliable form):
+
+```text
+## Install
+/plugin marketplace add git@github.com:owner/repo.git
+/plugin install my-plugin@my-marketplace
+```
+
+The `owner/repo` shorthand also works if a git credential helper is configured
+(`gh auth setup-git`); `ssh-agent` must have your key loaded and `github.com`
+must be in `~/.ssh/known_hosts`. For **automatic** startup updates of a private
+marketplace, export a read-access token (manual updates don’t need one):
+
+```bash
+export GITHUB_TOKEN=…   # read access to the private repo, in your shell profile
+```
+
+**Sync an update across machines** (public or private):
+
+```text
+# on the machine you edit: bump version in plugin.json, commit, push.
+# then on every other machine:
+/plugin marketplace update my-marketplace
+```
+
+---
+
 ## Gotchas
 
 | Gotcha | What happens | Fix |

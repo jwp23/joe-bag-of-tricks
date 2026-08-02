@@ -235,6 +235,7 @@
   <a href="#why"><span class="bar"></span>Two facts</a>
   <a href="#principles"><span class="bar"></span>Principles</a>
   <a href="#reference"><span class="bar"></span>Reference · 13</a>
+  <a href="#install"><span class="bar"></span>Install</a>
   <a href="#gotchas"><span class="bar"></span>Gotchas</a>
   <a href="#appendix"><span class="bar"></span>Appendix</a>
 </nav>
@@ -399,6 +400,23 @@ URLs, or provenance — verify or ask.</pre>
   </div>
 </section>
 
+<!-- INSTALL -->
+<section class="sec column" id="install">
+  <div class="sec-tag">Install &amp; sync</div>
+  <h2>What goes in your plugin’s README</h2>
+  <p>Prompt&nbsp;2 writes this for you (step 7) — here’s the exact content so you can review or hand-write it. Plugins install at <strong>user scope</strong> (available in every project); skills auto-trigger by description and can also be invoked explicitly as <code>/plugin:skill</code>.</p>
+  <p class="note">The block below fills in from the <strong>name / owner / visibility</strong> you set in <a href="#fastpath">Build your Plan prompt</a> — blanks fall back to examples. Set <strong>Visibility → private</strong> up there to get the SSH form.</p>
+  <figure class="code" data-copy>
+    <figcaption>your README install block<button class="copy" type="button">Copy</button></figcaption>
+    <pre class="copysrc" id="install-block"></pre>
+  </figure>
+  <p class="note"><strong>Private repos:</strong> the <code>owner/repo</code> shorthand also works with a configured credential helper (<code>gh auth setup-git</code>); <code>ssh-agent</code> must hold your key and <code>github.com</code> must be in <code>~/.ssh/known_hosts</code>. For <strong>automatic</strong> startup updates of a private marketplace, export a read-access token (manual <code>/plugin marketplace update</code> needs none):</p>
+  <figure class="code" data-copy>
+    <figcaption>shell profile — private auto-update only<button class="copy" type="button">Copy</button></figcaption>
+    <pre class="copysrc">export GITHUB_TOKEN=…   <span class="c"># read access to the private repo</span></pre>
+  </figure>
+</section>
+
 <!-- GOTCHAS -->
 <section class="sec column" id="gotchas">
   <div class="sec-tag">Gotchas</div>
@@ -525,6 +543,7 @@ URLs, or provenance — verify or ask.</pre>
     attr:   document.getElementById('f-attr')
   };
   var out = document.getElementById('prompt1');
+  var installOut = document.getElementById('install-block');
   var BLANK = '<...>';
   function val(el){ return el && el.value && el.value.trim() ? el.value.trim() : ''; }
   function visLine(){
@@ -562,7 +581,23 @@ URLs, or provenance — verify or ask.</pre>
 "Stop there. Change nothing until I approve."
     );
   }
-  function refresh(){ out.textContent = build(); }
+  function instSrc(){
+    var o = val(f.owner) || 'owner', n = val(f.name) || 'my-plugin';
+    return val(f.vis) === 'private' ? 'git@github.com:' + o + '/' + n + '.git' : o + '/' + n;
+  }
+  function buildInstall(){
+    var n = val(f.name) || 'my-plugin';
+    return (
+"## Install\n" +
+"/plugin marketplace add " + instSrc() + "\n" +
+"/plugin install " + n + "@" + n + "\n" +
+"\n" +
+"## Update (sync across machines)\n" +
+"# edit, bump version in plugin.json, commit, push — then on every other machine:\n" +
+"/plugin marketplace update " + n
+    );
+  }
+  function refresh(){ out.textContent = build(); if(installOut) installOut.textContent = buildInstall(); }
   Object.keys(f).forEach(function(k){
     if(f[k]){ f[k].addEventListener('input', refresh); f[k].addEventListener('change', refresh); }
   });
