@@ -64,8 +64,11 @@ Approved — build it end-to-end in this session:
 4. Wire hooks → hooks/hooks.json and MCP → .mcp.json; rewrite bundled paths to ${CLAUDE_PLUGIN_ROOT}.
 5. Handle license/attribution as agreed.
 6. Run `claude plugin validate` on the marketplace and the plugin; fix all errors and warnings.
-7. Write the README (install for public or private + the version-bump + `/plugin marketplace update` sync flow).
-8. Ship: init git, clean commit, create the repo (public or private, as agreed), push —
+7. Write a CLAUDE.md for the repo itself — maintainer notes: the marketplace + plugin
+   layout, `claude plugin validate` before commit, bump `version` to propagate, and the
+   provenance/attribution summary.
+8. Write the README (install for public or private + the version-bump + `/plugin marketplace update` sync flow).
+9. Ship: init git, clean commit, create the repo (public or private, as agreed), push —
    show me the file list before the first push. Then give me the add + install commands
    for this and other machines.
 
@@ -117,8 +120,8 @@ source project’s `CLAUDE.md` / `AGENTS.md` / `rules/` **loses that when
 extracted** — those are project instructions, not plugin components, so they
 don’t travel. Bake the needed convention into the skill itself, or document it in
 the plugin’s README. (A `CLAUDE.md` for the plugin’s *own repo* — instructions
-for maintaining the plugin — is a separate, optional thing, unrelated to what the
-plugin ships.)
+for maintaining the plugin — is a different thing, worth having and unrelated to
+what the plugin ships; see **Maintaining the plugin repo** below.)
 
 ---
 
@@ -210,6 +213,43 @@ export GITHUB_TOKEN=…   # read access to the private repo, in your shell profi
 # on the machine you edit: bump version in plugin.json, commit, push.
 # then on every other machine:
 /plugin marketplace update my-marketplace
+```
+
+---
+
+## Maintaining the plugin repo
+
+The plugin ships no instructions — but the *repo* benefits from a `CLAUDE.md` (and
+`AGENTS.md`) of its own: maintainer-facing notes for whoever — you or an agent —
+touches the plugin later. Not required, but it pays for itself the first time you
+come back to add a skill or sync from upstream. Prompt 2 writes a first draft;
+here’s what it should cover.
+
+- **Layout** — this repo is a marketplace + one plugin; where components live; and
+  that installed copies are cached under `~/.claude/plugins/cache` — edit *here*,
+  never the cache.
+- **Before committing** — `claude plugin validate` must pass; bump `version` in
+  `plugin.json` to propagate a change to your other machines.
+- **Provenance** — which components are vendored vs. original, the upstream and its
+  license, and where derivations are recorded. Verify any new upstream’s license
+  before vendoring.
+- **Sync** — if you track an upstream, the update procedure.
+
+A starter `CLAUDE.md` for the repo:
+
+```text
+# <name> — plugin repo (a marketplace shipping one plugin)
+
+Layout: marketplace manifest at .claude-plugin/marketplace.json; the plugin at
+plugins/<name>/ (skills/, agents/, .claude-plugin/plugin.json). Installed copies
+live in ~/.claude/plugins/cache — edit HERE and re-validate, never the cache.
+
+Before committing:
+- `claude plugin validate .` and `claude plugin validate ./plugins/<name>` pass clean.
+- Bump `version` in plugins/<name>/.claude-plugin/plugin.json to propagate to other machines.
+
+Provenance: <N> skills adapted from <upstream> (<license>) — preserve the notice.
+Record every vendored/original file in docs/. Verify any new upstream's license before vendoring.
 ```
 
 ---

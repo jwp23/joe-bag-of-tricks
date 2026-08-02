@@ -236,6 +236,7 @@
   <a href="#principles"><span class="bar"></span>Principles</a>
   <a href="#reference"><span class="bar"></span>Reference · 13</a>
   <a href="#install"><span class="bar"></span>Install</a>
+  <a href="#maintain"><span class="bar"></span>Maintain</a>
   <a href="#gotchas"><span class="bar"></span>Gotchas</a>
   <a href="#appendix"><span class="bar"></span>Appendix</a>
 </nav>
@@ -325,8 +326,11 @@
 4. Wire hooks → hooks/hooks.json and MCP → .mcp.json; rewrite bundled paths to ${CLAUDE_PLUGIN_ROOT}.
 5. Handle license/attribution as agreed.
 6. Run `claude plugin validate` on the marketplace and the plugin; fix all errors and warnings.
-7. Write the README (install for public or private + the version-bump + `/plugin marketplace update` sync flow).
-8. Ship: init git, clean commit, create the repo (public or private, as agreed), push —
+7. Write a CLAUDE.md for the repo itself — maintainer notes: the marketplace + plugin
+   layout, `claude plugin validate` before commit, bump `version` to propagate, and the
+   provenance/attribution summary.
+8. Write the README (install for public or private + the version-bump + `/plugin marketplace update` sync flow).
+9. Ship: init git, clean commit, create the repo (public or private, as agreed), push —
    show me the file list before the first push. Then give me the add + install commands
    for this and other machines.
 
@@ -363,7 +367,7 @@ URLs, or provenance — verify or ask.</pre>
     <span class="chip">README</span><span class="arr">→</span>
     <span class="chip">ship + sync</span>
   </div>
-  <div class="callout"><span class="lab">What a plugin can’t carry</span>A plugin ships <strong>components, not instructions</strong> — there’s no plugin <code>CLAUDE.md</code> and no always-loaded context. Each skill’s instructions live in its own <code>SKILL.md</code>, each agent’s in its own file, so there’s no plugin-wide instruction file to author and no “create CLAUDE.md” step. Watch the flip side: a skill that silently relied on a rule from the source project’s <code>CLAUDE.md</code>/<code>AGENTS.md</code>/<code>rules/</code> loses it on extraction — bake the convention into the skill, or note it in the README. (A <code>CLAUDE.md</code> for the plugin’s <em>own repo</em>, for maintaining it, is a separate, optional thing.)</div>
+  <div class="callout"><span class="lab">What a plugin can’t carry</span>A plugin ships <strong>components, not instructions</strong> — there’s no plugin <code>CLAUDE.md</code> and no always-loaded context. Each skill’s instructions live in its own <code>SKILL.md</code>, each agent’s in its own file, so there’s no plugin-wide instruction file to author and no “create CLAUDE.md” step. Watch the flip side: a skill that silently relied on a rule from the source project’s <code>CLAUDE.md</code>/<code>AGENTS.md</code>/<code>rules/</code> loses it on extraction — bake the convention into the skill, or note it in the README. (A <code>CLAUDE.md</code> for the plugin’s <em>own repo</em> — for maintaining it — is a different thing worth having; see <a href="#maintain">Maintaining the plugin repo</a>.)</div>
 </section>
 
 <!-- PRINCIPLES -->
@@ -415,6 +419,34 @@ URLs, or provenance — verify or ask.</pre>
   <figure class="code" data-copy>
     <figcaption>shell profile — private auto-update only<button class="copy" type="button">Copy</button></figcaption>
     <pre class="copysrc">export GITHUB_TOKEN=…   <span class="c"># read access to the private repo</span></pre>
+  </figure>
+</section>
+
+<!-- MAINTAIN -->
+<section class="sec column" id="maintain">
+  <div class="sec-tag">Maintaining the plugin repo</div>
+  <h2>A CLAUDE.md for the repo itself</h2>
+  <p>The plugin ships no instructions — but the <em>repo</em> benefits from a <code>CLAUDE.md</code> (and <code>AGENTS.md</code>) of its own: maintainer-facing notes for whoever — you or an agent — touches the plugin later. Not required, but it pays for itself the first time you come back to add a skill or sync from upstream. Prompt&nbsp;2 writes a first draft (step 7); here’s what it should cover.</p>
+  <ul class="lessons reveal">
+    <li><strong>Layout.</strong> This repo is a marketplace + one plugin; where components live; and that installed copies are cached under <code>~/.claude/plugins/cache</code> — edit <em>here</em>, never the cache.</li>
+    <li><strong>Before committing.</strong> <code>claude plugin validate</code> must pass; bump <code>version</code> in <code>plugin.json</code> to propagate a change to your other machines.</li>
+    <li><strong>Provenance.</strong> Which components are vendored vs. original, the upstream and its license, and where derivations are recorded. Verify any new upstream’s license before vendoring.</li>
+    <li><strong>Sync.</strong> If you track an upstream, the update procedure.</li>
+  </ul>
+  <figure class="code" data-copy>
+    <figcaption>a starter CLAUDE.md for the repo<button class="copy" type="button">Copy</button></figcaption>
+    <pre class="copysrc"># &lt;name&gt; — plugin repo (a marketplace shipping one plugin)
+
+Layout: marketplace manifest at .claude-plugin/marketplace.json; the plugin at
+plugins/&lt;name&gt;/ (skills/, agents/, .claude-plugin/plugin.json). Installed copies
+live in ~/.claude/plugins/cache — edit HERE and re-validate, never the cache.
+
+Before committing:
+- claude plugin validate .   and   claude plugin validate ./plugins/&lt;name&gt;   pass clean.
+- Bump "version" in plugins/&lt;name&gt;/.claude-plugin/plugin.json to propagate to other machines.
+
+Provenance: &lt;N&gt; skills adapted from &lt;upstream&gt; (&lt;license&gt;) — preserve the notice.
+Record every vendored/original file in docs/. Verify any new upstream's license before vendoring.</pre>
   </figure>
 </section>
 
