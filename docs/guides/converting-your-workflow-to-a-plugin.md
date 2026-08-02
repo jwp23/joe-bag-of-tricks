@@ -103,6 +103,23 @@ You are building **one git repo that is both a marketplace and the plugin it
 ships** — a “monorepo marketplace.” Add it once per machine; a git push plus
 `/plugin marketplace update` propagates the change everywhere else.
 
+### What a plugin can’t carry
+
+A plugin ships **components, not instructions.** There is no plugin `CLAUDE.md`
+and no always-loaded context — the plugin schema is skills, agents, commands,
+hooks, and MCP/LSP servers, nothing that injects standing text into the system
+prompt. Each skill’s instructions live in its own `SKILL.md`; each agent’s in its
+own file. So there’s no plugin-wide instruction file to author, and no “create
+CLAUDE.md” step in this process.
+
+Watch the flip side, though: a skill that silently relied on a rule from the
+source project’s `CLAUDE.md` / `AGENTS.md` / `rules/` **loses that when
+extracted** — those are project instructions, not plugin components, so they
+don’t travel. Bake the needed convention into the skill itself, or document it in
+the plugin’s README. (A `CLAUDE.md` for the plugin’s *own repo* — instructions
+for maintaining the plugin — is a separate, optional thing, unrelated to what the
+plugin ships.)
+
 ---
 
 ## Principles (bake these into any run)
@@ -137,7 +154,9 @@ step in the plan needs unpacking.
 6. **Scaffold + copy** — Build the monorepo layout; copy (never move) everything in,
    preserving every supporting file.
 7. **Fix references** — Repoint what broke on extraction: agent dispatches →
-   namespaced `name:agent`; docs a skill cites → carry into the plugin or drop.
+   namespaced `name:agent`; docs a skill cites → carry into the plugin or drop;
+   instructions a skill assumed (source-project `CLAUDE.md`/`rules/`) → bake into
+   the skill or note in the README, since they don’t travel.
 8. **Genericize** — Per assumption: KEEP a portable convention, PARAMETERIZE a
    language/build command to neutral phrasing, or REMOVE origin-only detail.
 9. **Hooks & MCP** — Hooks → `hooks/hooks.json`, MCP → `.mcp.json`; rewrite bundled
@@ -209,6 +228,7 @@ export GITHUB_TOKEN=…   # read access to the private repo, in your shell profi
 | Broken paths after extraction | Skills cite files that stayed in the old repo | Carry the file into the plugin or drop the reference |
 | Editing originals in place | You destabilize your working setup mid-build | Always work on copies |
 | Duplicate skills after install | Project-level `.claude/skills` + the plugin both active → two near-identical entries | Remove the duplicated project-level copies after cutover |
+| Skill leaned on project instructions | Its behavior assumed a `CLAUDE.md`/`AGENTS.md`/`rules/` convention that doesn’t travel (plugins carry no always-loaded instructions) | Bake the convention into the skill, or document it in the README |
 
 ---
 

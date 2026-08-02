@@ -363,6 +363,7 @@ URLs, or provenance — verify or ask.</pre>
     <span class="chip">README</span><span class="arr">→</span>
     <span class="chip">ship + sync</span>
   </div>
+  <div class="callout"><span class="lab">What a plugin can’t carry</span>A plugin ships <strong>components, not instructions</strong> — there’s no plugin <code>CLAUDE.md</code> and no always-loaded context. Each skill’s instructions live in its own <code>SKILL.md</code>, each agent’s in its own file, so there’s no plugin-wide instruction file to author and no “create CLAUDE.md” step. Watch the flip side: a skill that silently relied on a rule from the source project’s <code>CLAUDE.md</code>/<code>AGENTS.md</code>/<code>rules/</code> loses it on extraction — bake the convention into the skill, or note it in the README. (A <code>CLAUDE.md</code> for the plugin’s <em>own repo</em>, for maintaining it, is a separate, optional thing.)</div>
 </section>
 
 <!-- PRINCIPLES -->
@@ -390,7 +391,7 @@ URLs, or provenance — verify or ask.</pre>
     <div class="ref-item"><span class="ref-n">04</span><div><b>Name it.</b> Repo, marketplace, and plugin names; the plugin name becomes the <code>/prefix:</code> on every skill. Simplest: make all three identical.</div></div>
     <div class="ref-item"><span class="ref-n">05</span><div><b>Versioning.</b> Explicit semver (bump to propagate) or git-SHA (every commit is a version). Semver for a shared/stable plugin.</div></div>
     <div class="ref-item"><span class="ref-n">06</span><div><b>Scaffold + copy.</b> Build the monorepo layout; copy (never move) everything in, preserving every supporting file.</div></div>
-    <div class="ref-item"><span class="ref-n">07</span><div><b>Fix references.</b> Repoint what broke on extraction: agent dispatches → namespaced <code>name:agent</code>; docs a skill cites → carry into the plugin or drop.</div></div>
+    <div class="ref-item"><span class="ref-n">07</span><div><b>Fix references.</b> Repoint what broke on extraction: agent dispatches → namespaced <code>name:agent</code>; docs a skill cites → carry into the plugin or drop; instructions a skill assumed (source-project <code>CLAUDE.md</code>/<code>rules/</code>) → bake into the skill or note in the README.</div></div>
     <div class="ref-item"><span class="ref-n">08</span><div><b>Genericize.</b> Per assumption: KEEP a portable convention, PARAMETERIZE a language/build command to neutral phrasing, or REMOVE origin-only detail.</div></div>
     <div class="ref-item"><span class="ref-n">09</span><div><b>Hooks &amp; MCP.</b> Hooks → <code>hooks/hooks.json</code>, MCP → <code>.mcp.json</code>; rewrite bundled paths to <code>${CLAUDE_PLUGIN_ROOT}</code>.</div></div>
     <div class="ref-item"><span class="ref-n">10</span><div><b>License.</b> If adapted from someone’s work, find their real LICENSE and comply (preserve their notice); add a <code>license</code> field and README attribution.</div></div>
@@ -435,6 +436,7 @@ URLs, or provenance — verify or ask.</pre>
         <tr><td><strong>Broken paths after extraction</strong></td><td>Skills cite files that stayed in the old repo</td><td>Carry the file into the plugin or drop the reference</td></tr>
         <tr><td><strong>Editing originals in place</strong></td><td>You destabilize your working setup mid-build</td><td>Always work on copies</td></tr>
         <tr><td><strong>Duplicate skills after install</strong></td><td>Project-level <code>.claude/skills</code> + the plugin both active → two near-identical entries</td><td>Remove the duplicated project-level copies after cutover</td></tr>
+        <tr><td><strong>Skill leaned on project instructions</strong></td><td>Its behavior assumed a <code>CLAUDE.md</code>/<code>AGENTS.md</code>/<code>rules/</code> convention that doesn’t travel (plugins carry no always-loaded instructions)</td><td>Bake the convention into the skill, or document it in the README</td></tr>
       </tbody>
     </table>
   </div>
