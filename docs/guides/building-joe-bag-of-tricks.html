@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building joe-bag-of-tricks — The Build Log</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%93%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15120C;
+    --bg-2:#1C1810;
+    --bg-3:#241F16;
+    --ink:#ECE1CC;
+    --ink-2:#CDBF9F;
+    --muted:#998A6C;
+    --brass:#E0AE5A;
+    --brass-2:#C6913C;
+    --verm:#DB5A3E;
+    --line:rgba(236,225,204,.11);
+    --line-2:rgba(236,225,204,.2);
+    --maxw:1080px;
+    --read:min(740px,100%);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink-2);
+    font-family:"Instrument Sans",system-ui,sans-serif;font-size:18px;line-height:1.68;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
+    opacity:.045;mix-blend-mode:screen}
+  body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(120% 70% at 50% -10%, rgba(224,174,90,.10), transparent 55%),
+               radial-gradient(100% 60% at 100% 8%, rgba(219,90,62,.08), transparent 50%)}
+  .wrap{position:relative;z-index:1}
+  a{color:var(--brass);text-decoration-thickness:1px;text-underline-offset:2px}
+  a:hover{color:var(--verm)}
+
+  .progress{position:fixed;top:0;left:0;height:3px;width:100%;z-index:60;
+    background:linear-gradient(90deg,var(--verm),var(--brass));transform:scaleX(0);transform-origin:0 50%}
+
+  code,kbd,samp{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  p code,li code,.note code,.lead code,.field-note code{font-size:.8em;background:rgba(224,174,90,.12);
+    border:1px solid var(--line-2);border-radius:4px;padding:.05em .34em;color:var(--brass);white-space:nowrap}
+
+  .shell{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .column{max-width:var(--read);margin:0 auto}
+
+  /* masthead */
+  header.mast{padding:64px 0 40px;position:relative;border-bottom:1px solid var(--line-2)}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--brass);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .kicker .dot{width:6px;height:6px;background:var(--verm);border-radius:50%;display:inline-block}
+  h1.title{font-family:"Instrument Serif",Georgia,serif;font-weight:400;line-height:.98;
+    font-size:clamp(48px,10vw,104px);letter-spacing:-.01em;margin:.2em 0 .18em;color:var(--ink)}
+  h1.title em{font-style:italic;color:var(--brass)}
+  .dek{font-size:clamp(18px,2.4vw,22px);max-width:50ch;color:var(--ink-2);margin:0 0 18px}
+  .meta-strip{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:6px}
+  .tagpill{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.08em;
+    border:1px solid var(--line-2);border-radius:999px;padding:5px 12px;color:var(--muted)}
+  .tagpill b{color:var(--brass);font-weight:600}
+  .stamp{position:absolute;top:60px;right:0;font-family:"IBM Plex Mono",monospace;font-size:11px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--brass);border:1.5px solid var(--brass-2);
+    border-radius:50%;width:108px;height:108px;display:grid;place-content:center;text-align:center;
+    transform:rotate(-10deg);opacity:.85;line-height:1.55;padding:8px}
+  @media(max-width:760px){.stamp{display:none}}
+
+  .sec{padding:46px 0}
+  .sec-tag{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:11.5px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--verm);display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .sec-tag::before{content:"";width:24px;height:2px;background:var(--verm)}
+  h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(32px,5vw,48px);
+    line-height:1.04;color:var(--ink);margin:0 0 .4em}
+  p{margin:0 0 1.05em}
+  strong{color:var(--ink);font-weight:600}
+  em{color:var(--brass);font-style:italic}
+  .lead{font-size:17px;color:var(--ink-2)}
+  ul.plain{padding-left:1.15em;margin:.5em 0 1.1em}
+  ul.plain li{margin:.45em 0}
+  ul.plain li::marker{color:var(--brass)}
+
+  /* prompt card */
+  .prompt{background:var(--bg-3);border:1px solid var(--line-2);border-left:3px solid var(--brass);
+    border-radius:10px;margin:16px 0;overflow:hidden;box-shadow:0 18px 40px -30px #000}
+  .prompt.del{border-left-color:var(--muted)}
+  .prompt-top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:9px 13px;background:rgba(0,0,0,.24);border-bottom:1px solid var(--line)}
+  .who{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.18em;
+    text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .who .sq{width:8px;height:8px;display:inline-block;transform:rotate(45deg)}
+  .who.you{color:var(--brass)} .who.you .sq{background:var(--brass)}
+  .who.del{color:var(--muted)} .who.del .sq{background:var(--muted);transform:none;border-radius:50%}
+  .prompt-body{font-family:"IBM Plex Mono",monospace;font-size:12.8px;line-height:1.72;color:var(--ink);
+    margin:0;padding:15px 17px;white-space:pre-wrap;overflow-x:auto}
+  .prompt-cap{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);
+    margin:-8px 0 14px;padding-left:2px}
+  .copy{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.12em;
+    text-transform:uppercase;cursor:pointer;color:var(--ink);background:transparent;border:1px solid var(--line-2);
+    border-radius:6px;padding:5px 10px;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+  .copy:hover{background:var(--brass);color:#1a140a;border-color:var(--brass)}
+  .copy.done{background:#6f9a5a;border-color:#6f9a5a;color:#12100a}
+
+  /* answer chip */
+  .answer{display:inline-flex;align-items:center;gap:10px;margin:8px 0 4px;padding:8px 14px;
+    background:rgba(224,174,90,.12);border:1px solid var(--brass-2);border-radius:8px;
+    font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--brass)}
+  .answer .lab{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+  /* code panel */
+  figure.code{margin:16px 0;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;background:var(--bg-2)}
+  figure.code figcaption{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;
+    background:rgba(0,0,0,.24);border-bottom:1px solid var(--line);font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  figure.code pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;
+    font-size:12.8px;line-height:1.6;color:var(--ink)}
+  figure.code pre .c{color:var(--muted)} figure.code pre .fl{color:var(--brass)}
+
+  /* timeline */
+  .timeline{position:relative;margin-top:6px}
+  .timeline::before{content:"";position:absolute;left:19px;top:6px;bottom:26px;width:2px;
+    background:linear-gradient(var(--brass),rgba(224,174,90,.12))}
+  .step{position:relative;padding:0 0 42px 60px}
+  .step:last-child{padding-bottom:6px}
+  .node{position:absolute;left:0;top:-2px;width:40px;height:40px;border-radius:50%;background:var(--bg-2);
+    border:2px solid var(--brass-2);color:var(--brass);display:grid;place-content:center;
+    font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:13px;z-index:1;
+    box-shadow:0 0 0 5px var(--bg)}
+  .step.reveal.in .node{animation:pop .5s ease}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+  .step h3{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(24px,3.6vw,32px);
+    line-height:1.08;color:var(--ink);margin:4px 0 .35em}
+  .step p{font-size:16.5px}
+  @media(max-width:520px){.step{padding-left:52px}.node{width:36px;height:36px}}
+
+  /* field notes (closing) */
+  .notes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  @media(max-width:640px){.notes{grid-template-columns:1fr}}
+  .field-note{background:var(--bg-2);border:1px solid var(--line-2);border-radius:10px;padding:20px 22px}
+  .field-note h4{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:22px;color:var(--brass);
+    margin:0 0 .35em}
+  .field-note p{font-size:15px;margin:0;color:var(--ink-2)}
+
+  footer{border-top:1px solid var(--line-2);margin-top:36px;padding:32px 0 60px}
+  .colophon{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 22px}
+  .colophon b{color:var(--brass);font-weight:600}
+  .backlink{margin-bottom:14px;font-size:15px}
+
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.step.reveal.in .node{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="progress" aria-hidden="true"></div>
+<div class="wrap">
+
+<header class="mast">
+  <div class="shell">
+    <div class="stamp">Build<br>Log<br>· Rev 1</div>
+    <div class="kicker"><span class="dot"></span>Build Log<span class="dot"></span>joe-bag-of-tricks</div>
+    <h1 class="title">Building a Bag of <em>Tricks</em></h1>
+    <p class="dek">How a pile of skills and agents became an installable, cross-machine plugin — the real sequence, the decisions, the dead ends, and the load-bearing prompts that steered it.</p>
+    <div class="meta-strip">
+      <span class="tagpill">Session: <b>Opus · xhigh</b></span>
+      <span class="tagpill">Research: <b>delegated to claude-code-guide</b></span>
+      <span class="tagpill">11 steps</span>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+
+<!-- THE GOAL -->
+<section class="sec column">
+  <div class="sec-tag">The goal</div>
+  <h2>One repo, every machine</h2>
+  <p>Pull the skills and agents out of a single project’s <code>.claude/</code> directory into a standalone repo I could install on any machine — and, when I push an update from one machine, have it propagate to the others. Possibly share it with others down the line.</p>
+  <p>Starting material, from <code>spe/.claude/</code>: <strong>18 skills, 4 agents, 1 command</strong> (<code>bootstrap</code>), plus project <code>rules/</code>, a <code>brainstorm/</code> scratch dir, and a small <code>docs/adr/</code>.</p>
+  <div class="prompt reveal" data-copy>
+    <div class="prompt-top"><span class="who you"><span class="sq"></span>You — the opening ask</span><button class="copy" type="button">Copy</button></div>
+    <p class="prompt-body copysrc">I'd like to pull the skills and agents from .claude/ into a repo that I can use to build a plugin for my use and possibly others if they choose. My goal is to be able to install updates to my skills and agents on any computer that I use. And that on any computer that I use that I can update the git repo and have the plugin updated on my other computers.</p>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="sec column">
+  <div class="sec-tag">The build</div>
+  <h2>Eleven steps</h2>
+  <div class="timeline">
+
+    <!-- 1 -->
+    <div class="step reveal">
+      <div class="node">01</div>
+      <h3>Look before designing</h3>
+      <p>First move was to actually read what was there, not assume. Listing the skills, the agent frontmatter, and the settings showed the real shape: mostly general-purpose engineering skills (TDD, debugging, planning, review) and four clean agents — <code>code-reviewer</code>, <code>coderabbit-reviewer</code>, <code>pr-creator</code>, <code>pr-merger</code>. A grep for project-specific strings (<code>cargo</code>, <code>bd</code>, <code>docs/adr</code>, <code>pdftoppm</code>, <code>iced</code>, …) mapped exactly which files carried assumptions.</p>
+      <p>The finding that shaped everything: the “project-specific” references were almost all <em>cross-project conventions</em> (beads for issues, ADRs for decisions, Rust/cargo as the example stack) rather than anything truly tied to the origin project. Only a couple of references were genuinely broken once extracted.</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="step reveal">
+      <div class="node">02</div>
+      <h3>Research the format, don’t recall it</h3>
+      <p>Rather than write <code>plugin.json</code> and <code>marketplace.json</code> from memory, I dispatched a <code>claude-code-guide</code> subagent to verify the current spec against the docs. This is the rule that kept the build honest — <strong>the spec changes; verify it.</strong></p>
+      <div class="prompt del" data-copy>
+        <div class="prompt-top"><span class="who del"><span class="sq"></span>Delegated → claude-code-guide</span><button class="copy" type="button">Copy</button></div>
+        <p class="prompt-body copysrc">I need the authoritative, current spec for Claude Code plugins AND plugin marketplaces. Verify against current docs — do not guess:
+- plugin.json manifest: required vs optional fields, and where commands/agents/skills/hooks live relative to the plugin root — auto-discovered by convention, or listed in the manifest?
+- marketplace.json format: fields, and how a plugin entry's `source` references a plugin in the SAME repo (relative path) vs an external git repo.
+- Can one repo be BOTH the marketplace and contain the plugin(s)? The canonical monorepo layout.
+- Exact CLI/slash commands to add a marketplace from git, install a plugin, list, and pull the latest so an update pushed from one machine reaches the others.
+- How updates propagate: version bumping vs commit SHA. ${CLAUDE_PLUGIN_ROOT} usage and naming constraints.
+Give copy-pasteable JSON and exact command syntax, and cite where each fact comes from.</p>
+      </div>
+      <p class="prompt-cap">— condensed from the actual delegation</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="step reveal">
+      <div class="node">03</div>
+      <h3>The decisions</h3>
+      <p>Four decisions, made explicitly before any files moved:</p>
+      <ul class="plain">
+        <li><strong>Granularity → one plugin.</strong> I initially wanted mix-and-match plugins so people could compose their own workflow. Research killed that cleanly: there is <strong>no per-component enable/disable</strong> inside a plugin, and plugin components are <strong>always namespaced</strong>. My skills are a coupled chain — splitting them wouldn’t deliver composability, it would break cross-references. The real composability is use-time: skills auto-fire only when relevant.</li>
+        <li><strong>Versioning → explicit semver.</strong> Bump <code>version</code> to propagate. More discipline than the git-SHA scheme, but predictable and pinnable if others use it.</li>
+        <li><strong>Genericize → minimal, personal.</strong> Keep the <code>bd</code> and <code>docs/adr</code> conventions; genericize <code>cargo</code> for non-Rust projects.</li>
+        <li><strong>Naming → all three the same.</strong> See below.</li>
+      </ul>
+      <div class="prompt" data-copy>
+        <div class="prompt-top"><span class="who you"><span class="sq"></span>You — on composability</span><button class="copy" type="button">Copy</button></div>
+        <p class="prompt-body copysrc">My goal is to make it possible for people to mix and match skills and agents for their workflow if they want to use my plugin. But I think you're right, they're so tangled together that trying to split into separate plugins would mean that they are calling skills from one plugin to another. What do you think the best UI is. For my own purposes, I plan to remove the superpowers plugin and replace it with mine for my workflow.</p>
+      </div>
+      <div class="prompt" data-copy>
+        <div class="prompt-top"><span class="who you"><span class="sq"></span>You — the genericize call</span><button class="copy" type="button">Copy</button></div>
+        <p class="prompt-body copysrc">keep the bd commands. keep the docs/adr. not sure about cargo. I plan to use this in non-rust projects</p>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="step reveal">
+      <div class="node">04</div>
+      <h3>The naming detour</h3>
+      <p>More time went here than anywhere else, and it’s worth recording why. There are three names — repo, marketplace, and plugin — and the plugin name becomes the slash prefix on every skill (<code>/name:skill</code>).</p>
+      <ul class="plain">
+        <li><strong><code>joebot</code> / <code>jbot</code></strong> — “bot” frames it as a chatbot, fighting the magician’s <em>bag-of-tricks</em> image. Rejected.</li>
+        <li><strong><code>tricks</code> / <code>presto</code> / <code>conjure</code></strong> — short and on-theme, but drop the personal “Joe” identity and don’t echo the marketplace.</li>
+        <li><strong><code>joe-bag-tricks</code></strong> — a <em>near-miss</em> of the marketplace name (of / no-of). Not short enough to win on brevity, not distinct enough to avoid “which one had the <em>of</em>?” typos. The trap: match exactly, or be clearly distinct.</li>
+      </ul>
+      <div class="prompt" data-copy>
+        <div class="prompt-top"><span class="who you"><span class="sq"></span>You — the naming reasoning</span><button class="copy" type="button">Copy</button></div>
+        <p class="prompt-body copysrc">I'm thinking of a good name that is short to type that still carries the "bag of tricks" idea. Joe is a good personal touch. I like the idea of jbot or joebot. but it breaks the flow of joe-bag-of-tricks and means that it's not obvious which plugin marketplace. … Also the term "bot" just makes people think that it's a bot when I really want to convey a magician's bag of tricks</p>
+      </div>
+      <div class="answer"><span class="lab">Resolved</span> repo = marketplace = plugin = joe-bag-of-tricks</div>
+      <p>Since skills mostly auto-fire (and Claude fuzzy-matches the skill word when you type <code>/</code>), the long prefix is rarely typed — so its one cost barely applies, and consistency wins.</p>
+    </div>
+
+    <!-- 5 -->
+    <div class="step reveal">
+      <div class="node">05</div>
+      <h3>Scaffold and copy</h3>
+      <p>Built the monorepo-marketplace layout — <code>.claude-plugin/marketplace.json</code> at the root, the plugin under <code>plugins/joe-bag-of-tricks/</code> with its own <code>.claude-plugin/plugin.json</code>, <code>skills/</code>, <code>agents/</code>, <code>docs/adr/</code>. Copied (not moved) the 18 skills and 4 agents with every supporting file intact, plus the one ADR a skill’s design rationale pointed at. Wrote both manifests from the researched schema, plus a README and <code>.gitignore</code>.</p>
+    </div>
+
+    <!-- 6 -->
+    <div class="step reveal">
+      <div class="node">06</div>
+      <h3>Fix what extraction broke</h3>
+      <p>Reference fixes were narrower than feared — concentrated almost entirely in <code>finishing-a-development-branch</code>:</p>
+      <ul class="plain">
+        <li>Agent dispatches by file path (<code>.claude/agents/pr-creator.md</code>) → namespaced names (<code>joe-bag-of-tricks:pr-creator</code>).</li>
+        <li>A broken pointer to <code>.claude/docs/adr/001-…</code> → the copy carried into the plugin’s own <code>docs/adr/</code>.</li>
+        <li>The <code>cargo test</code> default → language-neutral phrasing with cargo as an example.</li>
+      </ul>
+      <p>The worktree and security-review skills already spoke in multi-language terms, so they needed nothing.</p>
+    </div>
+
+    <!-- 7 -->
+    <div class="step reveal">
+      <div class="node">07</div>
+      <h3>Drop what didn’t belong</h3>
+      <p>The <code>bootstrap</code> command was genuinely project-specific — its suggested ADR sequence was literally “GUI framework / PDF rendering libraries / Linux system utility strategy.” Wrong for a general toolkit, and I’d only asked for skills + agents. I removed it rather than ship project content or invent a generic replacement I hadn’t reviewed. Easy to add back later, genericized, if wanted.</p>
+    </div>
+
+    <!-- 8 -->
+    <div class="step reveal">
+      <div class="node">08</div>
+      <h3>Validate</h3>
+      <p><code>claude plugin validate</code> on both the marketplace and the plugin. It passed, with one warning — the <code>bootstrap</code> command had no frontmatter — which was moot once <code>bootstrap</code> was removed. Re-validated clean.</p>
+    </div>
+
+    <!-- 9 -->
+    <div class="step reveal">
+      <div class="node">09</div>
+      <h3>License and attribution</h3>
+      <p>Thirteen of the eighteen skills share names with the community <a href="https://github.com/obra/superpowers">Superpowers</a> project. Rather than guess its license, I read the actual <code>LICENSE</code> in my installed copy: <strong>MIT, © 2025 Jesse Vincent</strong>. MIT permits redistribution but requires preserving the copyright and license notice.</p>
+      <p>So: a dual-copyright MIT <code>LICENSE</code> (mine + Jesse Vincent’s notice retained), a <code>license</code> field in <code>plugin.json</code>, and an accurate README attribution section naming exactly which 13 skills are derived and which 5 skills + 4 agents are original. I verified the Superpowers repo URL from my local marketplace config rather than typing a plausible one.</p>
+      <div class="prompt" data-copy>
+        <div class="prompt-top"><span class="who you"><span class="sq"></span>You — private + the MIT tip</span><button class="copy" type="button">Copy</button></div>
+        <p class="prompt-body copysrc">keep it private. How would I install it if it's a private repo? superpowers plugin is under MIT license</p>
+      </div>
+      <p class="prompt-cap">— one line that kicked off three things: confirm private, research private-repo install, and the whole license/attribution pass.</p>
+    </div>
+
+    <!-- 10 -->
+    <div class="step reveal">
+      <div class="node">10</div>
+      <h3>Ship</h3>
+      <p><code>git init</code>, a single clean initial commit (amended to fold in the LICENSE), then a <strong>private</strong> GitHub repo created and pushed over SSH. Private was the right default while the license/attribution question was fresh — flippable to public anytime.</p>
+      <figure class="code" data-copy>
+        <figcaption>create + push<button class="copy" type="button">Copy</button></figcaption>
+        <pre class="copysrc">gh repo create joe-bag-of-tricks --private --source=. --remote=origin --push</pre>
+      </figure>
+    </div>
+
+    <!-- 11 -->
+    <div class="step reveal">
+      <div class="node">11</div>
+      <h3>The private-repo install correction</h3>
+      <p>The first README said <code>/plugin marketplace add jwp23/joe-bag-of-tricks</code>. For a <em>private</em> repo that shorthand isn’t the most reliable form. I verified how private-repo auth actually works and corrected the README to lead with the SSH URL form, note that the shorthand works with a configured credential helper, and note that background auto-update needs a <code>GITHUB_TOKEN</code>. Per my own never-touch-<code>main</code> rule, that correction landed as a branch + PR, not a direct push.</p>
+      <div class="prompt del" data-copy>
+        <div class="prompt-top"><span class="who del"><span class="sq"></span>Delegated → claude-code-guide</span><button class="copy" type="button">Copy</button></div>
+        <p class="prompt-body copysrc">I have a PRIVATE GitHub repo that is a plugin marketplace. Verify against current docs — don't guess:
+- When I run `/plugin marketplace add owner/repo` for a PRIVATE repo, does it clone over HTTPS or SSH? Does it use my git credential helper / SSH config, or the GitHub API token?
+- Is the full SSH URL `git@github.com:owner/repo.git` an accepted source for `marketplace add`?
+- Does background auto-update need a token (GITHUB_TOKEN / GH_TOKEN)?
+Give the exact command forms confirmed to work for a private repo, with citations.</p>
+      </div>
+      <p class="prompt-cap">— condensed from the actual delegation</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- FIELD NOTES -->
+<section class="sec column">
+  <div class="sec-tag">Field notes</div>
+  <h2>What I’d tell myself before starting</h2>
+  <div class="notes reveal">
+    <div class="field-note"><h4>Look first, design second</h4><p>The grep for project-specific strings answered the “how much do I have to genericize?” question before I’d committed to a plan.</p></div>
+    <div class="field-note"><h4>Two facts kill the fun idea early</h4><p>No per-component toggle + mandatory namespacing meant “mix-and-match plugins” was never really on the table for coupled skills. Learning that up front saved a bad split.</p></div>
+    <div class="field-note"><h4>Name once, match everything</h4><p>The naming detour was the biggest time sink for the smallest surface. Matching all three names ended it.</p></div>
+    <div class="field-note"><h4>Don’t invent — verify</h4><p>Format from the docs, license from the real <code>LICENSE</code>, repo URL from local config. Every place I could have guessed, I looked instead.</p></div>
+  </div>
+</section>
+
+</main>
+
+<footer class="shell">
+  <div class="column">
+    <p class="backlink">The generalized, reusable version → <a href="converting-your-workflow-to-a-plugin.html">Converting Your Workflow into a Plugin</a>.</p>
+    <div class="colophon">
+      <span><b>Build Log</b> · joe-bag-of-tricks</span>
+      <span>Set in <b>Instrument Serif</b>, <b>Instrument Sans</b> &amp; <b>IBM Plex Mono</b></span>
+      <span>Rev. 1</span>
+    </div>
+  </div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+(function(){
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var wrap = btn.closest('[data-copy]'); if(!wrap) return;
+      var src = wrap.querySelector('.copysrc'); if(!src) return;
+      var text = src.innerText.replace(/ /g,' ').replace(/[ \t]+\n/g,'\n').trim();
+      var done = function(){ var o=btn.textContent; btn.textContent='Copied ✓'; btn.classList.add('done');
+        setTimeout(function(){ btn.textContent=o; btn.classList.remove('done'); },1400); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(text); done(); });
+      } else { fallback(text); done(); }
+    });
+  });
+  function fallback(text){ var t=document.createElement('textarea'); t.value=text; t.setAttribute('readonly','');
+    t.style.position='absolute'; t.style.left='-9999px'; document.body.appendChild(t); t.select();
+    try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(t); }
+
+  var bar=document.querySelector('.progress'), ticking=false;
+  function onScroll(){ if(ticking) return; ticking=true; requestAnimationFrame(function(){
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    bar.style.transform='scaleX('+(max>0?h.scrollTop/max:0)+')'; ticking=false; }); }
+  addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },
+    {rootMargin:'0px 0px -8% 0px', threshold:0.06});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+</script>
+</body>
+</html>
