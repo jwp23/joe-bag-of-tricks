@@ -1,8 +1,7 @@
 {
   "name": "joe-bag-of-tricks",
   "owner": {
-    "name": "Joe Presley",
-    "email": "REDACTED"
+    "name": "Joseph Presley"
   },
   "description": "Joe's personal Claude Code plugins.",
   "plugins": [

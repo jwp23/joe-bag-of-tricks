@@ -106,9 +106,9 @@ This git-pulls the marketplace and, because the plugin **version changed**, inst
 Test changes against your live setup before pushing:
 
 ```text
-/plugin marketplace add /home/REDACTED/workspace/jwp23/joe-bag-of-tricks
+/plugin marketplace add /path/to/joe-bag-of-tricks
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
-/plugin validate /home/REDACTED/workspace/jwp23/joe-bag-of-tricks
+/plugin validate /path/to/joe-bag-of-tricks
 ```
 
 Use `/reload-plugins` to pick up local edits without restarting.
