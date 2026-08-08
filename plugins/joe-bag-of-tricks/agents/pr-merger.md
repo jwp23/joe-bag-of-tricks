@@ -1,6 +1,6 @@
 ---
 name: pr-merger
-description: Squash merges a GitHub PR with no body, pulls main, verifies CI from the PR gate, and cleans up the local branch and worktree. Dispatched when Joe approves a merge. Reports result without attempting to fix failures.
+description: Squash merges a GitHub PR with no body, pulls main, verifies CI from the PR gate, and cleans up the local branch and worktree. Dispatched when your human partner approves a merge. Reports result without attempting to fix failures.
 model: haiku
 tools: Bash, Read
 ---
