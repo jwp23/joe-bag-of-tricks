@@ -28,7 +28,7 @@ Record technical decisions as they happen. Architectural decisions go in `docs/a
 
 ## Classification
 
-Ask Joe if uncertain: "Should I record this as an ADR or decision doc?"
+Ask your human partner if uncertain: "Should I record this as an ADR or decision doc?"
 
 | ADR (`docs/adr/`) | Decision Doc (`docs/decisions/`) |
 |--------------------|----------------------------------|
@@ -48,7 +48,7 @@ Ask Joe if uncertain: "Should I record this as an ADR or decision doc?"
 4. **Write** — Use format from CLAUDE.md
    - ADR: Context / Decision / Trade-offs
    - Decision doc: Decision / Rationale
-5. **Review** — Present to Joe for approval before committing
+5. **Review** — Present to your human partner for approval before committing
 6. **Commit** — `docs: record ADR-NNN title` or `docs: record title`
 
 ## Quick Reference
@@ -68,8 +68,8 @@ Ask Joe if uncertain: "Should I record this as an ADR or decision doc?"
 
 **Wrong classification**
 - Tactical choice recorded as ADR, or vice versa
-- Fix: Ask Joe. When uncertain, err toward decision doc (lighter weight)
+- Fix: Ask your human partner. When uncertain, err toward decision doc (lighter weight)
 
 **Skipping the review step**
 - Recorded decision doesn't match what was actually decided
-- Fix: Always present to Joe before committing
+- Fix: Always present to your human partner before committing

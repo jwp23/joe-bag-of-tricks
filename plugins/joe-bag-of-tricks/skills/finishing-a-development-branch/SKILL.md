@@ -38,7 +38,7 @@ BASE=$(git merge-base HEAD main)
 ```
 2. Dispatch security-reviewer subagent (from `security-review/security-reviewer.md`) with the git range
 3. **If Critical findings:** Stop. Fix before proceeding.
-4. **If Important findings:** Fix before proceeding, or get explicit approval from Joe to defer.
+4. **If Important findings:** Fix before proceeding, or get explicit approval from your human partner to defer.
 5. **If Minor only or clean:** Continue to Step 2.
 
 ### Step 2: Determine Base Branch
@@ -139,7 +139,7 @@ The agent waits for CodeRabbit's review, extracts the AI agent prompt from the r
 - **`NO_REVIEW`**: CodeRabbit didn't review. Continue — nothing to do.
 - **`NEEDS_ESCALATION`**: Some suggestions were too complex for sonnet. Re-dispatch `coderabbit-reviewer` at **opus** with the escalated items only. Include the escalation list in the prompt so opus knows which comments to address.
 
-After escalation, if opus also reports `NEEDS_ESCALATION`, surface the remaining items to Joe for a decision.
+After escalation, if opus also reports `NEEDS_ESCALATION`, surface the remaining items to your human partner for a decision.
 
 **After any applied changes:** Wait for CI again to verify the fixes didn't break anything —
 backgrounded by default, using the loop in Step 4.
@@ -166,9 +166,9 @@ git worktree prune   # self-healing: clears any stale registrations
 
 Report: "PR ready at <URL>. All CI checks passing."
 
-## Merging (when Joe requests)
+## Merging (when your human partner requests)
 
-When Joe says to merge or close a PR, dispatch the `joe-bag-of-tricks:pr-merger` agent (model: haiku) with:
+When your human partner says to merge or close a PR, dispatch the `joe-bag-of-tricks:pr-merger` agent (model: haiku) with:
 
 - **number**: the PR number
 
@@ -198,13 +198,13 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | "Tests passed earlier this session" | Run the suite on the tree you are about to push. A green run only proves the tree it ran on. |
 | "The base branch is obviously main" | Confirm the fork point or ask. Targeting the wrong base is expensive to undo. |
 | "The PR is open, so the work is done" | Done means CI green. Report completion only after every check passes. |
-| "The push was rejected — force-push will fix it" | A rejected push means the remote moved. Investigate; force-push only on Joe's explicit request. |
+| "The push was rejected — force-push will fix it" | A rejected push means the remote moved. Investigate; force-push only on your human partner's explicit request. |
 | "It's a one-line change, I'll just push to main" | Never push to main. Every change goes through a feature branch and a PR. |
 | "A merge body documents the change nicely" | Squash merge with `--body ""`. PR detail belongs in the PR, not in git log. |
 | "This other worktree looks stale — I'll clean it too" | Clean up only worktrees under `.worktrees/`. Everything else belongs to the host. |
 | "CI is probably just flaky" | A red check stops the merge. Investigate the failure before touching the merge button. |
 | "It's only a couple of minutes — I'll just watch CI" | Background the wait. Every time. A blocked session cannot be handed the next piece of work. |
-| "There's nothing else to do, so blocking costs nothing" | You cannot know that — Joe can hand you work the moment the wait starts. Background it and stay reachable. |
+| "There's nothing else to do, so blocking costs nothing" | You cannot know that — your human partner can hand you work the moment the wait starts. Background it and stay reachable. |
 
 ## Integration
 

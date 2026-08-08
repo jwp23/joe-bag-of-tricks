@@ -59,14 +59,14 @@ digraph process {
         "Run review-package BASE HEAD,\ndispatch task reviewer\n(./task-reviewer-prompt.md)" [shape=box];
         "Spec OK and quality approved?" [shape=diamond];
         "Finding conflicts with the task's design?" [shape=diamond];
-        "Ask Joe which governs" [shape=box];
+        "Ask your human partner which governs" [shape=box];
         "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [shape=box];
         "Dispatch scoped re-review\n(./re-review-prompt.md)" [shape=box];
         "All findings addressed?" [shape=diamond];
         "R = 5?" [shape=diamond];
         "Adjudicate each open finding" [shape=box];
         "Any load-bearing finding?" [shape=diamond];
-        "STOP: report BLOCKED to Joe" [shape=box];
+        "STOP: report BLOCKED to your human partner" [shape=box];
         "Park findings on the task bead\nwith rulings (bd note)" [shape=box];
         "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" [shape=box];
     }
@@ -95,8 +95,8 @@ digraph process {
     "Run review-package BASE HEAD,\ndispatch task reviewer\n(./task-reviewer-prompt.md)" -> "Spec OK and quality approved?";
     "Spec OK and quality approved?" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" [label="yes"];
     "Spec OK and quality approved?" -> "Finding conflicts with the task's design?" [label="no"];
-    "Finding conflicts with the task's design?" -> "Ask Joe which governs" [label="yes"];
-    "Ask Joe which governs" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model";
+    "Finding conflicts with the task's design?" -> "Ask your human partner which governs" [label="yes"];
+    "Ask your human partner which governs" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model";
     "Finding conflicts with the task's design?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [label="no"];
     "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" -> "Dispatch scoped re-review\n(./re-review-prompt.md)";
     "Dispatch scoped re-review\n(./re-review-prompt.md)" -> "All findings addressed?";
@@ -105,7 +105,7 @@ digraph process {
     "R = 5?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [label="no - next round"];
     "R = 5?" -> "Adjudicate each open finding" [label="yes - breaker trips"];
     "Adjudicate each open finding" -> "Any load-bearing finding?";
-    "Any load-bearing finding?" -> "STOP: report BLOCKED to Joe" [label="yes"];
+    "Any load-bearing finding?" -> "STOP: report BLOCKED to your human partner" [label="yes"];
     "Any load-bearing finding?" -> "Park findings on the task bead\nwith rulings (bd note)" [label="no"];
     "Park findings on the task bead\nwith rulings (bd note)" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"";
     "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" -> "More tasks in feature?";
@@ -125,7 +125,7 @@ digraph process {
 
 Ensure the work happens in an isolated workspace: use using-git-worktrees to
 create one or verify the existing one. Never start implementation on a
-main/master branch without Joe's explicit consent.
+main/master branch without your human partner's explicit consent.
 
 **Durable progress rides on bd, not a ledger file.** Conversation memory does
 not survive compaction. In real sessions, controllers that lost their place
@@ -163,7 +163,7 @@ each feature, the same two-level traversal the process above uses.
   as a defect (a test that asserts nothing, verbatim duplication of a logic
   block)
 
-Present everything you find to Joe as one batched question — each finding
+Present everything you find to your human partner as one batched question — each finding
 beside the task text that mandates it, asking which governs — before execution
 begins, not one interrupt per discovery mid-plan. If the scan is clean,
 proceed without comment. The review loop remains the net for conflicts that
@@ -259,7 +259,7 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 1. If it's a context problem, provide more context and re-dispatch with the same model
 2. If the task requires more reasoning, re-dispatch with a more capable model
 3. If the task is too large, break it into smaller pieces
-4. If the plan itself is wrong, escalate to Joe
+4. If the plan itself is wrong, escalate to your human partner
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -332,7 +332,7 @@ Before the loop starts, two routes leave it immediately:
   so it can triage which must be fixed before merge. A roll-up nobody reads is
   a silent discard. Minor findings never enter the loop.
 - A finding labeled plan-mandated — or any finding that conflicts with what
-  the task's design requires — is Joe's decision, like any plan
+  the task's design requires — is your human partner's decision, like any plan
   contradiction: present the finding and the task text, ask which governs.
   Do not dismiss the finding because the plan mandates it, and do not
   dispatch a fix that contradicts the plan without asking.
@@ -387,7 +387,7 @@ the cross-task context the reviewer lacks:
   a ruling that says it's real and deferred.
 - **Real and load-bearing** — a later task builds on it, or it reveals a
   plan defect: STOP. `bd note <task-id> "BLOCKED: <reason>"`, leave the task
-  open, and report to Joe with the finding, the task text it collides with,
+  open, and report to your human partner with the finding, the task text it collides with,
   and the fix history. Parking a structural failure lets every dependent task
   build on it and hands the final review a problem it cannot fix either.
 
@@ -436,7 +436,7 @@ re-review of the fix wave (`scripts/review-package FIX_BASE HEAD`,
 [re-review-prompt.md](re-review-prompt.md)). Adjudicate any residual findings
 as in the task loop's breaker: park with rulings on the relevant beads, or
 stop on load-bearing ones. There is no second fix wave — residual
-load-bearing findings surface to Joe when finishing-a-development-branch
+load-bearing findings surface to your human partner when finishing-a-development-branch
 presents the options.
 
 ## Finish
