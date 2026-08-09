@@ -18,6 +18,13 @@ git diff --stat {BASE_SHA}..{HEAD_SHA}
 
 Review ONLY the files in this diff.
 
+## Working Directory Safety
+
+This working directory may be shared with a concurrent session on a different branch. Use ONLY
+non-mutating git commands (`git diff`, `git log`, `git show`, `git status`) against the explicit
+SHAs above. NEVER run `git checkout`, `git switch`, `git pull`, `git fetch`, or `git merge` —
+doing so moves HEAD out from under whoever dispatched you.
+
 ## Procedure
 
 1. **Detect tech stack** — Check for `Cargo.toml`, `package.json`, `pyproject.toml`, `go.mod`
