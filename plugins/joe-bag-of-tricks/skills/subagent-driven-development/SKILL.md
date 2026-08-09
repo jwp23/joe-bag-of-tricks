@@ -445,7 +445,15 @@ When the final whole-branch review is clean and its fixes are merged, delete
 the SDD workspace (`rm -rf "$(git rev-parse --show-toplevel)/.joe-bag-of-tricks/sdd"`)
 — bd and git history are the record now.
 
-Use finishing-a-development-branch.
+Dispatch the `joe-bag-of-tricks:branch-shepherd` agent with this one branch (its worktree path,
+and the PR number if one already exists) to run finishing-a-development-branch's tail —
+push, PR, CI, CodeRabbit, squash-merge, cleanup — unattended, rather than conducting it
+yourself step by step. **Dispatch it in the background** and keep working while it runs; it
+reports back one outcome line for the branch.
+
+For interactive, step-by-step delivery instead — watching each stage and deciding as you go —
+use finishing-a-development-branch directly; its procedure is what branch-shepherd runs on
+your behalf.
 
 ## Common Rationalizations
 
@@ -543,10 +551,17 @@ Done! Using finishing-a-development-branch.
 - **using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 - **writing-plans** - Creates the bd task hierarchy this skill executes
 - **requesting-code-review** - Code review template for the final whole-branch review
-- **finishing-a-development-branch** - Complete development after all tasks
+- **finishing-a-development-branch** - Reference procedure for delivery; run directly for
+  interactive delivery, or unattended via branch-shepherd (see Dispatches)
 
 **Subagents should use:**
 - **test-driven-development** - Subagents follow TDD for each task
 
+**Dispatches:**
+- **branch-shepherd** agent (sonnet) - Runs the finishing-a-development-branch tail
+  unattended for the finished branch (Finish)
+
 **Alternative workflow:**
 - **executing-plans** - Use for parallel session instead of same-session execution
+- **dispatching-parallel-agents** - Compose with this skill when an epic's independent tasks
+  run inside a parallel batch: each parallel item can itself be an SDD task-brief

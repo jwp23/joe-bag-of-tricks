@@ -4,6 +4,9 @@ Personal [Claude Code](https://code.claude.com) plugins — a curated bag of eng
 
 This repository is a plugin marketplace shipping two plugins. Add the marketplace once on each machine, install the plugin(s) you want, and keep them in sync through git.
 
+**New to the workflow?** [`docs/workflow-guide.md`](docs/workflow-guide.md) is a hands-on-keyboard
+walkthrough — what you type, start to finish, from an idea through a merged PR.
+
 ## What's inside
 
 Two plugins.
@@ -39,6 +42,7 @@ Two plugins.
 |-------|-------|------|
 | `coderabbit-reviewer` | sonnet | Evaluates and applies/rejects CodeRabbit PR comments |
 | `pr-merger` | haiku | Squash-merges, watches CI on main, cleans up |
+| `branch-shepherd` | sonnet | Delivers one or more review-clean branches end to end: push, PR, CI, CodeRabbit, conflict reconciliation, squash-merge, cleanup |
 
 `joe-magic-bootstrap` — interactively generates a project's CLAUDE.md + `.claude/` structure (one skill, `project`).
 
@@ -66,7 +70,7 @@ joe-bag-of-tricks/
     │   ├── .claude-plugin/
     │   │   └── plugin.json       # plugin manifest (semver version)
     │   ├── skills/               # 18 skills
-    │   └── agents/               # 4 agents
+    │   └── agents/               # 3 agents
     └── joe-magic-bootstrap/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)
@@ -129,4 +133,4 @@ Licensed under the [MIT License](LICENSE).
 
 Thirteen of the eighteen skills are adapted from the [Superpowers](https://github.com/obra/superpowers) project by Jesse Vincent (MIT-licensed): `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
 
-The remaining skills (`readme-sync`, `record-decision`, `security-review`, `using-skills`, `writing-agents`) and all four agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
+The remaining skills (`readme-sync`, `record-decision`, `security-review`, `using-skills`, `writing-agents`) and all three agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.

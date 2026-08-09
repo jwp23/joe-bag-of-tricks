@@ -13,6 +13,29 @@ Complete development work by pushing the feature branch, creating a PR, and wait
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
+## Orchestrating Multiple Branches
+
+Steps 1-2 below (verify tests, security review, confirm base branch) happen per branch, in
+this session, before a branch is ready to hand off — they need the working tree and your
+judgment.
+
+Once one or more branches are review-clean and ready to ship, decide how many you're
+delivering:
+
+- **One branch, staying in the loop:** Run Step 3 onward yourself, as written below.
+- **Two or more branches, or you want the whole delivery tail run unattended:** Dispatch the
+  `joe-bag-of-tricks:branch-shepherd` agent once with the full branch list (each entry: worktree
+  path, optional existing PR number). It runs Step 3 through Merging for every branch —
+  push/PR, the backgrounded CI wait and fix loop, CodeRabbit handling, conflict reconciliation
+  if main moves mid-train, squash-merge, and worktree cleanup — sequentially, and reports one
+  outcome table at the end instead of checking in after each step.
+
+This does not replace Steps 3-5 as the *reference procedure* — branch-shepherd runs the same
+steps, just autonomously and across a list. Read them below regardless of which path you take;
+they're what branch-shepherd is executing on your behalf.
+
+**Dispatch it in the background** and keep working while it runs.
+
 ## The Process
 
 ### Step 1: Verify Tests
@@ -185,6 +208,7 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | 1. Verify | Run tests, stop if failing |
 | 1.5 Security | Run security review, fix Critical/Important |
 | 2. Base branch | Confirm target branch |
+| 2+ branches ready | Dispatch branch-shepherd with the branch list instead of Step 3-Merging manually |
 | 3. Open PR | Push, `gh pr create` with a conventional-commit title |
 | 4. CI result | Background the wait; if failed: debug, fix, push, wait again |
 | 4.5 CodeRabbit | Dispatch coderabbit-reviewer: auto-apply or reject. Escalate to opus if needed |
@@ -215,6 +239,8 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 **Dispatches:**
 - **coderabbit-reviewer** agent (sonnet, escalates to opus) - Auto-apply review suggestions (Step 4.5)
 - **pr-merger** agent (haiku) - Squash merge, CI watch, cleanup (Merging)
+- **branch-shepherd** agent (sonnet) - Runs Step 3 through Merging unattended across a list of
+  review-clean branches (Orchestrating Multiple Branches)
 
 **Pairs with:**
 - **security-review** - Runs security audit before push (Step 1.5)
