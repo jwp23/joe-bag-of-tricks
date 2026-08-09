@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Converting Your Workflow into a Claude Code Plugin — Field Manual</title>
+<title>Converting Your Workflow into a Claude Code Plugin · Field Manual</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%A9%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,7 +35,7 @@
   html{scroll-behavior:smooth}
   body{
     margin:0;background:var(--paper);color:var(--ink-body);
-    font-family:"Spectral",Georgia,serif;font-size:18px;line-height:1.66;
+    font-family:"Spectral",Georgia,serif;font-size:18px;line-height:1.72;
     -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;
   }
   body::before{
@@ -76,7 +76,7 @@
   h1.title em{font-style:italic;font-weight:600;color:var(--brass-deep)}
   .dek{font-size:clamp(18px,2.4vw,22px);max-width:48ch;color:var(--ink-2);margin:0 0 4px}
   .audience{margin-top:22px;padding:14px 18px;border-left:3px solid var(--brass);
-    background:linear-gradient(90deg,rgba(169,116,43,.10),transparent);font-size:15.5px;color:var(--ink-2);max-width:62ch}
+    background:linear-gradient(90deg,rgba(169,116,43,.10),transparent);font-size:16.5px;color:var(--ink-2);max-width:62ch}
   .stamp{position:absolute;top:50px;right:0;font-family:"IBM Plex Mono",monospace;font-size:11px;
     letter-spacing:.18em;text-transform:uppercase;color:var(--brass-deep);border:1.5px solid var(--brass);
     border-radius:50%;width:104px;height:104px;display:grid;place-content:center;text-align:center;
@@ -87,13 +87,15 @@
   .sec-tag{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px;letter-spacing:.26em;
     text-transform:uppercase;color:var(--verm-deep);display:flex;align-items:center;gap:12px;margin-bottom:14px}
   .sec-tag::before{content:"";width:26px;height:2px;background:var(--verm)}
-  h2{font-family:"Fraunces",serif;font-optical-sizing:auto;font-weight:600;font-size:clamp(28px,4.4vw,40px);
-    line-height:1.06;letter-spacing:-.01em;color:var(--ink);margin:0 0 .5em}
+  h2{font-family:"Fraunces",serif;font-optical-sizing:auto;font-weight:900;font-size:clamp(32px,4.8vw,46px);
+    line-height:1.04;letter-spacing:-.015em;color:var(--ink);margin:0 0 .18em}
+  .sizzle{font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    font-size:clamp(19px,2.6vw,25px);line-height:1.25;color:var(--brass-deep);margin:0 0 .9em}
   h3{font-family:"Fraunces",serif;font-weight:600;font-size:22px;color:var(--ink);margin:1.5em 0 .5em}
   p{margin:0 0 1.05em}
   strong{color:var(--ink);font-weight:600}
   em{color:var(--brass-deep)}
-  .lead{font-size:17px;color:var(--ink-2)}
+  .lead{font-size:19px;line-height:1.7;color:var(--ink-2)}
 
   /* ---- interactive builder ---- */
   .builder{background:var(--paper-2);border:1px solid var(--line-2);border-radius:12px;
@@ -107,12 +109,12 @@
   .field.full{grid-column:1 / -1}
   .field label{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.13em;
     text-transform:uppercase;color:var(--brass-deep);font-weight:600}
-  .field input,.field select{font-family:"IBM Plex Mono",monospace;font-size:13.5px;color:var(--ink);
+  .field input,.field select{font-family:"IBM Plex Mono",monospace;font-size:14.5px;color:var(--ink);
     background:var(--paper);border:1px solid var(--line-2);border-radius:7px;padding:9px 11px;width:100%;
     transition:border-color .15s,box-shadow .15s}
   .field input:focus,.field select:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(169,116,43,.16)}
   .field input::placeholder{color:#a99a7e}
-  .builder .hint{font-size:13.5px;color:var(--muted);margin:16px 0 0}
+  .builder .hint{font-size:15px;color:var(--ink-2);margin:16px 0 0}
   .builder .hint b{color:var(--brass-deep);font-weight:600}
 
   /* prompt card (carbon copy) */
@@ -125,7 +127,7 @@
     text-transform:uppercase;color:var(--carbon-brass);display:flex;align-items:center;gap:9px}
   .prompt-tag .sq{width:8px;height:8px;background:var(--verm);display:inline-block}
   .prompt.live .prompt-tag .sq{background:var(--carbon-brass)}
-  .prompt-body{font-family:"IBM Plex Mono",monospace;font-size:13.3px;line-height:1.7;color:var(--carbon-ink);
+  .prompt-body{font-family:"IBM Plex Mono",monospace;font-size:14.5px;line-height:1.7;color:var(--carbon-ink);
     margin:0;padding:16px 18px 18px;white-space:pre-wrap;overflow-x:auto}
   .prompt-body .ph{color:var(--carbon-brass)}
 
@@ -146,7 +148,7 @@
   figure.code .copy{color:var(--brass-deep);border-color:var(--line-2)}
   figure.code .copy:hover{background:var(--brass);color:var(--paper);border-color:var(--brass)}
   figure.code pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;
-    font-size:13px;line-height:1.65;color:#493721}
+    font-size:14px;line-height:1.65;color:#493721}
   figure.code pre .c{color:var(--muted);font-style:italic}
   figure.code pre .k{color:var(--verm-deep)}
   figure.code pre .s{color:var(--brass-deep)}
@@ -159,7 +161,7 @@
   .fact .n{font-family:"Fraunces",serif;font-weight:900;font-size:58px;line-height:1;color:var(--verm);
     opacity:.9;position:absolute;top:10px;right:16px}
   .fact h4{font-family:"Fraunces",serif;font-weight:600;font-size:20px;margin:0 0 .4em;color:var(--ink);max-width:16ch}
-  .fact p{font-size:15.5px;margin:0;color:var(--ink-2)}
+  .fact p{font-size:17px;line-height:1.65;margin:0;color:var(--ink-2)}
   .consequence{margin-top:22px;border-left:3px solid var(--verm);padding:6px 0 6px 18px;font-size:17px}
 
   .pipeline{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;margin:20px 0 4px}
@@ -170,7 +172,7 @@
 
   /* principles */
   ul.lessons{list-style:none;margin:0;padding:0}
-  ul.lessons li{position:relative;padding:13px 0 13px 34px;border-bottom:1px solid var(--line);font-size:16px}
+  ul.lessons li{position:relative;padding:13px 0 13px 34px;border-bottom:1px solid var(--line);font-size:16.5px;line-height:1.62}
   ul.lessons li:last-child{border-bottom:0}
   ul.lessons li::before{content:"";position:absolute;left:2px;top:20px;width:14px;height:14px;background:var(--brass);
     border-radius:2px;transform:rotate(45deg)}
@@ -179,8 +181,8 @@
 
   /* condensed 13-phase reference */
   .refgrid{margin:14px 0 0;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
-  .ref-item{display:flex;gap:16px;padding:13px 18px;background:var(--paper-2);border-bottom:1px solid var(--line);
-    font-size:15.5px;color:var(--ink-2)}
+  .ref-item{display:flex;gap:16px;padding:14px 18px;background:var(--paper-2);border-bottom:1px solid var(--line);
+    font-size:17px;line-height:1.65;color:var(--ink-2)}
   .ref-item:last-child{border-bottom:0}
   .ref-item:nth-child(even){background:rgba(35,29,20,.035)}
   .ref-n{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px;color:var(--paper);
@@ -189,7 +191,7 @@
 
   /* tables */
   .tablewrap{overflow-x:auto;margin:18px 0;border:1px solid var(--line-2);border-radius:10px;box-shadow:var(--shadow)}
-  table{border-collapse:collapse;width:100%;min-width:520px;background:var(--paper-2);font-size:14.5px}
+  table{border-collapse:collapse;width:100%;min-width:520px;background:var(--paper-2);font-size:16px}
   thead th{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:11.5px;letter-spacing:.12em;
     text-transform:uppercase;text-align:left;color:var(--paper);background:var(--ink);padding:11px 14px}
   tbody td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
@@ -197,23 +199,32 @@
   tbody tr:nth-child(even){background:rgba(35,29,20,.035)}
   .mono-col{font-family:"IBM Plex Mono",monospace;font-size:13px;color:#5a4322}
 
-  .note{font-size:15.5px;color:var(--ink-2)}
+  .note{font-size:17px;color:var(--ink-2)}
   .note .lab{font-weight:600;color:var(--ink)}
   .callout{background:rgba(169,116,43,.10);border:1px solid rgba(169,116,43,.4);border-radius:9px;
-    padding:15px 18px;margin:16px 0;font-size:15.5px}
+    padding:16px 19px;margin:16px 0;font-size:16.5px;line-height:1.68;color:var(--ink-body)}
   .callout .lab{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:11px;letter-spacing:.2em;
     text-transform:uppercase;color:var(--brass-deep);display:block;margin-bottom:5px}
 
-  /* rail */
-  nav.rail{position:fixed;top:50%;left:24px;transform:translateY(-50%);z-index:40;display:none;flex-direction:column;gap:2px}
-  @media(min-width:1300px){nav.rail{display:flex}}
-  nav.rail a{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500;color:var(--muted);
-    text-decoration:none;padding:4px 8px;border-radius:5px;display:flex;align-items:center;gap:8px;
-    transition:color .15s}
-  nav.rail a .bar{width:14px;height:2px;background:var(--line-2);transition:width .2s,background .2s}
-  nav.rail a:hover{color:var(--brass-deep)}
-  nav.rail a.active{color:var(--ink);font-weight:600}
-  nav.rail a.active .bar{width:26px;background:var(--verm)}
+  /* side table of contents */
+  .layout{display:block}
+  aside.toc{display:none}
+  @media(min-width:1020px){
+    .layout{display:grid;grid-template-columns:264px minmax(0,1fr);gap:48px}
+    aside.toc{display:block}
+  }
+  .toc-inner{position:sticky;top:26px;border-top:2px solid var(--ink);padding:16px 0 6px}
+  .toc-head{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--verm-deep);margin-bottom:14px}
+  .toc a{display:flex;gap:11px;align-items:baseline;font-family:"Spectral",serif;font-size:17px;
+    line-height:1.4;color:var(--ink-2);text-decoration:none;padding:9px 8px 9px 14px;
+    border-left:2px solid var(--line);transition:color .15s,border-color .15s,background .15s}
+  .toc a .tn{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--muted);
+    letter-spacing:.06em;flex:none}
+  .toc a:hover{color:var(--verm-deep)}
+  .toc a.active{color:var(--ink);font-weight:600;border-left-color:var(--verm);
+    background:linear-gradient(90deg,rgba(187,58,34,.08),transparent)}
+  .toc a.active .tn{color:var(--verm-deep)}
 
   footer{border-top:2px solid var(--ink);margin-top:40px;padding:34px 0 60px}
   .caveat{font-size:14.5px;color:var(--muted);border-left:3px solid var(--brass);padding:6px 0 6px 16px;
@@ -230,17 +241,6 @@
 <body>
 <div class="progress" aria-hidden="true"></div>
 
-<nav class="rail" aria-label="Section index">
-  <a href="#fastpath"><span class="bar"></span>Fast path</a>
-  <a href="#why"><span class="bar"></span>Two facts</a>
-  <a href="#principles"><span class="bar"></span>Principles</a>
-  <a href="#reference"><span class="bar"></span>Reference · 13</a>
-  <a href="#install"><span class="bar"></span>Install</a>
-  <a href="#maintain"><span class="bar"></span>Maintain</a>
-  <a href="#gotchas"><span class="bar"></span>Gotchas</a>
-  <a href="#appendix"><span class="bar"></span>Appendix</a>
-</nav>
-
 <div class="wrap">
 
 <header class="mast">
@@ -248,34 +248,78 @@
     <div class="stamp">Two<br>Prompts<br>· Plan · Go</div>
     <div class="kicker"><span class="dot"></span>Claude Code<span class="dot"></span>Field Manual</div>
     <h1 class="title">Converting Your Workflow into a <em>Plugin</em></h1>
-    <p class="dek">Turn a pile of skills, agents, hooks, commands, and MCP servers into one installable plugin you can sync across every machine — in two prompts.</p>
+    <p class="dek">Turn your skills, agents, hooks, commands, and MCP servers into one installable plugin you can sync across every machine, in two prompts.</p>
     <div class="rule-row"><span>Plan → approve → go</span><span>Interview-driven</span><span>Rev. 2</span></div>
     <div class="audience"><strong>Audience.</strong> You already use Claude Code and keep skills/agents in <code>.claude/</code>. You want them packaged, versioned, and installable with one command everywhere you work.</div>
   </div>
 </header>
 
-<main class="shell">
+<main class="shell layout">
+
+<aside class="toc" aria-label="Table of contents">
+  <div class="toc-inner">
+    <div class="toc-head">Contents</div>
+    <a href="#why-plugin"><span class="tn">01</span>Why</a>
+    <a href="#packaging"><span class="tn">02</span>Packaging Model</a>
+    <a href="#fastpath"><span class="tn">03</span>The Fast Path</a>
+    <a href="#why"><span class="tn">04</span>Why It Works</a>
+    <a href="#principles"><span class="tn">05</span>Principles</a>
+    <a href="#reference"><span class="tn">06</span>The 13 Phases</a>
+    <a href="#install"><span class="tn">07</span>Install &amp; Sync</a>
+    <a href="#maintain"><span class="tn">08</span>Maintaining the Repo</a>
+    <a href="#gotchas"><span class="tn">09</span>Gotchas</a>
+    <a href="#appendix"><span class="tn">10</span>Appendix</a>
+  </div>
+</aside>
+
+<div class="content">
+
+<!-- WHY (do this at all) -->
+<section class="sec column" id="why-plugin">
+  <div class="sec-tag">§ 01</div>
+  <h2>Why</h2>
+  <p class="sizzle">Scale a consistent workflow across repos, people, and machines</p>
+  <p class="lead">A plugin turns your personal setup into <strong>one installable unit</strong>. Every repo, teammate, and machine gets the same skills, agents, and hooks — and one push updates them all.</p>
+  <ul class="lessons reveal">
+    <li><strong>Use it when</strong> repeatable skills, agents, or hooks belong in every repo or every teammate’s setup — or you want to open-source your workflow.</li>
+    <li><strong>Skip project-specific skills.</strong> A skill tied to one codebase (its build commands, issue tracker, file layout) stays in that project’s <code>.claude/</code>. Package only what travels.</li>
+    <li><strong>Skip the plugin entirely</strong> for one or two people on a few projects — a shared or copied <code>.claude/</code> is simpler. Convert when the copies start to drift.</li>
+  </ul>
+</section>
+
+<!-- PACKAGING MODEL -->
+<section class="sec column" id="packaging">
+  <div class="sec-tag">§ 02</div>
+  <h2>Mental Model for Packaging</h2>
+  <p class="sizzle">Determine composability first</p>
+  <ul class="lessons reveal">
+    <li><strong>Map the coupling.</strong> Which skills, agents, and hooks reference each other?</li>
+    <li><strong>Coupled workflows ship as one plugin</strong> — skills that invoke each other, agents a skill dispatches. Splitting them breaks cross-references.</li>
+    <li><strong>Split only what stands alone</strong> — e.g. a self-contained bootstrap workflow can be its own plugin. One marketplace carries both.</li>
+  </ul>
+</section>
 
 <!-- FAST PATH -->
 <section class="sec column" id="fastpath">
-  <div class="sec-tag">The fast path</div>
-  <h2>Two prompts: plan, then go</h2>
-  <p class="lead">The whole job collapses to <strong>two prompts in one session</strong>. Prompt&nbsp;1 interviews you for anything you don’t specify, then stops with a plan. You approve. Prompt&nbsp;2 builds and ships. Run both on your most capable model at high/xhigh effort — no model switching, so no reason to break it up further.</p>
+  <div class="sec-tag">§ 03</div>
+  <h2>The Fast Path</h2>
+  <p class="sizzle">Two prompts: plan, then go</p>
+  <p class="lead"><strong>Two prompts, one session.</strong> Prompt&nbsp;1 interviews you, then stops with a plan. You approve. Prompt&nbsp;2 builds and ships. Run both on your most capable model at high/xhigh effort.</p>
 
-  <div class="callout"><span class="lab">Minimal entry — if you remember nothing else</span>“Convert my <code>.claude</code> at <code>&lt;path&gt;</code> into a plugin — interview me for the rest, then show me a plan before touching any files.” The interview fills in everything below.</div>
+  <div class="callout"><span class="lab">Minimal entry</span>“Convert my <code>.claude</code> at <code>&lt;path&gt;</code> into a plugin. Interview me for the rest, then show me a plan before touching any files.” The interview fills in everything below.</div>
 
   <h3>Build your Plan prompt</h3>
-  <p class="note">Fill in what you’ve decided; leave the rest blank — the prompt tells the agent to interview you for it. The prompt below updates live. Hit <strong>Copy</strong> and paste it into Claude Code.</p>
+  <p class="note">Fill in what you know; leave the rest blank — every blank becomes an interview question. The prompt updates live below. <strong>Copy</strong> it into Claude Code.</p>
 
   <div class="builder reveal">
     <div class="builder-head"><span class="sq"></span>Your decisions</div>
     <div class="grid">
       <div class="field full">
-        <label for="f-source">Source path — your .claude dir</label>
+        <label for="f-source">Source path (your .claude dir)</label>
         <input id="f-source" type="text" placeholder="~/.claude   (or a project's ./.claude)">
       </div>
       <div class="field">
-        <label for="f-name">Name — repo = marketplace = plugin</label>
+        <label for="f-name">Name (repo = marketplace = plugin)</label>
         <input id="f-name" type="text" placeholder="my-plugin">
       </div>
       <div class="field">
@@ -295,15 +339,15 @@
         <select id="f-ver">
           <option value="">— (interview me)</option>
           <option value="explicit semver, start at 0.1.0">explicit semver (0.1.0)</option>
-          <option value="git-SHA — omit version; every commit is a version">git-SHA (every commit)</option>
+          <option value="git-SHA (omit version; every commit is a version)">git-SHA (every commit)</option>
         </select>
       </div>
       <div class="field full">
         <label for="f-attr">Is this a fork? If so from what repo?</label>
-        <input id="f-attr" type="text" placeholder="no   —or—   upstream owner/repo">
+        <input id="f-attr" type="text" placeholder="no   /   upstream owner/repo">
       </div>
     </div>
-    <p class="hint"><b>Tip:</b> every blank becomes an interview question — you can copy this with nothing filled in and let the agent walk you through it.</p>
+    <p class="hint"><b>Tip:</b> copy it with nothing filled in and let the interview do everything.</p>
   </div>
 
   <div class="prompt live" data-copy>
@@ -311,10 +355,10 @@
     <pre class="prompt-body copysrc" id="prompt1"></pre>
   </div>
 
-  <h3>Prompt 2 — Execute (after you approve the plan)</h3>
+  <h3>Prompt 2 · Execute (after you approve the plan)</h3>
   <div class="prompt" data-copy>
     <div class="prompt-top"><span class="prompt-tag"><span class="sq"></span>Prompt 2 · Execute</span><button class="copy" type="button">Copy</button></div>
-    <pre class="prompt-body copysrc">Approved — build it end-to-end in this session:
+    <pre class="prompt-body copysrc">Approved. Build it end-to-end in this session:
 1. Scaffold the monorepo layout; COPY (never move) everything in, preserving supporting files.
 2. Fix every reference that breaks once extracted (agent dispatches → namespaced
    name:agent; cited docs → carry in or drop).
@@ -322,32 +366,33 @@
 4. Wire hooks → hooks/hooks.json and MCP → .mcp.json; rewrite bundled paths to ${CLAUDE_PLUGIN_ROOT}.
 5. Handle license/attribution as agreed.
 6. Run `claude plugin validate` on the marketplace and the plugin; fix all errors and warnings.
-7. Write a CLAUDE.md for the repo itself — maintainer notes: the marketplace + plugin
+7. Write a CLAUDE.md for the repo itself, with maintainer notes: the marketplace + plugin
    layout, `claude plugin validate` before commit, bump `version` to propagate, and the
    provenance/attribution summary.
 8. Write the README (install for public or private + the version-bump + `/plugin marketplace update` sync flow).
-9. Ship: init git, clean commit, create the repo (public or private, as agreed), push —
-   show me the file list before the first push. Then give me the add + install commands
+9. Ship: init git, clean commit, create the repo (public or private, as agreed), push.
+   Show me the file list before the first push. Then give me the add + install commands
    for this and other machines.
 
 Guardrails: work on copies, never my originals; never invent field names, licenses,
-URLs, or provenance — verify or ask.</pre>
+URLs, or provenance. Verify or ask.</pre>
   </div>
 
-  <div class="callout"><span class="lab">Why two prompts, not one</span>The only genuinely risky call is the plan — a wrong <strong>architecture</strong> or <strong>genericize</strong> decision is expensive to unwind, because everything downstream (namespaces, layout, every edited file) is built on it. Prompt&nbsp;1’s stop-for-approval is a cheap checkpoint at exactly that seam. Everything else is safe to run autonomously.</div>
+  <div class="callout"><span class="lab">Why two prompts, not one</span>The only risky decision is the plan. A wrong <strong>architecture</strong> or <strong>genericize</strong> choice is costly to undo — everything downstream builds on it. Prompt&nbsp;1 stops for approval at exactly that point; the rest runs safely on its own.</div>
 </section>
 
 <!-- WHY -->
 <section class="sec column" id="why">
-  <div class="sec-tag">Why it works</div>
-  <h2>The two facts that decide everything</h2>
-  <p>Internalize these — they’re why the plan defaults to “one plugin,” and why the agent must namespace references.</p>
+  <div class="sec-tag">§ 04</div>
+  <h2>Why It Works</h2>
+  <p class="sizzle">Two facts drive the whole plan</p>
+  <p>These two facts are why the plan defaults to “one plugin” and why every reference must be namespaced.</p>
   <div class="facts">
-    <div class="fact reveal"><span class="n">1</span><h4>No per-component enable / disable</h4><p>A plugin is the atomic unit you install, enable, and disable. You cannot install a plugin and then keep 6 of its skills while turning 3 off.</p></div>
+    <div class="fact reveal"><span class="n">1</span><h4>No per-component enable / disable</h4><p>A plugin is the atomic unit you install, enable, and disable. You can’t install a plugin and then keep 6 of its skills while turning 3 off.</p></div>
     <div class="fact reveal"><span class="n">2</span><h4>Components are always namespaced</h4><p>A skill <code>foo</code> inside plugin <code>bar</code> is invoked <code>/bar:foo</code>, never <code>/foo</code>. Auto-triggering by description is unchanged, but explicit invocation and every cross-reference must use the namespaced form.</p></div>
   </div>
-  <p class="consequence"><strong>If your skills reference each other, ship them as one plugin.</strong> Splitting coupled skills across plugins doesn’t give mix-and-match — it gives broken cross-references. Real composability for coupled skills is <em>use-time</em> (skills auto-fire only when relevant), not install-time.</p>
-  <p style="margin-top:22px">You are building <strong>one git repo that is both a marketplace and the plugin it ships</strong> — a “monorepo marketplace.” Add it once per machine; a git push plus <code>/plugin marketplace update</code> propagates the change everywhere else. Under the hood, that’s these thirteen moves:</p>
+  <p class="consequence"><strong>If your skills reference each other, ship them as one plugin.</strong> Splitting coupled skills across plugins gives you broken cross-references, not mix-and-match. The composability you want happens at <em>use-time</em>: skills auto-trigger only when relevant.</p>
+  <p style="margin-top:22px">You’re building <strong>one git repo that is both a marketplace and the plugin it ships</strong>: a “monorepo marketplace.” Add it once per machine; after that, a push plus <code>/plugin marketplace update</code> propagates everywhere. The conversion breaks down into thirteen steps:</p>
   <div class="pipeline">
     <span class="chip">inventory</span><span class="arr">→</span>
     <span class="chip">research format</span><span class="arr">→</span>
@@ -363,29 +408,36 @@ URLs, or provenance — verify or ask.</pre>
     <span class="chip">README</span><span class="arr">→</span>
     <span class="chip">ship + sync</span>
   </div>
-  <div class="callout"><span class="lab">What a plugin can’t carry</span>A plugin ships <strong>components, not instructions</strong> — there’s no plugin <code>CLAUDE.md</code> and no always-loaded context. Each skill’s instructions live in its own <code>SKILL.md</code>, each agent’s in its own file, so there’s no plugin-wide instruction file to author and no “create CLAUDE.md” step. Watch the flip side: a skill that silently relied on a rule from the source project’s <code>CLAUDE.md</code>/<code>AGENTS.md</code>/<code>rules/</code> loses it on extraction — bake the convention into the skill, or note it in the README. (A <code>CLAUDE.md</code> for the plugin’s <em>own repo</em> — for maintaining it — is a different thing worth having; see <a href="#maintain">Maintaining the plugin repo</a>.)</div>
+  <div class="callout"><span class="lab">What a plugin can’t carry</span>A plugin ships <strong>components, not instructions</strong> — no plugin <code>CLAUDE.md</code>, no always-loaded context.
+    <ul style="margin:8px 0 0;padding-left:20px">
+      <li>Each skill’s instructions live in its own <code>SKILL.md</code>; each agent’s in its own file.</li>
+      <li>Flip side: a skill that silently relied on the source project’s <code>CLAUDE.md</code>/<code>AGENTS.md</code>/<code>rules/</code> loses that rule on extraction. Bake the convention into the skill, or note it in the README.</li>
+      <li>A <code>CLAUDE.md</code> for the plugin’s <em>own repo</em> is a different thing, and worth having — see <a href="#maintain">Maintaining the Repo</a>.</li>
+    </ul></div>
 </section>
 
 <!-- PRINCIPLES -->
 <section class="sec column" id="principles">
-  <div class="sec-tag">How to drive the agent</div>
-  <h2>Principles — bake these into any run</h2>
+  <div class="sec-tag">§ 05</div>
+  <h2>Principles</h2>
+  <p class="sizzle">Rules that apply to any run</p>
   <ul class="lessons reveal">
-    <li><strong>Research, don’t recall.</strong> The plugin/marketplace spec changes. Have the agent verify manifest fields and the CLI against current docs — a single wrong field name silently breaks install.</li>
-    <li><strong>Work on copies.</strong> Copy <code>.claude/</code> into the new repo first; never edit the originals. Your working setup keeps running while you build.</li>
+    <li><strong>Research, don’t recall.</strong> The spec changes; verify manifest fields and the CLI against current docs. One wrong field name silently breaks install.</li>
+    <li><strong>Work on copies.</strong> Copy <code>.claude/</code> into the new repo; never edit the originals — your working setup keeps running.</li>
     <li><strong>Don’t invent provenance or licenses.</strong> If a skill is adapted from someone else’s work, find the real LICENSE and copyright line.</li>
     <li><strong>Validate before you ship.</strong> <code>claude plugin validate &lt;path&gt;</code> catches missing frontmatter, bad JSON, and manifest mismatches in seconds.</li>
   </ul>
-  <p class="note" style="margin-top:16px"><span class="lab">One model, one session.</span> With no model switching, drop the per-phase model juggling entirely: run the whole thing on your most capable model (Opus-tier) at high/xhigh effort. The agent can still spin up a subagent for the format research to keep your context clean — that runs on the same session model, so it costs you nothing.</p>
+  <p class="note" style="margin-top:16px"><span class="lab">One model, one session.</span> No per-phase model juggling — run it all on your most capable model (Opus-tier) at high/xhigh effort. A subagent can do the format research to keep your context clean; it runs on the same model, so it costs nothing.</p>
 </section>
 
 <!-- REFERENCE -->
 <section class="sec column" id="reference">
-  <div class="sec-tag">Reference</div>
-  <h2>The 13 phases, condensed</h2>
-  <p>What Prompt&nbsp;1 and Prompt&nbsp;2 are actually doing, step by step. Reach for this when a step in the plan needs unpacking.</p>
+  <div class="sec-tag">§ 06</div>
+  <h2>The 13 Phases</h2>
+  <p class="sizzle">The whole conversion, condensed to a reference</p>
+  <p>What the two prompts are doing, step by step — for when a step in the plan needs unpacking.</p>
   <div class="refgrid reveal">
-    <div class="ref-item"><span class="ref-n">01</span><div><b>Inventory.</b> List every skill/agent/command/hook/MCP and grep for project-specific references, so you know what you have and what carries assumptions.</div></div>
+    <div class="ref-item"><span class="ref-n">01</span><div><b>Inventory.</b> List every skill/agent/command/hook/MCP; grep for project-specific references. Know what you have and what carries assumptions.</div></div>
     <div class="ref-item"><span class="ref-n">02</span><div><b>Research the format.</b> Verify the current plugin/marketplace schema and CLI against the docs; never write manifests from memory.</div></div>
     <div class="ref-item"><span class="ref-n">03</span><div><b>Architecture.</b> Coupling test: map which skills/agents reference each other. Default to one plugin; a split only makes sense for genuinely independent groups.</div></div>
     <div class="ref-item"><span class="ref-n">04</span><div><b>Name it.</b> Repo, marketplace, and plugin names; the plugin name becomes the <code>/prefix:</code> on every skill. Simplest: make all three identical.</div></div>
@@ -403,53 +455,56 @@ URLs, or provenance — verify or ask.</pre>
 
 <!-- INSTALL -->
 <section class="sec column" id="install">
-  <div class="sec-tag">Install &amp; sync</div>
-  <h2>What goes in your plugin’s README</h2>
-  <p>Prompt&nbsp;2 writes this for you (step 7) — here’s the exact content so you can review or hand-write it. Plugins install at <strong>user scope</strong> (available in every project); skills auto-trigger by description and can also be invoked explicitly as <code>/plugin:skill</code>.</p>
-  <p class="note">The block below fills in from the <strong>name / owner / visibility</strong> you set in <a href="#fastpath">Build your Plan prompt</a> — blanks fall back to examples. Set <strong>Visibility → private</strong> up there to get the SSH form.</p>
+  <div class="sec-tag">§ 07</div>
+  <h2>Install &amp; Sync</h2>
+  <p class="sizzle">What goes in your plugin’s README</p>
+  <p>Prompt&nbsp;2 writes this (step 8); here it is to review or hand-write. Plugins install at <strong>user scope</strong> — every project. Skills auto-trigger by description, or invoke explicitly as <code>/plugin:skill</code>.</p>
+  <p class="note">The block fills in from the <strong>name / owner / visibility</strong> you set in <a href="#fastpath">Build your Plan prompt</a>; blanks fall back to examples. <strong>Visibility → private</strong> gives the SSH form.</p>
   <figure class="code" data-copy>
     <figcaption>your README install block<button class="copy" type="button">Copy</button></figcaption>
     <pre class="copysrc" id="install-block"></pre>
   </figure>
-  <p class="note"><strong>Private repos:</strong> the <code>owner/repo</code> shorthand also works with a configured credential helper (<code>gh auth setup-git</code>); <code>ssh-agent</code> must hold your key and <code>github.com</code> must be in <code>~/.ssh/known_hosts</code>. For <strong>automatic</strong> startup updates of a private marketplace, export a read-access token (manual <code>/plugin marketplace update</code> needs none):</p>
+  <p class="note"><strong>Private repos:</strong> the <code>owner/repo</code> shorthand also works with a credential helper (<code>gh auth setup-git</code>); for SSH, <code>ssh-agent</code> must hold your key and <code>github.com</code> must be in <code>~/.ssh/known_hosts</code>. <strong>Automatic</strong> startup updates need a read-access token (manual <code>/plugin marketplace update</code> needs none):</p>
   <figure class="code" data-copy>
-    <figcaption>shell profile — private auto-update only<button class="copy" type="button">Copy</button></figcaption>
+    <figcaption>shell profile · private auto-update only<button class="copy" type="button">Copy</button></figcaption>
     <pre class="copysrc">export GITHUB_TOKEN=…   <span class="c"># read access to the private repo</span></pre>
   </figure>
 </section>
 
 <!-- MAINTAIN -->
 <section class="sec column" id="maintain">
-  <div class="sec-tag">Maintaining the plugin repo</div>
-  <h2>A CLAUDE.md for the repo itself</h2>
-  <p>The plugin ships no instructions — but the <em>repo</em> benefits from a <code>CLAUDE.md</code> (and <code>AGENTS.md</code>) of its own: maintainer-facing notes for whoever — you or an agent — touches the plugin later. Not required, but it pays for itself the first time you come back to add a skill or sync from upstream. Prompt&nbsp;2 writes a first draft (step 7); here’s what it should cover.</p>
+  <div class="sec-tag">§ 08</div>
+  <h2>Maintaining the Repo</h2>
+  <p class="sizzle">A CLAUDE.md for the repo itself</p>
+  <p>The plugin ships no instructions, but the <em>repo</em> benefits from its own <code>CLAUDE.md</code>: maintainer notes for whoever touches the plugin next — you or an agent. It saves time the first time you come back to add a skill. Prompt&nbsp;2 drafts it (step 7). It should cover:</p>
   <ul class="lessons reveal">
-    <li><strong>Layout.</strong> This repo is a marketplace + one plugin; where components live; and that installed copies are cached under <code>~/.claude/plugins/cache</code> — edit <em>here</em>, never the cache.</li>
+    <li><strong>Layout.</strong> This repo is a marketplace + one plugin; where components live; and that installed copies are cached under <code>~/.claude/plugins/cache</code>. Edit <em>here</em>, never the cache.</li>
     <li><strong>Before committing.</strong> <code>claude plugin validate</code> must pass; bump <code>version</code> in <code>plugin.json</code> to propagate a change to your other machines.</li>
     <li><strong>Provenance.</strong> Which components are vendored vs. original, the upstream and its license, and where derivations are recorded. Verify any new upstream’s license before vendoring.</li>
     <li><strong>Sync.</strong> If you track an upstream, the update procedure.</li>
   </ul>
   <figure class="code" data-copy>
     <figcaption>a starter CLAUDE.md for the repo<button class="copy" type="button">Copy</button></figcaption>
-    <pre class="copysrc"># &lt;name&gt; — plugin repo (a marketplace shipping one plugin)
+    <pre class="copysrc"># &lt;name&gt; plugin repo (a marketplace shipping one plugin)
 
 Layout: marketplace manifest at .claude-plugin/marketplace.json; the plugin at
 plugins/&lt;name&gt;/ (skills/, agents/, .claude-plugin/plugin.json). Installed copies
-live in ~/.claude/plugins/cache — edit HERE and re-validate, never the cache.
+live in ~/.claude/plugins/cache. Edit HERE and re-validate, never the cache.
 
 Before committing:
 - claude plugin validate .   and   claude plugin validate ./plugins/&lt;name&gt;   pass clean.
 - Bump "version" in plugins/&lt;name&gt;/.claude-plugin/plugin.json to propagate to other machines.
 
-Provenance: &lt;N&gt; skills adapted from &lt;upstream&gt; (&lt;license&gt;) — preserve the notice.
+Provenance: &lt;N&gt; skills adapted from &lt;upstream&gt; (&lt;license&gt;); preserve the notice.
 Record every vendored/original file in docs/. Verify any new upstream's license before vendoring.</pre>
   </figure>
 </section>
 
 <!-- GOTCHAS -->
 <section class="sec column" id="gotchas">
-  <div class="sec-tag">Gotchas</div>
-  <h2>What bites, and the fix</h2>
+  <div class="sec-tag">§ 09</div>
+  <h2>Gotchas</h2>
+  <p class="sizzle">Common failures, and the fix for each</p>
   <div class="tablewrap reveal">
     <table>
       <thead><tr><th>Gotcha</th><th>What happens</th><th>Fix</th></tr></thead>
@@ -472,8 +527,9 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
 
 <!-- APPENDIX -->
 <section class="sec column" id="appendix">
-  <div class="sec-tag">Appendix</div>
-  <h2>Templates &amp; cheat-sheet</h2>
+  <div class="sec-tag">§ 10</div>
+  <h2>Appendix</h2>
+  <p class="sizzle">Templates &amp; cheat-sheet</p>
 
   <h3>marketplace.json</h3>
   <figure class="code" data-copy>
@@ -505,7 +561,7 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
   <span class="k">"license"</span>: <span class="s">"MIT"</span>
 }</pre>
   </figure>
-  <p class="note">Optional <code>plugin.json</code> keys for non-default component locations (all paths relative, starting with <code>./</code>): <code>skills</code> (adds to the default <code>skills/</code> scan), <code>commands</code>, <code>agents</code>, <code>workflows</code>, <code>outputStyles</code> (each <em>replaces</em> its default), <code>hooks</code>, <code>mcpServers</code>, <code>lspServers</code> (merge with defaults), plus <code>dependencies</code> and <code>userConfig</code>. You rarely need any of these — the default locations are auto-discovered.</p>
+  <p class="note">Optional <code>plugin.json</code> keys for non-default component locations (all paths relative, starting with <code>./</code>): <code>skills</code> (adds to the default <code>skills/</code> scan), <code>commands</code>, <code>agents</code>, <code>workflows</code>, <code>outputStyles</code> (each <em>replaces</em> its default), <code>hooks</code>, <code>mcpServers</code>, <code>lspServers</code> (merge with defaults), plus <code>dependencies</code> and <code>userConfig</code>. You rarely need any of these; the default locations are auto-discovered.</p>
 
   <h3>Reference layout</h3>
   <figure class="code" data-copy>
@@ -545,11 +601,13 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
   </div>
 </section>
 
+</div><!-- /content -->
+
 </main>
 
 <footer class="shell">
   <div class="column">
-    <p class="caveat">Facts here reflect the Claude Code plugin system at time of writing. The format evolves — when in doubt, have the agent re-verify against current docs (Prompt&nbsp;1, step 1) rather than trusting this page.</p>
+    <p class="caveat">Facts here reflect the Claude Code plugin system at time of writing. The format evolves, so when in doubt have the agent re-verify against current docs (Prompt&nbsp;1, step 1) rather than trusting this page.</p>
     <div class="colophon">
       <span><b>Field Manual</b> · Converting Your Workflow into a Plugin</span>
       <span>Set in <b>Fraunces</b>, <b>Spectral</b> &amp; <b>IBM Plex Mono</b></span>
@@ -594,15 +652,15 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
 "- Versioning: " + (val(f.ver) || BLANK) + "\n" +
 "- Is this a fork? If so, from what repo: " + (val(f.attr) || BLANK) + "\n" +
 "\n" +
-"For anything I left blank, INTERVIEW me — one topic at a time, recommend a default,\n" +
+"For anything I left blank, INTERVIEW me: one topic at a time, recommend a default,\n" +
 "and wait for my answer. Don't guess my name or my conventions.\n" +
 "\n" +
 "Then, before touching any files:\n" +
 "1. Verify the CURRENT plugin/marketplace format against the docs (don't recall from memory).\n" +
 "2. Inventory my customizations; grep for project-specific references. For each\n" +
 "   project-specific convention you find (issue tracker, decision records, build\n" +
-"   commands), ASK me whether to keep it everywhere or strip it — don't decide for me.\n" +
-"3. Run the coupling test — map which skills/agents reference each other — and\n" +
+"   commands), ASK me whether to keep it everywhere or strip it. Don't decide for me.\n" +
+"3. Run the coupling test (map which skills/agents reference each other) and\n" +
 "   recommend ONE plugin unless groups are genuinely independent.\n" +
 "4. Present a PLAN for approval: architecture (one plugin vs split, with the coupling\n" +
 "   evidence), the resolved name / visibility / versioning, and a KEEP / PARAMETERIZE /\n" +
@@ -623,7 +681,7 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
 "/plugin install " + n + "@" + n + "\n" +
 "\n" +
 "## Update (sync across machines)\n" +
-"# edit, bump version in plugin.json, commit, push — then on every other machine:\n" +
+"# edit, bump version in plugin.json, commit, push, then on every other machine:\n" +
 "/plugin marketplace update " + n
     );
   }
@@ -665,8 +723,8 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
     {rootMargin:'0px 0px -8% 0px', threshold:0.08});
   document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
 
-  // ---- rail active state ----
-  var links=Array.prototype.slice.call(document.querySelectorAll('nav.rail a')), map={};
+  // ---- TOC active state ----
+  var links=Array.prototype.slice.call(document.querySelectorAll('.toc a')), map={};
   links.forEach(function(a){ var id=a.getAttribute('href').slice(1), s=document.getElementById(id); if(s) map[id]=a; });
   var spy=new IntersectionObserver(function(es){ es.forEach(function(e){ var a=map[e.target.id]; if(!a) return;
     if(e.isIntersecting){ links.forEach(function(l){l.classList.remove('active');}); a.classList.add('active'); } }); },

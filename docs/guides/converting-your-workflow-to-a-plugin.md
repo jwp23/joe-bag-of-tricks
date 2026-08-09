@@ -1,6 +1,6 @@
 # Converting Your Workflow into a Claude Code Plugin
 
-A prompt-driven guide for turning a pile of skills, agents, hooks, commands, and
+A prompt-driven guide for turning your skills, agents, hooks, commands, and
 MCP servers into a single installable plugin you can sync across machines (and
 optionally share).
 
@@ -10,21 +10,48 @@ work.
 
 ---
 
-## The fast path — two prompts
+## Why
 
-The whole job collapses to **two prompts in one session**: a *plan* prompt that
-interviews you and stops for approval, then an *execute* prompt that builds and
-ships. Run both on your most capable model at high/xhigh effort — there’s no
-model switching, so there’s no reason to break it up further.
+**Scale a consistent workflow across repos, people, and machines.** A plugin
+turns your personal setup into one installable unit. Every repo, teammate, and
+machine gets the same skills, agents, and hooks, and one push updates them all.
 
-**Minimal entry** — if you remember nothing else, paste this:
+- **Use it when** repeatable skills, agents, or hooks belong in every repo or
+  every teammate's setup — or you want to open-source your workflow.
+- **Skip project-specific skills.** A skill tied to one codebase (its build
+  commands, issue tracker, file layout) stays in that project's `.claude/`.
+  Package only what travels.
+- **Skip the plugin entirely** for one or two people on a few projects — a
+  shared or copied `.claude/` is simpler. Convert when the copies start to drift.
 
-> "Convert my `.claude` at `<path>` into a plugin — interview me for the rest,
+---
+
+## Mental model for packaging
+
+Determine composability first:
+
+- **Map the coupling.** Which skills, agents, and hooks reference each other?
+- **Coupled workflows ship as one plugin** — skills that invoke each other,
+  agents a skill dispatches. Splitting them breaks cross-references.
+- **Split only what stands alone** — e.g. a self-contained bootstrap workflow
+  can be its own plugin. One marketplace carries both.
+
+---
+
+## The fast path: two prompts
+
+**Two prompts, one session.** Prompt 1 interviews you, then stops with a plan.
+You approve. Prompt 2 builds and ships. Run both on your most capable model at
+high/xhigh effort.
+
+**Minimal entry.** Paste this:
+
+> "Convert my `.claude` at `<path>` into a plugin. Interview me for the rest,
 > then show me a plan before touching any files."
 
 The interview fills in everything below.
 
-### Prompt 1 — Plan (interviews for anything you leave blank)
+### Prompt 1 · Plan (interviews for anything you leave blank)
 
 ```
 I want to convert my Claude Code customizations into a single installable plugin,
@@ -37,15 +64,15 @@ Here's what I've decided (leave blank what you don't know):
 - Versioning: <...>
 - Is this a fork? If so, from what repo: <...>
 
-For anything I left blank, INTERVIEW me — one topic at a time, recommend a default,
+For anything I left blank, INTERVIEW me: one topic at a time, recommend a default,
 and wait for my answer. Don't guess my name or my conventions.
 
 Then, before touching any files:
 1. Verify the CURRENT plugin/marketplace format against the docs (don't recall from memory).
 2. Inventory my customizations; grep for project-specific references. For each
    project-specific convention you find (issue tracker, decision records, build
-   commands), ASK me whether to keep it everywhere or strip it — don't decide for me.
-3. Run the coupling test — map which skills/agents reference each other — and
+   commands), ASK me whether to keep it everywhere or strip it. Don't decide for me.
+3. Run the coupling test (map which skills/agents reference each other) and
    recommend ONE plugin unless groups are genuinely independent.
 4. Present a PLAN for approval: architecture (one plugin vs split, with the coupling
    evidence), the resolved name / visibility / versioning, and a KEEP / PARAMETERIZE /
@@ -54,10 +81,10 @@ Then, before touching any files:
 Stop there. Change nothing until I approve.
 ```
 
-### Prompt 2 — Execute (after you approve the plan)
+### Prompt 2 · Execute (after you approve the plan)
 
 ```
-Approved — build it end-to-end in this session:
+Approved. Build it end-to-end in this session:
 1. Scaffold the monorepo layout; COPY (never move) everything in, preserving supporting files.
 2. Fix every reference that breaks once extracted (agent dispatches → namespaced
    name:agent; cited docs → carry in or drop).
@@ -65,32 +92,31 @@ Approved — build it end-to-end in this session:
 4. Wire hooks → hooks/hooks.json and MCP → .mcp.json; rewrite bundled paths to ${CLAUDE_PLUGIN_ROOT}.
 5. Handle license/attribution as agreed.
 6. Run `claude plugin validate` on the marketplace and the plugin; fix all errors and warnings.
-7. Write a CLAUDE.md for the repo itself — maintainer notes: the marketplace + plugin
+7. Write a CLAUDE.md for the repo itself, with maintainer notes: the marketplace + plugin
    layout, `claude plugin validate` before commit, bump `version` to propagate, and the
    provenance/attribution summary.
 8. Write the README (install for public or private + the version-bump + `/plugin marketplace update` sync flow).
-9. Ship: init git, clean commit, create the repo (public or private, as agreed), push —
-   show me the file list before the first push. Then give me the add + install commands
+9. Ship: init git, clean commit, create the repo (public or private, as agreed), push.
+   Show me the file list before the first push. Then give me the add + install commands
    for this and other machines.
 
 Guardrails: work on copies, never my originals; never invent field names, licenses,
-URLs, or provenance — verify or ask.
+URLs, or provenance. Verify or ask.
 ```
 
-**Why two, not one:** the only genuinely risky call is the plan — a wrong
-*architecture* or *genericize* decision is expensive to unwind because everything
-downstream (namespaces, layout, every edited file) is built on it. Prompt 1’s
-stop-for-approval is a cheap checkpoint at exactly that seam. Everything else is
-safe to run autonomously.
+**Why two, not one:** the only risky decision is the plan. A wrong
+*architecture* or *genericize* choice is costly to undo — everything downstream
+builds on it. Prompt 1 stops for approval at exactly that point; the rest runs
+safely on its own.
 
 ---
 
-## The two facts that decide everything
+## Why it works: two facts drive the whole plan
 
-Internalize these — they’re why the plan defaults to “one plugin,” and why the
-agent must namespace references.
+These two facts are why the plan defaults to “one plugin” and why every
+reference must be namespaced.
 
-1. **There is no per-component enable/disable inside a plugin.** A plugin is the
+1. **There’s no per-component enable/disable inside a plugin.** A plugin is the
    atomic unit you install, enable, and disable. You can’t keep 6 of its skills
    while turning 3 off.
 2. **Plugin components are always namespaced.** A skill `foo` inside plugin `bar`
@@ -99,89 +125,88 @@ agent must namespace references.
    namespaced form.
 
 **Consequence:** if your skills reference each other, ship them as one plugin.
-Splitting coupled skills across plugins doesn’t give mix-and-match — it gives
-broken cross-references. Real composability for coupled skills is *use-time*
-(skills auto-fire only when relevant), not install-time.
+Splitting coupled skills across plugins gives you broken cross-references, not
+mix-and-match. The composability you want happens at *use-time*: skills
+auto-trigger only when relevant.
 
-You are building **one git repo that is both a marketplace and the plugin it
-ships** — a “monorepo marketplace.” Add it once per machine; a git push plus
-`/plugin marketplace update` propagates the change everywhere else.
+You’re building **one git repo that is both a marketplace and the plugin it
+ships**: a “monorepo marketplace.” Add it once per machine; after that, a push
+plus `/plugin marketplace update` propagates everywhere.
 
 ### What a plugin can’t carry
 
-A plugin ships **components, not instructions.** There is no plugin `CLAUDE.md`
-and no always-loaded context — the plugin schema is skills, agents, commands,
-hooks, and MCP/LSP servers, nothing that injects standing text into the system
-prompt. Each skill’s instructions live in its own `SKILL.md`; each agent’s in its
-own file. So there’s no plugin-wide instruction file to author, and no “create
-CLAUDE.md” step in this process.
+A plugin ships **components, not instructions** — no plugin `CLAUDE.md`, no
+always-loaded context.
 
-Watch the flip side, though: a skill that silently relied on a rule from the
-source project’s `CLAUDE.md` / `AGENTS.md` / `rules/` **loses that when
-extracted** — those are project instructions, not plugin components, so they
-don’t travel. Bake the needed convention into the skill itself, or document it in
-the plugin’s README. (A `CLAUDE.md` for the plugin’s *own repo* — instructions
-for maintaining the plugin — is a different thing, worth having and unrelated to
-what the plugin ships; see **Maintaining the plugin repo** below.)
+- Each skill’s instructions live in its own `SKILL.md`; each agent’s in its own
+  file.
+- Flip side: a skill that silently relied on the source project’s
+  `CLAUDE.md`/`AGENTS.md`/`rules/` loses that rule on extraction. Bake the
+  convention into the skill, or note it in the README.
+- A `CLAUDE.md` for the plugin’s *own repo* is a different thing, and worth
+  having — see **Maintaining the plugin repo** below.
 
 ---
 
-## Principles (bake these into any run)
+## Principles: rules that apply to any run
 
-- **Research, don’t recall.** The plugin/marketplace spec changes. Have the agent
-  verify manifest fields and the CLI against current docs — a single wrong field
-  name silently breaks install.
-- **Work on copies.** Copy `.claude/` into the new repo first; never edit the
-  originals. Your working setup keeps running while you build.
+- **Research, don’t recall.** The spec changes; verify manifest fields and the
+  CLI against current docs. One wrong field name silently breaks install.
+- **Work on copies.** Copy `.claude/` into the new repo; never edit the
+  originals — your working setup keeps running.
 - **Don’t invent provenance or licenses.** If a skill is adapted from someone
   else’s work, find the real LICENSE and copyright line.
 - **Validate before you ship.** `claude plugin validate <path>` catches missing
   frontmatter, bad JSON, and manifest mismatches in seconds.
 
+**One model, one session.** No per-phase model juggling — run it all on your
+most capable model (Opus-tier) at high/xhigh effort. A subagent can do the
+format research to keep your context clean; it runs on the same model, so it
+costs nothing.
+
 ---
 
-## Reference — the 13 phases, condensed
+## Reference: the 13 phases, condensed
 
-What Prompt 1 and Prompt 2 are actually doing, step by step. Reach for this when a
-step in the plan needs unpacking.
+What the two prompts are doing, step by step — for when a step in the plan
+needs unpacking.
 
-1. **Inventory** — List every skill/agent/command/hook/MCP and grep for
-   project-specific references, so you know what you have and what carries assumptions.
-2. **Research the format** — Verify the current plugin/marketplace schema and CLI
+1. **Inventory.** List every skill/agent/command/hook/MCP; grep for
+   project-specific references. Know what you have and what carries assumptions.
+2. **Research the format.** Verify the current plugin/marketplace schema and CLI
    against the docs; never write manifests from memory.
-3. **Architecture** — Coupling test: map which skills/agents reference each other.
+3. **Architecture.** Coupling test: map which skills/agents reference each other.
    Default to one plugin; a split only makes sense for genuinely independent groups.
-4. **Name it** — Repo, marketplace, and plugin names; the plugin name becomes the
+4. **Name it.** Repo, marketplace, and plugin names; the plugin name becomes the
    `/prefix:` on every skill. Simplest: make all three identical.
-5. **Versioning** — Explicit semver (bump to propagate) or git-SHA (every commit is
+5. **Versioning.** Explicit semver (bump to propagate) or git-SHA (every commit is
    a version). Semver for a shared/stable plugin.
-6. **Scaffold + copy** — Build the monorepo layout; copy (never move) everything in,
+6. **Scaffold + copy.** Build the monorepo layout; copy (never move) everything in,
    preserving every supporting file.
-7. **Fix references** — Repoint what broke on extraction: agent dispatches →
+7. **Fix references.** Repoint what broke on extraction: agent dispatches →
    namespaced `name:agent`; docs a skill cites → carry into the plugin or drop;
    instructions a skill assumed (source-project `CLAUDE.md`/`rules/`) → bake into
-   the skill or note in the README, since they don’t travel.
-8. **Genericize** — Per assumption: KEEP a portable convention, PARAMETERIZE a
+   the skill or note in the README.
+8. **Genericize.** Per assumption: KEEP a portable convention, PARAMETERIZE a
    language/build command to neutral phrasing, or REMOVE origin-only detail.
-9. **Hooks & MCP** — Hooks → `hooks/hooks.json`, MCP → `.mcp.json`; rewrite bundled
+9. **Hooks & MCP.** Hooks → `hooks/hooks.json`, MCP → `.mcp.json`; rewrite bundled
    paths to `${CLAUDE_PLUGIN_ROOT}`.
-10. **License** — If adapted from someone’s work, find their real LICENSE and comply
+10. **License.** If adapted from someone’s work, find their real LICENSE and comply
     (preserve their notice); add a `license` field and README attribution.
-11. **Validate** — `claude plugin validate` on the marketplace and the plugin; fix
+11. **Validate.** `claude plugin validate` on the marketplace and the plugin; fix
     every error and warning.
-12. **README** — Install instructions differ for public vs. private; document the
+12. **README.** Install instructions differ for public vs. private; document the
     version-bump + `/plugin marketplace update` sync flow.
-13. **Ship** — git init, clean commit, create the repo, push; then hand back the
+13. **Ship.** git init, clean commit, create the repo, push; then hand back the
     add + install commands for every machine.
 
 ---
 
-## Install & sync — what goes in your plugin’s README
+## Install & sync: what goes in your plugin’s README
 
-Prompt 2 writes this for you (step 7), but here’s the exact content so you can
-review it or hand-write it. Plugins install at **user scope**, so they’re
-available in every project; skills auto-trigger by description and can also be
-invoked explicitly as `/plugin:skill`.
+Prompt 2 writes this (step 8); here it is to review or hand-write. Plugins
+install at **user scope** — every project. Skills auto-trigger by description,
+or invoke explicitly as `/plugin:skill`.
 
 **Public repo:**
 
@@ -199,10 +224,10 @@ invoked explicitly as `/plugin:skill`.
 /plugin install my-plugin@my-marketplace
 ```
 
-The `owner/repo` shorthand also works if a git credential helper is configured
-(`gh auth setup-git`); `ssh-agent` must have your key loaded and `github.com`
-must be in `~/.ssh/known_hosts`. For **automatic** startup updates of a private
-marketplace, export a read-access token (manual updates don’t need one):
+The `owner/repo` shorthand also works with a credential helper
+(`gh auth setup-git`); for SSH, `ssh-agent` must hold your key and `github.com`
+must be in `~/.ssh/known_hosts`. **Automatic** startup updates need a
+read-access token (manual updates don’t):
 
 ```bash
 export GITHUB_TOKEN=…   # read access to the private repo, in your shell profile
@@ -220,36 +245,35 @@ export GITHUB_TOKEN=…   # read access to the private repo, in your shell profi
 
 ## Maintaining the plugin repo
 
-The plugin ships no instructions — but the *repo* benefits from a `CLAUDE.md` (and
-`AGENTS.md`) of its own: maintainer-facing notes for whoever — you or an agent —
-touches the plugin later. Not required, but it pays for itself the first time you
-come back to add a skill or sync from upstream. Prompt 2 writes a first draft;
-here’s what it should cover.
+The plugin ships no instructions, but the *repo* benefits from its own
+`CLAUDE.md`: maintainer notes for whoever touches the plugin next — you or an
+agent. It saves time the first time you come back to add a skill. Prompt 2
+drafts it (step 7). It should cover:
 
-- **Layout** — this repo is a marketplace + one plugin; where components live; and
-  that installed copies are cached under `~/.claude/plugins/cache` — edit *here*,
+- **Layout.** This repo is a marketplace + one plugin; where components live; and
+  that installed copies are cached under `~/.claude/plugins/cache`. Edit *here*,
   never the cache.
-- **Before committing** — `claude plugin validate` must pass; bump `version` in
+- **Before committing.** `claude plugin validate` must pass; bump `version` in
   `plugin.json` to propagate a change to your other machines.
-- **Provenance** — which components are vendored vs. original, the upstream and its
+- **Provenance.** Which components are vendored vs. original, the upstream and its
   license, and where derivations are recorded. Verify any new upstream’s license
   before vendoring.
-- **Sync** — if you track an upstream, the update procedure.
+- **Sync.** If you track an upstream, the update procedure.
 
 A starter `CLAUDE.md` for the repo:
 
 ```text
-# <name> — plugin repo (a marketplace shipping one plugin)
+# <name> plugin repo (a marketplace shipping one plugin)
 
 Layout: marketplace manifest at .claude-plugin/marketplace.json; the plugin at
 plugins/<name>/ (skills/, agents/, .claude-plugin/plugin.json). Installed copies
-live in ~/.claude/plugins/cache — edit HERE and re-validate, never the cache.
+live in ~/.claude/plugins/cache. Edit HERE and re-validate, never the cache.
 
 Before committing:
 - `claude plugin validate .` and `claude plugin validate ./plugins/<name>` pass clean.
 - Bump `version` in plugins/<name>/.claude-plugin/plugin.json to propagate to other machines.
 
-Provenance: <N> skills adapted from <upstream> (<license>) — preserve the notice.
+Provenance: <N> skills adapted from <upstream> (<license>); preserve the notice.
 Record every vendored/original file in docs/. Verify any new upstream's license before vendoring.
 ```
 
@@ -265,7 +289,7 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
 | Version didn’t change | Other machines keep the cached copy, no update | Bump `version` (semver) or push a new commit (git-SHA scheme) |
 | Reserved marketplace names | Names impersonating Anthropic are rejected | Pick your own name |
 | Private repo, no token | Background auto-update can’t authenticate at startup | Export `GITHUB_TOKEN`/`GH_TOKEN` with read access |
-| Command/agent missing frontmatter | Validator warns; no description in the UI | Add YAML frontmatter with at least a `description` |
+| Missing frontmatter | Validator warns; no description in the UI | Add YAML frontmatter with at least a `description` |
 | Broken paths after extraction | Skills cite files that stayed in the old repo | Carry the file into the plugin or drop the reference |
 | Editing originals in place | You destabilize your working setup mid-build | Always work on copies |
 | Duplicate skills after install | Project-level `.claude/skills` + the plugin both active → two near-identical entries | Remove the duplicated project-level copies after cutover |
@@ -273,7 +297,7 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
 
 ---
 
-## Appendix — templates and cheat-sheet
+## Appendix: templates and cheat-sheet
 
 ### `marketplace.json`
 
@@ -310,8 +334,8 @@ Optional `plugin.json` keys for non-default component locations (all paths
 relative, starting with `./`): `skills` (adds to the default `skills/` scan),
 `commands`, `agents`, `workflows`, `outputStyles` (each *replaces* its default),
 `hooks`, `mcpServers`, `lspServers` (merge with defaults), plus `dependencies`
-(other plugins this one requires) and `userConfig` (values prompted at enable
-time). You rarely need any of these — the default locations are auto-discovered.
+and `userConfig`. You rarely need any of these; the default locations are
+auto-discovered.
 
 ### Reference layout
 
@@ -347,5 +371,5 @@ my-marketplace/
 | Enable / disable a plugin | `/plugin enable <plugin>` · `/plugin disable <plugin>` |
 
 > Facts here reflect the Claude Code plugin system at time of writing. The format
-> evolves — when in doubt, have the agent re-verify against current docs (Prompt 1,
-> step 1) rather than trusting this page.
+> evolves, so when in doubt have the agent re-verify against current docs
+> (Prompt 1, step 1) rather than trusting this page.
