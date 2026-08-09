@@ -41,7 +41,9 @@ doc uses `joe-bag-of-tricks` as the running example unless a rule is specific to
 - `.claude/rules/*.md` — team rules loaded alongside CLAUDE.md.
 - `.claude/settings.json` — permission allowlist.
 - `docs/` (repo root) — fork-maintenance docs: customizations, upstream-sync, licensing, architecture,
-  and all ADRs (`docs/adr/`). Maintainer-facing; not shipped.
+  the hands-on-keyboard workflow guide, and all ADRs (`docs/adr/`). Not shipped — not installed by
+  `/plugin install`, but not maintainer-only either: `workflow-guide.md` is written for whoever is
+  using the toolkit, day to day.
 
 ## ADR placement
 All ADRs live in repo-root `docs/adr/`, one global number sequence covering both plugins. They are
