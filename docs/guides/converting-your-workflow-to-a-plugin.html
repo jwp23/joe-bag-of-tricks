@@ -299,12 +299,8 @@
         </select>
       </div>
       <div class="field full">
-        <label for="f-keep">Genericize policy — conventions to KEEP everywhere</label>
-        <input id="f-keep" type="text" placeholder="e.g. bd issue tracking, docs/adr decision records">
-      </div>
-      <div class="field full">
-        <label for="f-attr">Attribution — adapted from anything?</label>
-        <input id="f-attr" type="text" placeholder="none   —or—   adapted from obra/superpowers">
+        <label for="f-attr">Is this a fork? If so from what repo?</label>
+        <input id="f-attr" type="text" placeholder="no   —or—   upstream owner/repo">
       </div>
     </div>
     <p class="hint"><b>Tip:</b> every blank becomes an interview question — you can copy this with nothing filled in and let the agent walk you through it.</p>
@@ -573,7 +569,6 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
     owner:  document.getElementById('f-owner'),
     vis:    document.getElementById('f-vis'),
     ver:    document.getElementById('f-ver'),
-    keep:   document.getElementById('f-keep'),
     attr:   document.getElementById('f-attr')
   };
   var out = document.getElementById('prompt1');
@@ -597,15 +592,16 @@ Record every vendored/original file in docs/. Verify any new upstream's license 
 "- Name (repo = marketplace = plugin): " + (val(f.name) || BLANK) + "\n" +
 "- Visibility + owner: " + visLine() + "\n" +
 "- Versioning: " + (val(f.ver) || BLANK) + "\n" +
-"- Genericize policy (conventions to KEEP everywhere): " + (val(f.keep) || BLANK) + "\n" +
-"- Attribution (adapted from anything? which project): " + (val(f.attr) || BLANK) + "\n" +
+"- Is this a fork? If so, from what repo: " + (val(f.attr) || BLANK) + "\n" +
 "\n" +
 "For anything I left blank, INTERVIEW me — one topic at a time, recommend a default,\n" +
 "and wait for my answer. Don't guess my name or my conventions.\n" +
 "\n" +
 "Then, before touching any files:\n" +
 "1. Verify the CURRENT plugin/marketplace format against the docs (don't recall from memory).\n" +
-"2. Inventory my customizations; grep for project-specific references.\n" +
+"2. Inventory my customizations; grep for project-specific references. For each\n" +
+"   project-specific convention you find (issue tracker, decision records, build\n" +
+"   commands), ASK me whether to keep it everywhere or strip it — don't decide for me.\n" +
 "3. Run the coupling test — map which skills/agents reference each other — and\n" +
 "   recommend ONE plugin unless groups are genuinely independent.\n" +
 "4. Present a PLAN for approval: architecture (one plugin vs split, with the coupling\n" +

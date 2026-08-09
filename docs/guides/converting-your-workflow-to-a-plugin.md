@@ -35,15 +35,16 @@ Here's what I've decided (leave blank what you don't know):
 - Name (repo = marketplace = plugin): <...>
 - Visibility + owner: <...>
 - Versioning: <...>
-- Genericize policy (conventions to KEEP everywhere): <...>
-- Attribution (adapted from anything? which project): <...>
+- Is this a fork? If so, from what repo: <...>
 
 For anything I left blank, INTERVIEW me — one topic at a time, recommend a default,
 and wait for my answer. Don't guess my name or my conventions.
 
 Then, before touching any files:
 1. Verify the CURRENT plugin/marketplace format against the docs (don't recall from memory).
-2. Inventory my customizations; grep for project-specific references.
+2. Inventory my customizations; grep for project-specific references. For each
+   project-specific convention you find (issue tracker, decision records, build
+   commands), ASK me whether to keep it everywhere or strip it — don't decide for me.
 3. Run the coupling test — map which skills/agents reference each other — and
    recommend ONE plugin unless groups are genuinely independent.
 4. Present a PLAN for approval: architecture (one plugin vs split, with the coupling
