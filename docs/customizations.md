@@ -80,7 +80,12 @@ security wins.**
 `readme-sync`, `record-decision`, `security-review`, `writing-agents` — fork additions; no
 upstream file to diff against. 2026-08-08: `record-decision` had hardcoded "Joe" references;
 replaced with upstream's "your human partner" convention (already used throughout the rest of
-the plugin) so the personalization doesn't leak into a redistributable skill.
+the plugin) so the personalization doesn't leak into a redistributable skill. 2026-08-08:
+`security-review/security-reviewer.md` (the subagent-dispatch prompt used by
+finishing-a-development-branch Step 1.5) gained a "Working Directory Safety" clause forbidding
+`git checkout`/`switch`/`pull`/`fetch`/`merge` — observed a dispatched reviewer subagent run
+`git checkout main && git pull` in the shared working directory mid-session, moving HEAD off the
+branch the main session had checked out. See `docs/decisions/security-reviewer-shared-worktree-safety.md`.
 
 ## Vendored skills (== upstream head; take head each sync)
 
