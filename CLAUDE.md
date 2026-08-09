@@ -14,15 +14,20 @@ Plugin spec: https://code.claude.com/docs/en/plugins · Upstream: github.com/obr
 ## What This Project Does
 - Bundles inherited superpowers workflow skills (brainstorming, planning, TDD, systematic
   debugging, code review, branch finishing) plus custom additions into ONE installable plugin
+  (`plugins/joe-bag-of-tricks`)
 - Adds beads-based workflow skills, a record-decision skill, and custom subagents
 - Tracks superpowers upstream by release tag; may vendor other upstreams later
+- Also ships `plugins/joe-magic-bootstrap`, a second, separate plugin with one skill (`project`)
+  that interactively bootstraps a project's CLAUDE.md + `.claude/` structure
 
 ## What This Project Does NOT Do
 - NOT multi-harness. Claude Code only — do not add/maintain Codex, Gemini, Cursor, Kimi,
   OpenCode, or Pi support; strip upstream's harness machinery (.codex-plugin,
   gemini-extension.json, .opencode, .pi, GEMINI.md)
-- NOT composable. Skills/agents cross-reference; ships and installs as ONE unit. Do not split
-  it into separate plugins or rework skills to be standalone
+- NOT composable. Skills/agents within `joe-bag-of-tricks` cross-reference; that plugin ships
+  and installs as ONE unit — do not split it into separate plugins or rework its skills to be
+  standalone. (This constraint is per-plugin: it does not forbid the marketplace from carrying
+  a second, separate plugin like `joe-magic-bootstrap`.)
 - NEVER vendor content whose license is unknown or incompatible. Preserve upstream
   copyright/license notices; record source + license in docs/customizations.md
 - Ships skills, subagents, hooks. No commands/ — that pattern merged into skills
@@ -60,6 +65,8 @@ No TDD and no behavioral evals — deferred by docs/adr/006-defer-behavioral-eva
   skills first; also asserts the SessionStart hook injected using-skills. `--only <name>` while
   iterating. One billed model call per skill. Proves a skill LOADS, not that it TRIGGERS.
   `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace.
+- `plugins/joe-magic-bootstrap` has its own, identical validation gate:
+  `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root.
 - Editing/creating a skill: follow /joe-bag-of-tricks:writing-skills.
 NEVER claim a change works until you've loaded it and observed it — no "should work."
 Inherited tests/pre-commit suites are kept-or-stripped per docs/customizations.md.
@@ -80,6 +87,7 @@ upstream-merge surface.
 ## Pre-commit & CI
 Before commit: `betterleaks git --pre-commit --staged --redact` (hard fail) ·
 `claude plugin validate plugins/joe-bag-of-tricks` ·
+`claude plugin validate plugins/joe-magic-bootstrap` ·
 `.claude/scripts/verify-skills-load.sh` (every skill loads; billed, so run it deliberately).
 No markdown/shell/JS linters wired — upstream lints only its evals/, which is a gitignored clone
 of a separate repo this fork does not carry (docs/adr/006-defer-behavioral-evals.md).

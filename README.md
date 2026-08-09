@@ -1,12 +1,14 @@
 # joe-bag-of-tricks
 
-A personal [Claude Code](https://code.claude.com) plugin — a curated bag of engineering-workflow **skills** and **agents** that travel with Joe across every machine and project.
+Personal [Claude Code](https://code.claude.com) plugins — a curated bag of engineering-workflow **skills** and **agents** that travel with Joe across every machine and project.
 
-This repository is **both** a plugin marketplace and the plugin it ships. Add the marketplace once on each machine, install the plugin, and keep it in sync through git.
+This repository is a plugin marketplace shipping two plugins. Add the marketplace once on each machine, install the plugin(s) you want, and keep them in sync through git.
 
 ## What's inside
 
-A single plugin, `joe-bag-of-tricks`, bundling:
+Two plugins.
+
+`joe-bag-of-tricks` — the engineering workflow toolkit, bundling:
 
 **Skills** (`skills/`)
 
@@ -38,9 +40,11 @@ A single plugin, `joe-bag-of-tricks`, bundling:
 | `coderabbit-reviewer` | sonnet | Evaluates and applies/rejects CodeRabbit PR comments |
 | `pr-merger` | haiku | Squash-merges, watches CI on main, cleans up |
 
+`joe-magic-bootstrap` — interactively generates a project's CLAUDE.md + `.claude/` structure (one skill, `project`).
+
 ## Workflow assumptions
 
-These skills encode an opinionated workflow. They assume:
+These skills encode `joe-bag-of-tricks`' opinionated workflow. They assume:
 
 - **beads (`bd`)** for issue tracking — planning and execution skills create/claim/close `bd` issues.
 - **ADRs in `docs/adr/`** and decision docs in `docs/decisions/` for recording decisions.
@@ -58,11 +62,15 @@ joe-bag-of-tricks/
 ├── docs/
 │   └── adr/                      # architecture decision records (maintainer docs)
 └── plugins/
-    └── joe-bag-of-tricks/
+    ├── joe-bag-of-tricks/
+    │   ├── .claude-plugin/
+    │   │   └── plugin.json       # plugin manifest (semver version)
+    │   ├── skills/               # 18 skills
+    │   └── agents/               # 4 agents
+    └── joe-magic-bootstrap/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)
-        ├── skills/               # 18 skills
-        └── agents/               # 4 agents
+        └── skills/               # 1 skill (project)
 ```
 
 ## Install on a machine
@@ -72,6 +80,7 @@ This is a **private** repo, so the marketplace clones over your GitHub credentia
 ```text
 /plugin marketplace add git@github.com:jwp23/joe-bag-of-tricks.git
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
+/plugin install joe-magic-bootstrap@joe-bag-of-tricks
 ```
 
 The `jwp23/joe-bag-of-tricks` shorthand also works if your git credential helper is configured (e.g. `gh auth setup-git`). For the SSH form, make sure your key is loaded in `ssh-agent` and `github.com` is in `~/.ssh/known_hosts`.
@@ -108,6 +117,7 @@ Test changes against your live setup before pushing:
 ```text
 /plugin marketplace add /path/to/joe-bag-of-tricks
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
+/plugin install joe-magic-bootstrap@joe-bag-of-tricks
 /plugin validate /path/to/joe-bag-of-tricks
 ```
 

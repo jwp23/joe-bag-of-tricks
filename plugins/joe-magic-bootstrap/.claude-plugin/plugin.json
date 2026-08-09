@@ -1,0 +1,11 @@
+{
+  "name": "joe-magic-bootstrap",
+  "description": "Interactively generates a production-ready CLAUDE.md and .claude/ structure for a project.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Joseph Presley"
+  },
+  "homepage": "https://github.com/jwp23/joe-bag-of-tricks",
+  "repository": "https://github.com/jwp23/joe-bag-of-tricks",
+  "license": "MIT"
+}
