@@ -5,7 +5,7 @@ description: "Use when starting creative work - creating features, building comp
 
 # Brainstorming Ideas Into Designs
 
-Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
+Help turn ideas into fully formed designs through natural collaborative dialogue.
 
 Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
 
@@ -20,15 +20,15 @@ When you are in plan mode (`EnterPlanMode` / `/plan`) and the user asks to brain
 **In plan mode:**
 
 1. Run steps 1-5 normally (explore context, visual companion, clarify, propose approaches, present design) — these are conversational and work with available tools
-2. When the design is approved, write a summary to the plan file: design overview, components, key decisions, and note that next steps are spec writing + bd epic creation
+2. When the design is approved, write a summary to the plan file: design overview, components, key decisions, and note that next steps are design doc writing + bd epic creation
 3. Call `ExitPlanMode` to present the design for approval
-4. After approval (now outside plan mode with full tools): continue with steps 6-10 — write spec, spec self-review, user review, create bd epic, invoke writing-plans
+4. After approval (now outside plan mode with full tools): continue with steps 6-10 — write design doc, design self-review, user review, create bd epic, invoke writing-plans
 
 **The conversational design IS the plan mode output.** File operations happen after exiting plan mode.
 
 **Red flags — you are doing it wrong if:**
 - You skip brainstorming because "Write isn't available in plan mode"
-- You jump to writing-plans ad-hoc path without a design or spec
+- You jump to writing-plans ad-hoc path without a design or design doc
 - You do freeform design discussion without invoking this skill
 - You exit plan mode without presenting the design summary first
 
@@ -40,15 +40,15 @@ Every project goes through this process. A todo list, a single-function utility,
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Explore project context** — check files, docs, recent commits
+1. **Explore project context** — check files, docs (including `docs/designs/` for a doc covering this area), recent commits
 2. **Offer the visual companion just-in-time** — NOT upfront. The first time a question would genuinely be clearer shown than described, offer it then (its own message); on approval its browser tab opens for you. If no visual question ever arises, never offer it. See the Visual Companion section below.
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md` and commit
-7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Create bd epic and decompose into features/bugs** — see Work Decomposition section below
+6. **Create or update the design doc** — new subsystem: create `docs/designs/<topic>.md`; existing subsystem: update its doc in place. Commit. See Documentation section below.
+7. **Design self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
+8. **User reviews the design doc** — ask user to review it before proceeding
+9. **Create bd epic and decompose into features/bugs** — the epic carries this change's spec (requirements/acceptance/trade-offs); see Work Decomposition section below
 10. **Transition to implementation** — invoke writing-plans skill with the epic ID
 
 ## Process Flow
@@ -60,10 +60,11 @@ digraph brainstorming {
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
-    "Spec self-review\n(fix inline)" [shape=box];
-    "User reviews spec?" [shape=diamond];
-    "Create bd epic" [shape=box];
+    "Design doc exists\nfor this area?" [shape=diamond];
+    "Write design doc\n(create or update)" [shape=box];
+    "Design self-review\n(fix inline)" [shape=box];
+    "User reviews design doc?" [shape=diamond];
+    "Create bd epic\n(spec in --description/--design)" [shape=box];
     "Decompose into\nfeatures/bugs" [shape=box];
     "User approves\nhierarchy?" [shape=diamond];
     "Invoke writing-plans\nwith epic ID" [shape=doublecircle];
@@ -73,12 +74,14 @@ digraph brainstorming {
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Spec self-review\n(fix inline)";
-    "Spec self-review\n(fix inline)" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Create bd epic" [label="approved"];
-    "Create bd epic" -> "Decompose into\nfeatures/bugs";
+    "User approves design?" -> "Design doc exists\nfor this area?" [label="yes"];
+    "Design doc exists\nfor this area?" -> "Write design doc\n(create or update)" [label="yes: update in place"];
+    "Design doc exists\nfor this area?" -> "Write design doc\n(create or update)" [label="no: create new"];
+    "Write design doc\n(create or update)" -> "Design self-review\n(fix inline)";
+    "Design self-review\n(fix inline)" -> "User reviews design doc?";
+    "User reviews design doc?" -> "Write design doc\n(create or update)" [label="changes requested"];
+    "User reviews design doc?" -> "Create bd epic\n(spec in --description/--design)" [label="approved"];
+    "Create bd epic\n(spec in --description/--design)" -> "Decompose into\nfeatures/bugs";
     "Decompose into\nfeatures/bugs" -> "User approves\nhierarchy?";
     "User approves\nhierarchy?" -> "Decompose into\nfeatures/bugs" [label="revise"];
     "User approves\nhierarchy?" -> "Invoke writing-plans\nwith epic ID" [label="approved"];
@@ -91,9 +94,9 @@ digraph brainstorming {
 
 **Understanding the idea:**
 
-- Check out the current project state first (files, docs, recent commits)
+- Check out the current project state first (files, docs, recent commits), including whether `docs/designs/` already has a doc covering the area you're about to change
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
-- If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
+- If the project is too large for a single design doc, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own design doc → plan → implementation cycle.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
@@ -132,36 +135,63 @@ digraph brainstorming {
 
 **Documentation:**
 
-- Write the validated design (spec) to `docs/specs/YYYY-MM-DD-<topic>-design.md`
-  - (User preferences for spec location override this default)
-- Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
+`docs/designs/` holds **living** design docs — one per subsystem/component, describing the system's
+current design. A change updates the relevant doc in place; it does not add a new dated file. The
+per-change specifics (requirements, acceptance criteria, trade-offs for *this* change) don't belong
+here — they go into the bd epic (see Work Decomposition below). This is bead-driven development: the
+spec for a change lives in bd, not in a standalone markdown spec file.
 
-**Spec Self-Review:**
-After writing the spec document, look at it with fresh eyes:
+- Check whether a relevant doc already exists: `ls docs/designs/` (or grep for the subsystem/component name)
+  - **Existing subsystem:** open the doc and edit it in place so it reads as the current design — add,
+    revise, or remove sections as needed. Don't append a changelog entry; the doc describes what the
+    system *is*, not its history (that's what git history and record-decision ADRs are for).
+  - **New subsystem:** create `docs/designs/<topic>.md`, named for the subsystem/component
+    (kebab-case, no date prefix — e.g. `docs/designs/authentication.md`, not
+    `docs/designs/2026-08-08-auth-design.md`)
+- Use elements-of-style:writing-clearly-and-concisely skill if available
+- Commit the design doc change to git
+
+**Design Self-Review:**
+After creating or updating the design doc, look at it with fresh eyes:
 
 1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
-2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
+2. **Internal consistency:** Do any sections contradict each other — including parts of the doc you didn't touch this session? Does the architecture match the component descriptions?
 3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
 4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
 
 **User Review Gate:**
-After the spec self-review, ask the user to review the written spec before proceeding:
+After the design self-review, ask the user to review the design doc before proceeding:
 
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+> "Design doc for `<topic>` [created/updated] at `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
 
-Wait for the user's response. If they request changes, make them and re-run the spec self-review. Only proceed once the user approves.
+Wait for the user's response. If they request changes, make them and re-run the design self-review. Only proceed once the user approves.
 
 **Work Decomposition:**
 
-After the user approves the spec, create the bd issue hierarchy:
+After the user approves the design doc, create the bd issue hierarchy. The epic carries the spec for
+*this change* — requirements, acceptance criteria, and trade-offs live directly in bd now, not in a
+separate spec file:
 
 1. Create the epic:
    ```bash
    bd create "<project name>" -t epic \
-     --description="<one-paragraph summary of what this builds>" \
-     --spec-id="<path-to-spec-file>" --json
+     --description="<one-paragraph summary of what this builds and why>" \
+     --design="$(cat <<'EOF'
+   ## Requirements
+   - <requirement 1>
+   - <requirement 2>
+
+   ## Acceptance Criteria
+   - <criterion 1>
+
+   ## Trade-offs
+   - <trade-off decided during brainstorming, if not already captured by record-decision>
+   EOF
+   )" \
+     --spec-id="docs/designs/<topic>.md" --json
    ```
+   `--spec-id` links the epic back to the living design doc it's built on — a reference pointer, not
+   the spec for this change (that's the `--description`/`--design` content above).
 
 2. Decompose into features (or bugs) as children of the epic. Each feature represents a component or subsystem from the design:
    ```bash
