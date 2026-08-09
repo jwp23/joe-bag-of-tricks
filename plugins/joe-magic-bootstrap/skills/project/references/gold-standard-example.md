@@ -18,7 +18,7 @@ Rust (edition 2024) desktop GUI: Iced 0.14 (wgpu/Wayland); `pdftoppm` rendering;
 Full stack detail and per-choice rationale: see `docs/tech-stack-docs.md` and `docs/adr/` (see Reference Documents).
 
 ## Decision Recording
-Recording technical decisions: see `@.claude/rules/decision-recording.md`.
+Recording technical decisions: see `.claude/rules/decision-recording.md`.
 
 ## What This Project Does
 - Opens and renders PDF pages in a desktop GUI
@@ -42,7 +42,7 @@ Each utility has a trait-based wrapper module for testability. See ADR-004.
 When calling system utilities: use `std::process::Command` (never shell). Wrap failures with clear error messages stating what tool failed and how to install it.
 
 ## Code Style
-Five mandatory principles — human readable, loosely coupled, idiomatic, simple, professional. Details and anti-patterns: see `@docs/code-style-guide.md`.
+Five mandatory principles — human readable, loosely coupled, idiomatic, simple, professional. Details and anti-patterns: see `docs/code-style-guide.md` (read when writing or reviewing code).
 When style conventions and simplicity conflict, simplicity wins.
 
 ## Testing
@@ -52,19 +52,19 @@ When style conventions and simplicity conflict, simplicity wins.
 - **End-to-end tests**: Cover user workflows (open PDF → place text → save)
 Unit tests use trait-based test doubles for system boundaries and must pass without external utilities installed. Integration tests go in `tests/`, marked `#[ignore]` when they require system utilities; CI runs them with `cargo test -- --ignored`.
 ### TDD (Mandatory)
-Use red/green TDD for every feature/bugfix — see `@.claude/rules/tdd.md`.
+Use red/green TDD for every feature/bugfix — see `.claude/rules/tdd.md`.
 ### Test Framework
 `cargo test`. Unit tests co-located in `#[cfg(test)]` modules. See ADR-005.
 
 ## Git Workflow
 - **Commits**: Conventional Commits, single line only. No body, no footer.
 - **Lockfiles**: Always commit lockfiles regardless of language/package manager.
-See `@.claude/rules/git-workflow.md` for branch naming, PR workflow, worktrees, and merge policy.
+See `.claude/rules/git-workflow.md` for branch naming, PR workflow, worktrees, and merge policy.
 
 ## Pre-commit & CI
 Pre-commit hook runs: `betterleaks git --pre-commit --staged --redact` (hard fail) · `cargo fmt --check` · `cargo clippy -- -D warnings` · `cargo audit` · `cargo test`.
 GitHub Actions CI runs secret scanning, the same Rust checks, plus `cargo test -- --ignored`.
-See `@docs/decisions/pre-commit-suite.md` and `@docs/decisions/ci-pipeline.md`.
+See `docs/decisions/pre-commit-suite.md` and `docs/decisions/ci-pipeline.md` (read when reviewing or changing the pre-commit/CI setup).
 
 ## Reference Documents
 **IMPORTANT:** Before starting any task, identify which docs below are relevant and read them first. Load the full context before making changes.
