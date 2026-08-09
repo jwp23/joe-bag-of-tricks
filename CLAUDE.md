@@ -73,6 +73,10 @@ Inherited tests/pre-commit suites are kept-or-stripped per docs/customizations.m
 
 ## Git Workflow
 - Branches: feat/ fix/ docs/ chore/ refactor/ + short desc; sync/upstream-vX.Y.Z for upstream syncs
+- Release tags are scoped per plugin: `<plugin-name>-vX.Y.Z` (e.g. `joe-bag-of-tricks-v1.0.1`,
+  `joe-magic-bootstrap-v1.0.0`), matching each plugin's own `plugin.json` version. Tag on the
+  version-bump commit. Pre-existing unscoped tags (`v0.1.0`–`v1.0.0`) predate the second plugin
+  and are not retagged. See docs/decisions/per-plugin-scoped-release-tags.md
 - Commits: Conventional Commits, single line, no body
 - Squash-merge all feature branches, upstream syncs included. The fork shares no upstream
   ancestry, so a sync is an ordinary branch — no merge commit to preserve. See docs/adr/002-no-remote-upstream-sync.md
