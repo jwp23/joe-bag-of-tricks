@@ -39,6 +39,7 @@ Two plugins.
 |-------|-------|------|
 | `coderabbit-reviewer` | sonnet | Evaluates and applies/rejects CodeRabbit PR comments |
 | `pr-merger` | haiku | Squash-merges, watches CI on main, cleans up |
+| `branch-shepherd` | sonnet | Delivers one or more review-clean branches end to end: push, PR, CI, CodeRabbit, conflict reconciliation, squash-merge, cleanup |
 
 `joe-magic-bootstrap` — interactively generates a project's CLAUDE.md + `.claude/` structure (one skill, `project`).
 
@@ -66,7 +67,7 @@ joe-bag-of-tricks/
     │   ├── .claude-plugin/
     │   │   └── plugin.json       # plugin manifest (semver version)
     │   ├── skills/               # 18 skills
-    │   └── agents/               # 4 agents
+    │   └── agents/               # 3 agents
     └── joe-magic-bootstrap/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)
