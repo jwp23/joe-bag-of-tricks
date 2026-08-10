@@ -202,11 +202,41 @@ implementer that got stuck.
 
 **Always specify the model explicitly when dispatching a subagent.** An omitted model inherits your session's model — often the most capable and most expensive — which silently defeats this section.
 
+**Controller model and escalation.** The controller loop itself (claim,
+dispatch, close, roll up) is mid-tier work — running it on the top tier
+mostly buys more expensive bookkeeping. Where top-tier reasoning pays is
+plan authoring and adjudication. A controller on a mid-tier model must NOT
+try to self-assess "is this too hard for me" — a model cannot reliably see
+what it is missing. Escalate on structural triggers instead, all
+mechanically detectable:
+
+- the fix-loop breaker trips (round 5 with findings still open)
+- a finding conflicts with the task's design in either direction — the
+  design must be overruled, or the design itself is the source of the
+  defect
+- implementer and reviewer flatly contradict each other on a fact
+- a Critical finding touches data loss, security, or user files
+
+When several triggers fire at once, that is still ONE adjudicator dispatch —
+one question packet naming every fired trigger. Dispatch the one-shot
+**adjudicator** on the top tier (`model: "opus"` or above if available):
+clean context, the brief/report/review file paths, and the narrow question.
+Record its ruling as a `bd note` so your human partner can audit every
+judgment call afterward. Escalation is a dispatch, not a model switch — the
+main loop's model is the user's choice, not yours. Precedence: when your
+human partner is reachable, design/plan conflicts remain THEIR call (the
+fix loop already routes them there) — the adjudicator substitutes only on
+autonomous runs, and its ruling on such a conflict must be surfaced in the
+end-of-run summary, not just the bead.
+
 ## The Task Loop
 
 Everything you paste into a dispatch prompt — and everything a subagent
 prints back — stays resident in your context for the rest of the session
-and is re-read on every later turn. Hand artifacts over as files.
+and is re-read on every later turn. Hand artifacts over as files. The same
+goes for command output you'll consult more than once: capture the test
+suite's output to a scratch file and re-grep the file — re-running the
+suite to re-read its output pays the wall-clock cost again for nothing.
 
 ### 1. Dispatch the implementer
 
@@ -291,6 +321,13 @@ needed.
 - **Reviewer inputs:** the task reviewer gets three paths — the same brief
   file, the report file, and the review package — plus the global
   constraints that bind the task.
+- **Reviewer return contract:** the reviewer writes its FULL report to a
+  file (brief `…-brief.md` → review `…-review.md`) and returns only the two
+  verdicts plus Critical/Important findings as one-liners (≤15 lines).
+  Reviewer prose returned inline is permanently resident in the controller's
+  context and re-read every turn after — across a multi-task epic that is
+  thousands of tokens of pure bloat. The findings list must still be
+  complete enough to run the fix loop without opening the file.
 - The global-constraints block you hand the reviewer is its attention
   lens. Copy the binding requirements verbatim from the epic's Global
   Constraints (`bd show <epic-id>` — the design field set during
@@ -345,6 +382,14 @@ verbatim. Its context is intact: it knows the task, the code, and its own
 choices. If you cannot send another message to the live subagent, dispatch a
 fresh implementer carrying the brief path, the report-file path, and the
 findings — the report file is the persistent memory either way.
+
+**Never dispatch a fork for a fix round.** A fork inherits the controller's
+entire session context and runs on the controller's model — the most
+expensive possible dispatch for what is usually the smallest diff of the
+task. A real session paid ~250k tokens forking a 2-line fix that a resumed
+implementer or a fresh cheap-tier dispatch would have done for ~5k. Resume
+the implementer; when that's impossible, a fresh implementer with the brief
+and report paths is the fallback — never a fork.
 
 **Rounds 4-5 — dispatch a fresh implementer on a more capable model** (per
 Model Selection), with the brief path, the report-file path, the open
@@ -469,6 +514,9 @@ your behalf.
 | "I'll track progress in my head, bd is bookkeeping" | bd is what survives compaction. Controllers without it have re-dispatched entire completed task sequences. |
 | "The subagent can close its own bead" | Subagents never touch bd, remotes, or PRs. You own all durable state. |
 | "That discovered issue is out of scope, skip it" | File it: `bd create ... --deps discovered-from:<task-id>`. Unfiled discoveries are lost. |
+| "A fork is the safest resume — it has all the context" | That's why it's the most expensive dispatch possible. A fix round needs the brief, the report, and the findings — not your whole session. Resume or go cheap. |
+| "Inline reviewer reports are easier to adjudicate" | You adjudicate from the findings list. The full report belongs in a file — inline prose taxes every turn for the rest of the session. |
+| "This decision feels hard, I should handle it carefully myself" | Feeling hard IS the trigger signal you can't trust. Check the structural triggers; if one fires, dispatch an adjudicator. |
 
 ## Example Workflow
 
