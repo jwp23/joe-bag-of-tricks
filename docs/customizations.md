@@ -130,6 +130,11 @@ PR #6). If a future `server.cjs` re-port re-raises them, re-accept rather than "
   `0600`, realpath-contained. Accepted.
 - **S5131** reflect user data / **S2245** pseudorandom — these two were **fixed in code** (emit the
   validated `TOKEN` not the echoed request key; `crypto.randomInt` for the port), not accepted.
+- **S4036** PATH-searched command (`writing-skills/render-graphs.js`, the `execFileSync('dot', ...)`
+  availability probe added at v6.3.0) — the script is a local dev helper that must find graphviz
+  wherever the platform installs it (brew vs apt paths differ); hardcoding an absolute `dot` path
+  would break it everywhere but one machine, and the same-design upstream code does the same.
+  Accepted (2026-08-13, PR #25).
 
 ## Dropped upstream paths (never carried; skip on every sync)
 
