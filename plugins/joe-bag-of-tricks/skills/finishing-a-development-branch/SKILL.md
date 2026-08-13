@@ -187,6 +187,29 @@ git worktree remove <worktree-path>
 git worktree prune   # self-healing: clears any stale registrations
 ```
 
+**If removal is refused** (`contains modified or untracked files`): the
+worktree holds files that exist nowhere else — uncommitted plans, notes,
+or scratch work. Never `--force` on your own initiative. Show your human
+partner what is at stake and ask:
+
+```bash
+git -C "$WORKTREE_PATH" status --porcelain -uall
+```
+
+```
+Worktree removal refused — these files were never committed:
+
+<file list>
+
+1. Commit them to <branch> before cleanup
+2. Move them into <main repo root>
+3. Delete them (unrecoverable)
+
+Which?
+```
+
+Carry out the choice, then remove the worktree.
+
 Report: "PR ready at <URL>. All CI checks passing."
 
 ## Merging (when your human partner requests)
@@ -226,6 +249,7 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | "It's a one-line change, I'll just push to main" | Never push to main. Every change goes through a feature branch and a PR. |
 | "A merge body documents the change nicely" | Squash merge with `--body ""`. PR detail belongs in the PR, not in git log. |
 | "This other worktree looks stale — I'll clean it too" | Clean up only worktrees under `.worktrees/`. Everything else belongs to the host. |
+| "Removal refused — `--force` is just finishing the cleanup" | The refusal means files exist only in that worktree. `--force` destroys them permanently. Show your human partner and ask. |
 | "CI is probably just flaky" | A red check stops the merge. Investigate the failure before touching the merge button. |
 | "It's only a couple of minutes — I'll just watch CI" | Background the wait. Every time. A blocked session cannot be handed the next piece of work. |
 | "There's nothing else to do, so blocking costs nothing" | You cannot know that — your human partner can hand you work the moment the wait starts. Background it and stay reachable. |

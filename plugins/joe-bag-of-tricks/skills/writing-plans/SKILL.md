@@ -43,8 +43,13 @@ This skill receives an **epic ID** from the brainstorming skill. The epic alread
 
 If starting without an epic (e.g., ad-hoc planning with an existing spec or clear requirements), create one first:
 ```bash
-bd create "<project name>" -t epic --description="<summary>" --json
+bd create "<project name>" -t epic --description="<summary>" \
+  --spec-id="docs/designs/<topic>.md" --json
 ```
+
+The plan argues from the spec, so the spec travels with it: `--spec-id` points the epic at the
+living design doc, and executors read both. If no design doc covers this area, say so on the
+epic — rulings made without one are provisional.
 
 Review the existing hierarchy before creating tasks:
 ```bash
