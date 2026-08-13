@@ -70,6 +70,8 @@ Every task's requirements implicitly include these. Implementers and reviewers r
 
 Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
 
+**Survey by delegation, read by the slice.** Task designs need exact signatures and line anchors, but that does not mean reading whole files into the planning context — a full read of one large module can cost more resident tokens than the entire task hierarchy you're writing, and it is re-billed on every turn after. Dispatch an Explore agent to return the survey (module map, public signatures, relevant line numbers), then Read only the specific functions your task designs will prescribe edits to, with offset/limit. The survey tokens die with the subagent; only the load-bearing slices enter your context.
+
 - Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
 - You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
 - Files that change together should live together. Split by responsibility, not by technical layer.

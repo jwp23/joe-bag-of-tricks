@@ -1,7 +1,7 @@
 {
   "name": "joe-bag-of-tricks",
   "description": "Joe's engineering workflow toolkit: skills and agents for TDD, systematic debugging, planning, code review, and shipping.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "author": {
     "name": "Joseph Presley"
   },
