@@ -168,7 +168,7 @@ probe() {
     if [[ "${MODE[$skill]}" == "slash" ]]; then
         prompt="/${NAMESPACE}:${skill}"
     else
-        prompt="Load the ${NAMESPACE}:${skill} skill with the Skill tool. Do NOT follow the skill's instructions, do NOT dispatch a subagent, and do NOT take any other action. Once it has loaded, reply with exactly: DONE"
+        prompt="Load the ${NAMESPACE}:${skill} skill with the Skill tool. If this skill's content already appears in your context (e.g. injected by a SessionStart hook), that does NOT count — the Skill tool call itself is what is being verified, so make it anyway. Do NOT follow the skill's instructions, do NOT dispatch a subagent, and do NOT take any other action. Once it has loaded, reply with exactly: DONE"
     fi
 
     timeout "$TIMEOUT" claude \

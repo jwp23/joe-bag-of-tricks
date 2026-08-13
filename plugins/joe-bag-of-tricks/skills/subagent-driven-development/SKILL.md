@@ -13,7 +13,22 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 
 **Narration:** between tool calls, narrate at most one short line — bd state and the tool results carry the record.
 
-**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are the four named below, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+
+**Rulings, not stalls.** A running plan does not wait on a human. Conflicts,
+ambiguities, plan defects, a cap you would have asked to exceed — decide
+them. The spec is the binding authority, the plan is its argument, and your
+judgment settles what neither answers. Record every decision as
+`bd note <task-id> "Ruling: <what you decided> — <why> — <what it costs if
+wrong>"` (epic-level rulings go on the epic), and keep going. A wrong ruling
+costs rework your human partner can see and undo; a session parked on a
+question costs their whole day and buys nothing.
+
+Four things stop you, and only these: an irreversible or destructive
+operation; a security-sensitive action; a side effect outside this worktree
+that norms say you ask about first (a merge, a push to a shared branch, a
+publish); and a plan so broken that every path forward is a guess. For those,
+stop and ask.
 
 ## When to Use
 
@@ -59,14 +74,14 @@ digraph process {
         "Run review-package BASE HEAD,\ndispatch task reviewer\n(./task-reviewer-prompt.md)" [shape=box];
         "Spec OK and quality approved?" [shape=diamond];
         "Finding conflicts with the task's design?" [shape=diamond];
-        "Ask your human partner which governs" [shape=box];
+        "Rule on the conflict,\nbd note the ruling" [shape=box];
         "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [shape=box];
         "Dispatch scoped re-review\n(./re-review-prompt.md)" [shape=box];
         "All findings addressed?" [shape=diamond];
         "R = 5?" [shape=diamond];
         "Adjudicate each open finding" [shape=box];
         "Any load-bearing finding?" [shape=diamond];
-        "STOP: report BLOCKED to your human partner" [shape=box];
+        "Rule and continue; stop only if\nevery path forward is a guess" [shape=box];
         "Park findings on the task bead\nwith rulings (bd note)" [shape=box];
         "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" [shape=box];
     }
@@ -95,8 +110,8 @@ digraph process {
     "Run review-package BASE HEAD,\ndispatch task reviewer\n(./task-reviewer-prompt.md)" -> "Spec OK and quality approved?";
     "Spec OK and quality approved?" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" [label="yes"];
     "Spec OK and quality approved?" -> "Finding conflicts with the task's design?" [label="no"];
-    "Finding conflicts with the task's design?" -> "Ask your human partner which governs" [label="yes"];
-    "Ask your human partner which governs" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model";
+    "Finding conflicts with the task's design?" -> "Rule on the conflict,\nbd note the ruling" [label="yes"];
+    "Rule on the conflict,\nbd note the ruling" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model";
     "Finding conflicts with the task's design?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [label="no"];
     "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" -> "Dispatch scoped re-review\n(./re-review-prompt.md)";
     "Dispatch scoped re-review\n(./re-review-prompt.md)" -> "All findings addressed?";
@@ -105,7 +120,7 @@ digraph process {
     "R = 5?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [label="no - next round"];
     "R = 5?" -> "Adjudicate each open finding" [label="yes - breaker trips"];
     "Adjudicate each open finding" -> "Any load-bearing finding?";
-    "Any load-bearing finding?" -> "STOP: report BLOCKED to your human partner" [label="yes"];
+    "Any load-bearing finding?" -> "Rule and continue; stop only if\nevery path forward is a guess" [label="yes"];
     "Any load-bearing finding?" -> "Park findings on the task bead\nwith rulings (bd note)" [label="no"];
     "Park findings on the task bead\nwith rulings (bd note)" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"";
     "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" -> "More tasks in feature?";
@@ -157,17 +172,32 @@ hierarchy IS the plan — there is no markdown plan file to read instead: walk
 `bd children <epic-id> --json`, then `bd children <feature-id> --json` for
 each feature, the same two-level traversal the process above uses.
 
+The epic is the plan's argument for its spec: if `bd show <epic-id>` names a
+spec (`--spec-id`, pointing at the living design doc), read that too —
+conflicts inside the plan resolve against the epic's spec fields
+(description/design) and that doc. An epic with no reachable spec gets a
+`bd note` saying so — rulings made without one are provisional.
+
+Scan for, writing down what you checked as you check it:
+
 - tasks that contradict each other or the epic's Global Constraints
   (`bd show <epic-id>` — the design field set during writing-plans)
 - anything a task's design explicitly mandates that the review rubric treats
   as a defect (a test that asserts nothing, verbatim duplication of a logic
   block)
 
-Present everything you find to your human partner as one batched question — each finding
-beside the task text that mandates it, asking which governs — before execution
-begins, not one interrupt per discovery mid-plan. If the scan is clean,
-proceed without comment. The review loop remains the net for conflicts that
-only emerge from implementation.
+The scan's output is a table, not a verdict. One row for every pair of tasks
+that share a file or an interface: the two tasks, what one produces against
+what the other consumes, and what you found. One row for every task: whether
+its own text agrees with itself — the tests it specifies against the code it
+specifies, the files it creates against the files it later touches. "The scan
+is clean" without those rows is not a scan you ran.
+
+Record the table as a `bd note` on the epic. Rule on everything you find
+before execution begins — each finding against the task text that mandates
+it, the spec as the binding authority — and record each ruling beside its
+row. If the scan is clean, proceed without comment. The review loop remains
+the net for conflicts that only emerge from implementation.
 
 ## Model Selection
 
@@ -221,15 +251,23 @@ When several triggers fire at once, that is still ONE adjudicator dispatch —
 one question packet naming every fired trigger. Dispatch the one-shot
 **adjudicator** on the top tier (`model: "opus"` or above if available):
 clean context, the brief/report/review file paths, and the narrow question.
-Record its ruling as a `bd note` so your human partner can audit every
-judgment call afterward. Escalation is a dispatch, not a model switch — the
-main loop's model is the user's choice, not yours. Precedence: when your
-human partner is reachable, design/plan conflicts remain THEIR call (the
-fix loop already routes them there) — the adjudicator substitutes only on
-autonomous runs, and its ruling on such a conflict must be surfaced in the
-end-of-run summary, not just the bead.
+Record its ruling as a `bd note` (`Ruling: ...`) so your human partner can
+audit every judgment call afterward. Escalation is a dispatch, not a model
+switch — the main loop's model is the user's choice, not yours. The
+adjudicator is how a mid-tier controller rules without stalling: its ruling
+stands, the run continues, and the ruling surfaces in the "Rulings I made"
+roll-up at Finish — your human partner audits after, not during. Only the
+four stop classes above interrupt the run.
 
 ## The Task Loop
+
+**Batch small same-shape work.** When the plan lists several tasks that are
+each a small, independent edit of the same kind — the same one-line fix,
+constant change, or field addition repeated across files — do not dispatch
+one subagent per task. Compose ONE dispatch brief listing every file and
+its change, send the whole batch to a single subagent, and review its diff
+as one unit. Reserve one-dispatch-per-task for work that needs its own
+judgment, its own tests, or its own review surface.
 
 Everything you paste into a dispatch prompt — and everything a subagent
 prints back — stays resident in your context for the rest of the session
@@ -237,6 +275,17 @@ and is re-read on every later turn. Hand artifacts over as files. The same
 goes for command output you'll consult more than once: capture the test
 suite's output to a scratch file and re-grep the file — re-running the
 suite to re-read its output pays the wall-clock cost again for nothing.
+
+**Waiting on dispatched subagents:** never poll a wait interface with
+short timeouts, and never sit in one silent, open-ended wait either.
+While you have local work — bd notes, packaging the next review,
+reading reports — keep working; child results arrive on their own.
+When you are genuinely idle, wait in bounded stretches (five to ten
+minutes, where your platform allows), and between stretches post one
+line of status and reconcile your live children: list them, and chase
+any that finished without reporting. A bounded stretch keeps nearly
+all of a long wait's efficiency while guaranteeing a stuck or lost
+child is noticed within minutes, not at the end of the session.
 
 ### 1. Dispatch the implementer
 
@@ -265,6 +314,12 @@ diffs need it.
   later dispatches — a real session's dispatch hit 42k chars of which 99%
   was pasted history. A fresh subagent needs its task, the interfaces it
   touches, and the global constraints. Nothing else.
+- The dispatch carries the no-subagents contract (it is in the
+  implementer template): the implementer never dispatches subagents —
+  not helpers, and never a reviewer. Review arrives from you, after the
+  report. In real sessions, every reviewer a worker spawned duplicated
+  the task review the controller dispatched anyway — a full extra
+  review seat per task.
 - If an earlier task parked a finding in the area this task touches, carry a
   pointer to that task's bead in the dispatch.
 - Record the implementer's agent identity from the dispatch result —
@@ -289,7 +344,9 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 1. If it's a context problem, provide more context and re-dispatch with the same model
 2. If the task requires more reasoning, re-dispatch with a more capable model
 3. If the task is too large, break it into smaller pieces
-4. If the plan itself is wrong, escalate to your human partner
+4. If the plan itself is wrong, rule on the correction, record it
+   (`bd note <task-id> "Ruling: ..."`), and re-dispatch with the ruling
+   carried in the dispatch
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -369,10 +426,12 @@ Before the loop starts, two routes leave it immediately:
   so it can triage which must be fixed before merge. A roll-up nobody reads is
   a silent discard. Minor findings never enter the loop.
 - A finding labeled plan-mandated — or any finding that conflicts with what
-  the task's design requires — is your human partner's decision, like any plan
-  contradiction: present the finding and the task text, ask which governs.
-  Do not dismiss the finding because the plan mandates it, and do not
-  dispatch a fix that contradicts the plan without asking.
+  the task's design requires — is yours to rule on: weigh the finding
+  against the task text, decide with the spec as the binding authority (via
+  the adjudicator dispatch when a structural trigger fires — see Model
+  Selection), and record the ruling as a `bd note` before you act on it. Do
+  not dismiss the finding because the plan mandates it, and do not dispatch
+  a fix that contradicts the plan without a recorded ruling.
 
 Everything else enters the loop. A fix round is one fix dispatch plus one
 scoped re-review. Five rounds maximum per task:
@@ -426,15 +485,16 @@ dispatching. Adjudicate each open finding yourself — you hold the plan and
 the cross-task context the reviewer lacks:
 
 - **The reviewer is wrong, or the point is contestable:** park it —
-  `bd note <task-id> "Parked: <finding> — ruling: <why the code stands>"`.
+  `bd note <task-id> "Parked: <finding> — Ruling: <why the code stands>"`.
   The final review sees both sides.
 - **Real, but nothing downstream builds on it:** park it the same way, with
   a ruling that says it's real and deferred.
 - **Real and load-bearing** — a later task builds on it, or it reveals a
-  plan defect: STOP. `bd note <task-id> "BLOCKED: <reason>"`, leave the task
-  open, and report to your human partner with the finding, the task text it collides with,
-  and the fix history. Parking a structural failure lets every dependent task
-  build on it and hands the final review a problem it cannot fix either.
+  plan defect: rule on the smallest change that unblocks the dependent work,
+  record it (`bd note <task-id> "Ruling: <finding> — <what you decided and
+  why>"`), and carry it into the next task's dispatch. Parking a structural
+  failure silently lets every dependent task build on it. Stop only when the
+  defect leaves every path forward a guess.
 
 Adjudicate only at the cap. Adjudicating earlier to end a loop is
 pre-judging with a different name. Every adjudication is a `bd note` — a
@@ -480,11 +540,25 @@ fix wave cost more than all its tasks combined. Then run exactly one scoped
 re-review of the fix wave (`scripts/review-package FIX_BASE HEAD`,
 [re-review-prompt.md](re-review-prompt.md)). Adjudicate any residual findings
 as in the task loop's breaker: park with rulings on the relevant beads, or
-stop on load-bearing ones. There is no second fix wave — residual
+rule on the load-bearing ones and record what you decided. Only the four stop
+classes above stop you here. There is no second fix wave — residual
 load-bearing findings surface to your human partner when finishing-a-development-branch
 presents the options.
 
 ## Finish
+
+Before you delete anything, collect every ruling from bd — preflight rulings,
+parked findings, breaker and adjudicator rulings, all of them: walk the
+epic's hierarchy and grep the notes for `Ruling:` (`bd show` each closed
+task, or `bd children <epic-id> --json` and read the notes fields) — into
+your final message under "Rulings I made", in the order you made them, each
+with what it costs if wrong. The list is exhaustive: if a bd note holds a
+ruling, the list holds it. **Design/plan-conflict rulings lead the list,
+individually flagged** — each with the finding, the plan text it collided
+with, and which you ruled governs. Those are the rulings your human partner
+most needs to see: they overrode plan text on their behalf, and the summary
+is where they understand what shifted and direct changes or rework. A ruling
+left only in a bead was a decision made in secret.
 
 When the final whole-branch review is clean and its fixes are merged, delete
 the SDD workspace (`rm -rf "$(git rev-parse --show-toplevel)/.joe-bag-of-tricks/sdd"`)
@@ -517,6 +591,8 @@ your behalf.
 | "A fork is the safest resume — it has all the context" | That's why it's the most expensive dispatch possible. A fix round needs the brief, the report, and the findings — not your whole session. Resume or go cheap. |
 | "Inline reviewer reports are easier to adjudicate" | You adjudicate from the findings list. The full report belongs in a file — inline prose taxes every turn for the rest of the session. |
 | "This decision feels hard, I should handle it carefully myself" | Feeling hard IS the trigger signal you can't trust. Check the structural triggers; if one fires, dispatch an adjudicator. |
+| "The implementer spawned its own reviewer — free extra assurance" | It's a duplicate seat reviewing the same diff; the task review is the gate. A worker-spawned reviewer is a defect to flag, not rigor. |
+| "This needs a human — I'll park the run and wait" | Only the four stop classes stop you. Everything else is a ruling: decide, bd note it, keep going. The roll-up at Finish is where it reaches them. |
 
 ## Example Workflow
 
