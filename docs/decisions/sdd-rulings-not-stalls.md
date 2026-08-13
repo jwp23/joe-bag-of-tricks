@@ -34,3 +34,8 @@ call") was removed as incompatible with the model.
 - Cost if wrong: an autonomous run can now build several tasks on a bad ruling before the
   human sees it. Mitigations: rulings carry "what it costs if wrong", every dependent
   dispatch carries the ruling, and the four stop classes still halt anything irreversible.
+
+Ratified by the maintainer (2026-08-13) with one condition, now in the skill: design/plan-conflict
+rulings must lead the "Rulings I made" roll-up, individually flagged with the finding, the plan
+text they collided with, and which was ruled to govern — the end-of-run summary is where the
+human partner understands the shift and directs changes.

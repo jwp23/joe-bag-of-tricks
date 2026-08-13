@@ -553,10 +553,12 @@ epic's hierarchy and grep the notes for `Ruling:` (`bd show` each closed
 task, or `bd children <epic-id> --json` and read the notes fields) — into
 your final message under "Rulings I made", in the order you made them, each
 with what it costs if wrong. The list is exhaustive: if a bd note holds a
-ruling, the list holds it. That list is the only place the decisions you
-took on your human partner's behalf reach them — they read it and rework
-whatever you got wrong. A ruling left only in a bead was a decision made in
-secret.
+ruling, the list holds it. **Design/plan-conflict rulings lead the list,
+individually flagged** — each with the finding, the plan text it collided
+with, and which you ruled governs. Those are the rulings your human partner
+most needs to see: they overrode plan text on their behalf, and the summary
+is where they understand what shifted and direct changes or rework. A ruling
+left only in a bead was a decision made in secret.
 
 When the final whole-branch review is clean and its fixes are merged, delete
 the SDD workspace (`rm -rf "$(git rev-parse --show-toplevel)/.joe-bag-of-tricks/sdd"`)
