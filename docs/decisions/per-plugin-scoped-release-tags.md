@@ -28,3 +28,40 @@ numbers at the same point in repo history — a reader can't tell which plugin's
 marks. Scoping the tag by plugin name removes the ambiguity and matches the convention used by
 other multi-package repos (Go multi-module repos' `<module-path>/vX.Y.Z`, npm monorepo tools
 like lerna/changesets): one version lineage per shippable unit, one tag prefix per lineage.
+
+## Choosing the Version
+
+Semver applies to the plugin's behavior, not to its diff size. A skill is behavior: guidance an
+agent will follow.
+
+- **MINOR** — a skill gains new behavior: a new step, protocol, contract, or prohibition that
+  changes what an agent does. Also a new skill or agent.
+- **PATCH** — a fix to existing behavior: a wrong instruction, a broken cross-reference,
+  frontmatter that fails validation, a typo.
+- **MAJOR** — a skill or agent is removed or renamed, breaking references from outside the plugin.
+
+"It's only a few lines of markdown" is not a PATCH argument. `1.2.0` shipped ~50 added lines and
+was MINOR because those lines told controllers to escalate on new triggers — behavior that did
+not exist at `1.1.1`.
+
+## Tagging Under Squash-Merge
+
+Feature branches squash-merge, so a branch that bumps the version more than once arrives on
+`main` as a single commit carrying only the final version. Tag that squash commit, at the version
+its `plugin.json` actually reads.
+
+**Intermediate versions are never tagged.** They existed only inside the branch and were never a
+state of `main`; a tag pointing at a tree whose manifest reads a different number asserts a
+release that never shipped. Gaps in the tag sequence are expected and correct —
+`joe-bag-of-tricks` has no `v1.1.0` tag for exactly this reason (PR #22 bumped 1.1.0 then 1.1.1
+before merging). When a release covers skipped versions, say so in its release notes so the gap
+does not read as an oversight.
+
+Prefer a single bump per branch, set at the end, to avoid creating the gap at all.
+
+## The "Latest" Badge
+
+GitHub tracks one Latest release per repository, which cannot be accurate for two
+independently-versioned plugins. Point it at the most recent release across both
+(`gh release create --latest`), and pass `--latest=false` when backfilling an older tag so it
+does not steal the badge.
