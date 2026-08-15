@@ -66,7 +66,7 @@ digraph process {
         label="Per Task";
         "Claim task:\nbd update <task-id> --claim" [shape=box];
         "Run task-brief <task-id>" [shape=box];
-        "Dispatch implementer\n(model: haiku|sonnet|opus)\n(./implementer-prompt.md)" [shape=box];
+        "Dispatch implementer agent\n(mechanical|integration|complex)\n(./implementer-prompt.md)" [shape=box];
         "Implementer asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
         "Implementer implements, tests,\ncommits, self-reviews, writes report file" [shape=box];
@@ -75,7 +75,7 @@ digraph process {
         "Spec OK and quality approved?" [shape=diamond];
         "Finding conflicts with the task's design?" [shape=diamond];
         "Rule on the conflict,\nbd note the ruling" [shape=box];
-        "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [shape=box];
+        "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, next agent tier up" [shape=box];
         "Dispatch scoped re-review\n(./re-review-prompt.md)" [shape=box];
         "All findings addressed?" [shape=diamond];
         "R = 5?" [shape=diamond];
@@ -100,8 +100,8 @@ digraph process {
     "Setup: worktree, reload bd hierarchy, pre-flight review" -> "Load feature tasks:\nbd children <feature-id> --json";
     "Load feature tasks:\nbd children <feature-id> --json" -> "Claim task:\nbd update <task-id> --claim";
     "Claim task:\nbd update <task-id> --claim" -> "Run task-brief <task-id>";
-    "Run task-brief <task-id>" -> "Dispatch implementer\n(model: haiku|sonnet|opus)\n(./implementer-prompt.md)";
-    "Dispatch implementer\n(model: haiku|sonnet|opus)\n(./implementer-prompt.md)" -> "Implementer asks questions?";
+    "Run task-brief <task-id>" -> "Dispatch implementer agent\n(mechanical|integration|complex)\n(./implementer-prompt.md)";
+    "Dispatch implementer agent\n(mechanical|integration|complex)\n(./implementer-prompt.md)" -> "Implementer asks questions?";
     "Implementer asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Implementer implements, tests,\ncommits, self-reviews, writes report file";
     "Implementer asks questions?" -> "Implementer implements, tests,\ncommits, self-reviews, writes report file" [label="no"];
@@ -111,13 +111,13 @@ digraph process {
     "Spec OK and quality approved?" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" [label="yes"];
     "Spec OK and quality approved?" -> "Finding conflicts with the task's design?" [label="no"];
     "Finding conflicts with the task's design?" -> "Rule on the conflict,\nbd note the ruling" [label="yes"];
-    "Rule on the conflict,\nbd note the ruling" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model";
-    "Finding conflicts with the task's design?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [label="no"];
-    "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" -> "Dispatch scoped re-review\n(./re-review-prompt.md)";
+    "Rule on the conflict,\nbd note the ruling" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, next agent tier up";
+    "Finding conflicts with the task's design?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, next agent tier up" [label="no"];
+    "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, next agent tier up" -> "Dispatch scoped re-review\n(./re-review-prompt.md)";
     "Dispatch scoped re-review\n(./re-review-prompt.md)" -> "All findings addressed?";
     "All findings addressed?" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" [label="yes"];
     "All findings addressed?" -> "R = 5?" [label="no"];
-    "R = 5?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, more capable model" [label="no - next round"];
+    "R = 5?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, next agent tier up" [label="no - next round"];
     "R = 5?" -> "Adjudicate each open finding" [label="yes - breaker trips"];
     "Adjudicate each open finding" -> "Any load-bearing finding?";
     "Any load-bearing finding?" -> "Rule and continue; stop only if\nevery path forward is a guess" [label="yes"];
@@ -201,36 +201,42 @@ the net for conflicts that only emerge from implementation.
 
 ## Model Selection
 
-Use the least powerful model that can handle each role. Start cheap, escalate on failure.
+Use the least powerful agent that can handle each role. Start cheap, escalate on failure.
 
-The Agent tool accepts `model: "haiku" | "sonnet" | "opus"`. Use this table:
+Implementers dispatch as plugin **agent types** — each definition pins its own model and
+reasoning effort, so the dispatch names an agent and passes no model. Reviewers dispatch as
+general-purpose subagents with an explicit `model` param, drawn from
+`"haiku" | "sonnet" | "opus"`. That is the reviewer tier list, not the Agent tool's full
+set — the session's roster may offer higher tiers, and the adjudicator dispatch below pins
+one of them. Use this table:
 
-| Role | Model | Why |
-|------|-------|-----|
-| Implementer (mechanical) | `haiku` | Clear spec, 1-2 files, plan provides code snippets. Review stage catches mistakes. |
-| Implementer (integration) | `sonnet` | Multi-file coordination, message passing, pattern matching. |
-| Implementer (complex) | `opus` | Design judgment, broad codebase understanding, architectural decisions. |
-| Task reviewer (spec + quality) | `sonnet` | One dispatch covers both a structured spec comparison and a judgment-heavy quality read. Escalate to `opus` for a subtle or high-risk diff (see Review tasks below) — never drop to `haiku`: it caught 0/10 planted defects in upstream's own evaluation and rationalized them away. |
-| Scoped re-reviewer | `haiku` or `sonnet` | Verifying a small fix diff against a fixed findings list. Match the tier to the fix diff's size and risk. |
-| Final reviewer | `opus` | Holistic assessment across the entire branch. |
+| Role | Dispatch as | Why |
+|------|-------------|-----|
+| Implementer (mechanical) | `joe-bag-of-tricks:implementer-mechanical` (haiku, low effort) | Clear spec, 1-2 files, plan provides code snippets. Review stage catches mistakes. |
+| Implementer (integration) | `joe-bag-of-tricks:implementer` (sonnet, medium effort) | Multi-file coordination, message passing, pattern matching. |
+| Implementer (complex) | `joe-bag-of-tricks:implementer-complex` (opus, high effort) | Design judgment, broad codebase understanding, architectural decisions. |
+| Task reviewer (spec + quality) | `model: "sonnet"` | One dispatch covers both a structured spec comparison and a judgment-heavy quality read. Escalate to `opus` for a subtle or high-risk diff (see Review tasks below) — never drop to `haiku`: it caught 0/10 planted defects in upstream's own evaluation and rationalized them away. |
+| Scoped re-reviewer | `model: "haiku"` or `"sonnet"` | Verifying a small fix diff against a fixed findings list. Match the tier to the fix diff's size and risk. |
+| Final reviewer | `model: "fable"` (top tier; if Fable is not in this session's roster, use the top tier that is) | Holistic assessment across the entire branch. |
 
-**Most implementation tasks are mechanical when the plan is well-specified.** Plans from writing-plans include code snippets, file paths, and acceptance criteria — enough context for haiku to succeed.
+**Most implementation tasks are mechanical when the plan is well-specified.** Plans from writing-plans include code snippets, file paths, and acceptance criteria — enough context for `implementer-mechanical` to succeed.
 
-**Turn count beats token price.** Wall-clock and context cost scale with how many turns a subagent takes, and the cheapest models routinely take 2-3× the turns on multi-step work — costing more overall. Use `sonnet` as the floor for reviewers and for implementers working from prose descriptions. When the task's plan text contains the complete code to write, the implementation is transcription plus testing: use `haiku` for that implementer. Single-file mechanical fixes also take the cheapest tier.
+**Turn count beats token price.** Wall-clock and context cost scale with how many turns a subagent takes, and the cheapest models routinely take 2-3× the turns on multi-step work — costing more overall. Use `sonnet` as the floor for reviewers, and `implementer` as the floor for implementers working from prose descriptions. When the task's plan text contains the complete code to write, the implementation is transcription plus testing: dispatch `implementer-mechanical` for that task. Single-file mechanical fixes also take the cheapest tier.
 
 **Complexity signals for implementers:**
-- Touches 1-2 files with a complete spec → `haiku`
-- Touches multiple files with integration concerns → `sonnet`
-- Requires design judgment or broad codebase understanding → `opus`
+- Touches 1-2 files with a complete spec → `implementer-mechanical`
+- Touches multiple files with integration concerns → `implementer`
+- Requires design judgment or broad codebase understanding → `implementer-complex`
 
 **Review tasks:** choose the model with the same judgment, scaled to the diff's size, complexity, and risk. A small mechanical diff does not need `opus`; a subtle concurrency change does — escalate the task reviewer to `opus` for those.
 
-**Fix-loop escalation (rounds 4-5):** use a model at least one tier above the
-implementer that got stuck.
+**Fix-loop escalation (rounds 4-5):** re-dispatch one step up the implementer
+ladder (`implementer-mechanical` → `implementer` → `implementer-complex`) from
+the agent that got stuck. The ladder tops out at `implementer-complex`.
 
-**Escalation is the safety net:** If haiku reports BLOCKED, re-dispatch with sonnet. If sonnet reports BLOCKED, re-dispatch with opus. Never retry the same model without changing something (see step 2 below).
+**Escalation is the safety net:** If `implementer-mechanical` reports BLOCKED, re-dispatch `implementer`. If `implementer` reports BLOCKED, re-dispatch `implementer-complex`. Never retry the same agent type without changing something (see step 2 below).
 
-**Always specify the model explicitly when dispatching a subagent.** An omitted model inherits your session's model — often the most capable and most expensive — which silently defeats this section.
+**Always name the agent type or the model explicitly when dispatching.** An implementer dispatch names its agent type, which carries the model and effort with it. A reviewer dispatch names its model, and an omitted model inherits your session's model — often the most capable and most expensive — which silently defeats this section.
 
 **Controller model and escalation.** The controller loop itself (claim,
 dispatch, close, roll up) is mid-tier work — running it on the top tier
@@ -249,8 +255,9 @@ mechanically detectable:
 
 When several triggers fire at once, that is still ONE adjudicator dispatch —
 one question packet naming every fired trigger. Dispatch the one-shot
-**adjudicator** on the top tier (`model: "opus"` or above if available):
-clean context, the brief/report/review file paths, and the narrow question.
+**adjudicator** on the top tier (`model: "fable"`; if Fable is not in this
+session's roster, use the top tier that is): clean context, the
+brief/report/review file paths, and the narrow question.
 Record its ruling as a `bd note` (`Ruling: ...`) so your human partner can
 audit every judgment call afterward. Escalation is a dispatch, not a model
 switch — the main loop's model is the user's choice, not yours. The
@@ -341,14 +348,15 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 **NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
 
 **BLOCKED:** The implementer cannot complete the task. Assess the blocker:
-1. If it's a context problem, provide more context and re-dispatch with the same model
-2. If the task requires more reasoning, re-dispatch with a more capable model
+1. If it's a context problem, provide more context and re-dispatch the same agent type
+2. If the task requires more reasoning, re-dispatch one step up the implementer
+   ladder (`implementer-mechanical` → `implementer` → `implementer-complex`)
 3. If the task is too large, break it into smaller pieces
 4. If the plan itself is wrong, rule on the correction, record it
    (`bd note <task-id> "Ruling: ..."`), and re-dispatch with the ruling
    carried in the dispatch
 
-**Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
+**Never** ignore an escalation or force the same agent type to retry without changes. If the implementer said it's stuck, something needs to change.
 
 If the implementer asks questions — before starting or mid-task — answer
 clearly and completely, provide additional context if needed, and don't rush
@@ -450,7 +458,7 @@ implementer or a fresh cheap-tier dispatch would have done for ~5k. Resume
 the implementer; when that's impossible, a fresh implementer with the brief
 and report paths is the fallback — never a fork.
 
-**Rounds 4-5 — dispatch a fresh implementer on a more capable model** (per
+**Rounds 4-5 — dispatch a fresh implementer one step up the agent ladder** (per
 Model Selection), with the brief path, the report-file path, the open
 findings, and this framing: "A prior implementer attempted this task
 [N] times; you own it now. Read the report file for what was tried." A loop
@@ -527,7 +535,8 @@ The final whole-branch review gets a package too: run
 `scripts/review-package MERGE_BASE HEAD` (MERGE_BASE = the commit the branch
 started from, e.g. `git merge-base main HEAD`) and include the printed path in
 the final review dispatch, so the final reviewer reads one file instead of
-re-deriving the branch diff with git commands. Dispatch on `opus` using
+re-deriving the branch diff with git commands. Dispatch on `model: "fable"` (top tier; if Fable
+is not in this session's roster, use the top tier that is) using
 requesting-code-review's
 [code-reviewer.md](../requesting-code-review/code-reviewer.md). Point it at
 the deferred-minor and parked notes on the epic's closed tasks so it can
@@ -607,11 +616,11 @@ You: I'm using Subagent-Driven Development to execute this plan.
 [Load feature tasks: bd children bd-feat1 --json]
 
 Task 1 (bd-abc): Hook installation script
-  Complexity: 1-2 files, clear spec with code snippets → model: haiku
+  Complexity: 1-2 files, clear spec with code snippets → implementer-mechanical
 
 [bd update bd-abc --claim; record BASE]
 [Run scripts/task-brief bd-abc; prints .../task-bd-abc-brief.md]
-[Dispatch implementer (model: haiku) with brief path + report path + context]
+[Dispatch joe-bag-of-tricks:implementer-mechanical with brief path + report path + context]
 
 Implementer: "Before I begin - should the hook be installed at user or system level?"
 
@@ -632,9 +641,9 @@ Task reviewer: Spec ✅ - all requirements met, nothing extra.
 [bd close bd-abc --reason "commits abc123f..def456a, review clean"]
 
 Task 2 (bd-def): Recovery modes
-  Complexity: multi-file, integration with hook system → model: sonnet
+  Complexity: multi-file, integration with hook system → implementer
 
-[bd update bd-def --claim; task-brief; dispatch implementer (model: sonnet)]
+[bd update bd-def --claim; task-brief; dispatch joe-bag-of-tricks:implementer]
 Implementer: reports DONE, discovered work: "Found edge case in error path"
 [bd create --title="Edge case in error path" ... --deps discovered-from:bd-def]
 [Run review-package BASE HEAD; dispatch task reviewer (model: sonnet)]
@@ -661,7 +670,8 @@ Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
 [All features closed — bd close <epic-id> --reason "All features complete"]
 
 [Run scripts/review-package MERGE_BASE HEAD; dispatch final code reviewer
- (model: opus) with the printed path — requesting-code-review's code-reviewer.md]
+ (model: fable; top-available-tier fallback if not in roster) with the printed path —
+ requesting-code-review's code-reviewer.md]
 Final reviewer: All requirements met. Deferred minors triaged: none block merge.
 
 [Delete the SDD workspace — the record now lives in bd and git]
@@ -682,6 +692,9 @@ Done! Using finishing-a-development-branch.
 - **test-driven-development** - Subagents follow TDD for each task
 
 **Dispatches:**
+- **implementer-mechanical** / **implementer** / **implementer-complex** agents (haiku /
+  sonnet / opus) - One per task, chosen per Model Selection; also the fix-loop and BLOCKED
+  escalation ladder
 - **branch-shepherd** agent (sonnet) - Runs the finishing-a-development-branch tail
   unattended for the finished branch (Finish)
 

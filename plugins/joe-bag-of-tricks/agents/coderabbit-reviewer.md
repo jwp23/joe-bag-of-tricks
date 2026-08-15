@@ -2,6 +2,7 @@
 name: coderabbit-reviewer
 description: Watches a GitHub PR for CodeRabbit review comments, evaluates each suggestion, and auto-applies fixes or replies with rejections. Dispatched after CI passes or standalone for any PR. Reports applied/rejected/escalated findings.
 model: sonnet
+effort: low
 tools: Bash, Read, Edit, Grep, Glob
 ---
 

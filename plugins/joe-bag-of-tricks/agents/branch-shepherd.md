@@ -2,6 +2,7 @@
 name: branch-shepherd
 description: Autonomously delivers one or more review-clean branches — push, PR, CI, CodeRabbit, conflict reconciliation, squash-merge, cleanup. Dispatched with a branch list; reports one outcome table.
 model: sonnet
+effort: medium
 tools: Bash, Read, Edit, Grep, Glob
 ---
 

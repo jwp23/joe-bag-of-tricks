@@ -38,11 +38,14 @@ Two plugins.
 
 **Agents** (`agents/`)
 
-| Agent | Model | Role |
-|-------|-------|------|
-| `coderabbit-reviewer` | sonnet | Evaluates and applies/rejects CodeRabbit PR comments |
-| `pr-merger` | haiku | Squash-merges, watches CI on main, cleans up |
-| `branch-shepherd` | sonnet | Delivers one or more review-clean branches end to end: push, PR, CI, CodeRabbit, conflict reconciliation, squash-merge, cleanup |
+| Agent | Model | Effort | Role |
+|-------|-------|--------|------|
+| `coderabbit-reviewer` | sonnet | low | Evaluates and applies/rejects CodeRabbit PR comments |
+| `pr-merger` | haiku | low | Squash-merges, watches CI on main, cleans up |
+| `branch-shepherd` | sonnet | medium | Delivers one or more review-clean branches end to end: push, PR, CI, CodeRabbit, conflict reconciliation, squash-merge, cleanup |
+| `implementer-mechanical` | haiku | low | Executes a single, fully-specified SDD task — transcription-grade work where the plan already contains the code to write |
+| `implementer` | sonnet | medium | Implements a single SDD task — the default tier for ordinary multi-file integration work |
+| `implementer-complex` | opus | high | Implements an SDD task that needs design judgment or broad context; also the fix-loop escalation target |
 
 `joe-magic-bootstrap` — interactively generates a project's CLAUDE.md + `.claude/` structure (one skill, `project`).
 
