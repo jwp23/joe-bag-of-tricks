@@ -41,9 +41,14 @@ JOBS=3
 TIER="all"
 ONLY=()
 
+# The whole leading comment block is the help text, found by scanning rather than
+# by a hardcoded line range: a range silently truncates the last flags whenever
+# the header grows, as this one just did. Errors go to stderr.
 usage() {
-    sed -n '2,26p' "$0" | sed 's/^# \?//'
-    exit "${1:-0}"
+    local status="${1:-0}" out=1
+    [[ "$status" -eq 0 ]] || out=2
+    awk 'NR > 1 { if (!/^#/) exit; sub(/^# ?/, ""); print }' "$0" >&"$out"
+    exit "$status"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -92,8 +97,11 @@ NAMESPACE="$(jq -r '.name // empty' "${PLUGIN_DIR}/.claude-plugin/plugin.json")"
 # docs/customizations.md classifies one plugin's skills. Against any other plugin
 # there is no divergence data, so ordering degrades to alphabetical and the
 # diverged tier — which would otherwise select nothing — is refused.
+# -ef compares device+inode, so a --plugin-dir reached through a symlink or any
+# other spelling of the same directory is still recognized as the covered plugin;
+# string equality would silently degrade ordering to alphabetical instead.
 MANIFEST_COVERED=0
-[[ "$PLUGIN_DIR" == "$MANIFEST_PLUGIN" ]] && MANIFEST_COVERED=1
+[[ "$PLUGIN_DIR" -ef "$MANIFEST_PLUGIN" ]] && MANIFEST_COVERED=1
 if [[ "$TIER" == "diverged" && "$MANIFEST_COVERED" -eq 0 ]]; then
     echo "--tier diverged needs docs/customizations.md coverage, which exists only for ${MANIFEST_PLUGIN}" >&2
     exit 1
