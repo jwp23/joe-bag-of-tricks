@@ -22,7 +22,24 @@ skill still resolves, before committing.
   no skills; it must be `--plugin-dir plugins/joe-bag-of-tricks`.
   This proves a skill **loads when named**. It does NOT prove a skill **triggers** from a natural
   prompt — see `docs/adr/006-defer-behavioral-evals.md`. It is not an eval; don't call it one.
+- `.claude/scripts/check-context-budget.sh` — context-budget gate. Hard fail. Counts, via the
+  Anthropic `count_tokens` endpoint at `claude-opus-5`, the surface loaded into **every**
+  session: skill descriptions in the available-skills list, plus what the SessionStart hook
+  injects. Fails when the two together exceed the `BUDGET` committed in the script (currently
+  **4100**, measured 3416 = 1284 + 2132). SKILL.md bodies are reported but not gated — they load
+  on demand. Not billed as inference, so unlike `verify-skills-load.sh` this one is cheap to run
+  every time. Raising `BUDGET` is a deliberate decision, not a way to make the gate pass.
+  NEVER estimate these counts with tiktoken or chars/4 — OpenAI tokenizers undercount Claude
+  markdown. Needs the `anthropic` Python SDK and an `ant auth login` profile; a set (even empty)
+  `ANTHROPIC_API_KEY` shadows that profile — check with `ant auth status`.
 - `betterleaks git --pre-commit --staged --redact` — secret scan. Hard fail.
+
+## While Authoring a Skill
+`.claude/scripts/token-diff.sh [PATH...]` — prints the `claude-opus-5` token delta for each
+changed file between HEAD and the working tree (no arguments = everything changed vs HEAD;
+`--rev` compares against another ref). `count_tokens` is stateless, so this counts both versions
+and subtracts. Advisory, not a gate: it answers "did that edit actually shrink the skill".
+It shares its counting core, `.claude/scripts/count-tokens.py`, with the budget gate.
 
 ## After an Upstream Sync (advisory, not a gate)
 `.claude/scripts/probe-skill-triggering.sh` — sends natural prompts in a throwaway fixture repo
