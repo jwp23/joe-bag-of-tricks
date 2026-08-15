@@ -14,12 +14,22 @@
 #
 # Prompts live in triggering-prompts/<skill>.txt — the filename is the skill the
 # prompt is expected to trigger. They are authored from this fork's own skill
-# descriptions.
+# descriptions, to the REALISTIC-QUERY STANDARD: what a person actually types,
+# not a clean restatement of the description. Concretely — lowercase, unpunctual
+# prose; the situation and its history, not just the ask; enough domain detail
+# (real filenames, real constraints) that the request stands on its own; and NO
+# vocabulary lifted from the target skill's description. A prompt that echoes the
+# description measures the echo, not the skill.
 #
 # Cost: one model call per prompt. Roughly $0.14-0.18 each, so a full sweep at
 # --repeat 5 is real money. --changed-since is the cheap post-sync default:
 # triggering depends on the `description:` frontmatter, and detecting a change
 # there costs nothing, so only the drifted skills need probing.
+#
+# --changed-since compares <ref>..HEAD, so it sees COMMITTED changes only: an
+# uncommitted description edit in the working tree reports "nothing to probe"
+# and exits 0. Commit first, or pass --only. Combined with --only it intersects
+# — --only narrows the drifted set, it never widens it.
 #
 # Usage:
 #   .claude/scripts/probe-skill-triggering.sh                  # every prompt
@@ -51,7 +61,7 @@ while [[ $# -gt 0 ]]; do
             shift
             while [[ $# -gt 0 && "$1" != --* ]]; do ONLY+=("$1"); shift; done
             ;;
-        -h|--help) sed -n '2,29p' "$0" | sed 's/^# \?//'; exit 0 ;;
+        -h|--help) sed -n '2,38p' "$0" | sed 's/^# \?//'; exit 0 ;;
         *) echo "unknown argument: $1" >&2; exit 1 ;;
     esac
 done
@@ -106,7 +116,23 @@ if [[ -n "$CHANGED_SINCE" ]]; then
         echo "None of the drifted skills has a prompt — nothing to probe."
         exit 0
     fi
-    ONLY+=("${DRIFTED[@]}")
+    # --only NARROWS the drifted set; it never adds to it. Unioning the two would
+    # probe skills the caller did not ask for, at ~$0.15 a call.
+    if [[ ${#ONLY[@]} -gt 0 ]]; then
+        NARROWED=()
+        for want in "${ONLY[@]}"; do
+            for skill in "${DRIFTED[@]}"; do
+                [[ "$want" == "$skill" ]] && NARROWED+=("$want")
+            done
+        done
+        if [[ ${#NARROWED[@]} -eq 0 ]]; then
+            echo "None of --only (${ONLY[*]}) drifted since ${CHANGED_SINCE} — nothing to probe."
+            exit 0
+        fi
+        ONLY=("${NARROWED[@]}")
+    else
+        ONLY=("${DRIFTED[@]}")
+    fi
 fi
 
 EXPECTED=()
