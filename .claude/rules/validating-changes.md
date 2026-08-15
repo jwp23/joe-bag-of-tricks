@@ -15,7 +15,7 @@ skill still resolves, before committing.
   result, and that the SessionStart hook injected `using-skills`. Hard fail (non-zero exit, with
   the stream tail for each failure). Runs `replaced` skills first, then `patched`, then the rest,
   per the `State` column of `docs/customizations.md`. Use `--only <name>` while iterating on one
-  skill and `--tier diverged` for the 12 fork-owned ones; the bare command covers all 18.
+  skill and `--tier diverged` for the 12 fork-owned ones; the bare command covers all 19.
   **One model call per skill — it is billed**, which is why it is an explicitly-run gate and not
   a git pre-commit hook.
   `--plugin-dir <path>` points the same gate at any plugin root — use it to verify
@@ -30,7 +30,45 @@ skill still resolves, before committing.
   skills — the script now rejects it outright.
   This proves a skill **loads when named**. It does NOT prove a skill **triggers** from a natural
   prompt — see `docs/adr/006-defer-behavioral-evals.md`. It is not an eval; don't call it one.
+- `.claude/scripts/check-context-budget.sh` — context-budget gate. Hard fail. Counts, via the
+  Anthropic `count_tokens` endpoint at `claude-opus-5`, the surface loaded into **every**
+  session: skill descriptions in the available-skills list, plus what the SessionStart hook
+  injects. Fails when the two together exceed the `BUDGET` committed in the script — read the
+  current value and the measured surface from the script and its output, never from here, so
+  there is one source of truth to drift from. SKILL.md bodies are reported but not gated — they
+  load on demand. Not billed as inference, so unlike `verify-skills-load.sh` this one is cheap to run
+  every time. Raising `BUDGET` is a deliberate decision, not a way to make the gate pass.
+  NEVER estimate these counts with tiktoken or chars/4 — OpenAI tokenizers undercount Claude
+  markdown. Needs the `anthropic` Python SDK and an `ant auth login` profile; a set (even empty)
+  `ANTHROPIC_API_KEY` shadows that profile — check with `ant auth status`.
 - `betterleaks git --pre-commit --staged --redact` — secret scan. Hard fail.
+
+## Before a Sync, and Before Any PR That Touches a Skill
+`.claude/scripts/check-vendored-drift.sh` — proves every skill classified `vendored` is still
+byte-identical to `obra/superpowers` at the **Last synced** ref in `docs/customizations.md`. A
+`vendored` file is taken to upstream head wholesale by the next sync, so a fork edit that lands
+while the row still says `vendored` gets silently wiped — that already happened once
+(`dispatching-parallel-agents/SKILL.md`, caught by hand). Hard fail: it names each drifted file,
+shows the drift size (`--diff` for the full unified diff), and exits non-zero. It does **not**
+judge whether the drift was intentional — you decide reclassify-to-`patched` vs. revert.
+
+The file list is derived from the manifest — the `| skills/<name> |` rows plus its catch-all
+("skills not listed above are vendored") — so a new vendored skill needs no script edit. Use
+`--list` to see the classification it derived, `--only <skill>`, or `--ref <tag>` to measure
+against a different upstream ref. **Scope limit:** skill *directories*. Individually-vendored
+FILES inside a `patched`/`replaced` skill (named only in the manifest's narrative "Vendored
+skills" prose, negations and all) are not machine-checkable and remain a hand check.
+
+Cost: no model calls — one GitHub API call for the upstream tree, plus one per drifted file to
+render the diff. It is still **not** a git pre-commit hook: it needs the network and an
+authenticated `gh`, which a hook must not depend on. Sync time and pre-PR are the natural moments.
+
+## While Authoring a Skill
+`.claude/scripts/token-diff.sh [PATH...]` — prints the `claude-opus-5` token delta for each
+changed file between HEAD and the working tree (no arguments = everything changed vs HEAD;
+`--rev` compares against another ref). `count_tokens` is stateless, so this counts both versions
+and subtracts. Advisory, not a gate: it answers "did that edit actually shrink the skill".
+It shares its counting core, `.claude/scripts/count-tokens.py`, with the budget gate.
 
 ## After an Upstream Sync (advisory, not a gate)
 `.claude/scripts/probe-skill-triggering.sh` — sends natural prompts in a throwaway fixture repo

@@ -218,11 +218,19 @@ When your human partner says to merge or close a PR, dispatch the `joe-bag-of-tr
 
 - **number**: the PR number
 
-The agent squash merges with no body, checks out main, pulls, watches CI on the merge commit, and cleans up the local branch and worktree. It reports back with the merge SHA and CI status.
+The agent squash merges with no body, checks out main, pulls, verifies CI — requiring *every*
+Actions run on the merge commit to have succeeded when the repo triggers any, falling back to
+the PR gate when it triggers none — and cleans up the local branch and worktree. Its post-merge
+wait is the same backgrounded settle loop as Step 4, polling `gh run list --commit` rather than
+`gh pr checks`; `--watch` appears nowhere. It reports back with the merge SHA and CI status.
 
 **Dispatch it in the background** and keep working while it runs.
 
 **If pr-merger reports CI FAILED on main:** Investigate and fix on a new branch.
+
+**If it reports INCOMPLETE, or PASSED from the PR gate with no Actions run detected:** that is
+not post-merge verification. Treat main as unverified and check it yourself before building on
+it.
 
 ## Quick Reference
 

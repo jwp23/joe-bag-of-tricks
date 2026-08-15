@@ -35,6 +35,7 @@ Two plugins.
 | `readme-sync` | Keeping docs in sync after user-facing changes |
 | `writing-skills` | Creating, editing, or verifying skills |
 | `writing-agents` | Creating or editing subagents |
+| `implementer-contract` | Not invoked directly — the shared operating contract preloaded into the implementer agents |
 
 **Agents** (`agents/`)
 
@@ -72,8 +73,8 @@ joe-bag-of-tricks/
     ├── joe-bag-of-tricks/
     │   ├── .claude-plugin/
     │   │   └── plugin.json       # plugin manifest (semver version)
-    │   ├── skills/               # 18 skills
-    │   └── agents/               # 3 agents
+    │   ├── skills/               # 19 skills
+    │   └── agents/               # 6 agents
     └── joe-magic-bootstrap/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)

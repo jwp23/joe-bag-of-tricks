@@ -68,6 +68,9 @@ No TDD and no behavioral evals — deferred by docs/adr/006-defer-behavioral-eva
   `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace, and the script
   rejects it. Divergence ordering and `--tier diverged` need docs/customizations.md, which covers
   joe-bag-of-tricks only; elsewhere order is alphabetical and that tier is refused.
+- `.claude/scripts/check-context-budget.sh` — hard fail when the always-loaded surface (skill
+  descriptions + the SessionStart injection) exceeds the committed token budget. Cheap; run it
+  every time. SKILL.md bodies are reported, not gated.
 - `plugins/joe-magic-bootstrap` has its own, identical validation gate:
   `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root, plus
   `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-bootstrap`.
@@ -96,6 +99,7 @@ upstream-merge surface.
 Before commit: `betterleaks git --pre-commit --staged --redact` (hard fail) ·
 `claude plugin validate plugins/joe-bag-of-tricks` ·
 `claude plugin validate plugins/joe-magic-bootstrap` ·
+`.claude/scripts/check-context-budget.sh` (always-loaded token budget) ·
 `.claude/scripts/verify-skills-load.sh` (every skill loads; billed, so run it deliberately).
 No markdown/shell/JS linters wired — upstream lints only its evals/, which is a gitignored clone
 of a separate repo this fork does not carry (docs/adr/006-defer-behavioral-evals.md).
