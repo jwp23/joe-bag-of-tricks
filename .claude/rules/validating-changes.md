@@ -15,7 +15,7 @@ skill still resolves, before committing.
   result, and that the SessionStart hook injected `using-skills`. Hard fail (non-zero exit, with
   the stream tail for each failure). Runs `replaced` skills first, then `patched`, then the rest,
   per the `State` column of `docs/customizations.md`. Use `--only <name>` while iterating on one
-  skill and `--tier diverged` for the 12 fork-owned ones; the bare command covers all 19.
+  skill and `--tier diverged` for the 12 fork-owned ones; the bare command covers all 21.
   **One model call per skill — it is billed**, which is why it is an explicitly-run gate and not
   a git pre-commit hook.
   `--plugin-dir <path>` points the same gate at any plugin root — use it to verify
