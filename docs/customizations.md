@@ -65,7 +65,7 @@ security wins.**
 | skills/systematic-debugging | patched | obra/superpowers | MIT | de-prefixed skill refs + record-decision hook + desc/argument-hint. v6.1.1: **adopted** `Ultra-think`. v6.2.0: **adopted** all hunks — overview trim, the Phase-4 verification-before-completion step (de-prefixed), Related-skills + Real-World-Impact removal. 2026-07-26: the fork-added `description` is now **double-quoted** — it contains `: ` (`mid-task:`), which as an unquoted YAML plain scalar failed to parse and made `claude plugin validate` fail with all frontmatter silently dropped. Keep it quoted when re-editing the description |
 | skills/test-driven-development | patched | obra/superpowers | MIT | fork-added "Choose Test Level" section. v6.1.1: **adopted** the `[testing-anti-patterns.md](...)` markdown link (`@`-import is a CLAUDE.md mechanism, not a skill-body one). v6.2.0: **adopted** all hunks — `testing-anti-patterns.md` deleted and replaced by vendored `writing-good-tests.md`, Why-Order-Matters folded into the Common Rationalizations table |
 | skills/receiving-code-review | patched | obra/superpowers | MIT | KEEPS the "Strange things are afoot at the Circle K" signal (skipped that deletion — Joe wants it) + desc. v6.1.1: **adopted** CLAUDE.md→instruction-file. v6.2.0: **adopted** the Bottom Line deletion |
-| skills/verification-before-completion | patched | obra/superpowers | MIT | **Reclassified at v6.2.0 — previously (wrongly) listed as fork-original; it has had an upstream counterpart all along.** Fork delta: shortened description + a fork-added Visual Verification section. v6.2.0: **adopted** all hunks — overview trim, Why-This-Matters and Bottom Line removal |
+| skills/verification-before-completion | patched | obra/superpowers | MIT | **Reclassified at v6.2.0 — previously (wrongly) listed as fork-original; it has had an upstream counterpart all along.** Fork delta: shortened description + a fork-added Visual Verification section. v6.2.0: **adopted** all hunks — overview trim, Why-This-Matters and Bottom Line removal. 2026-08-14: two-line pointer to `scripted-browser-verification` added *inside* the fork-added Visual Verification section (the rule itself lives in that fork-original skill, not here — see `docs/decisions/scripted-browser-verification-skill.md`) |
 | skills/dispatching-parallel-agents | patched | obra/superpowers | MIT | **Reclassified 2026-08-09 (was vendored through v6.2.0).** Fork appended two sections after upstream's Integration block: "Delivering Parallel Work (the bead-crunch pattern)" — one worktree/branch per independent item, per-branch review to clean, accumulate rather than deliver one-at-a-time, then ONE `branch-shepherd` dispatch with the full train — and "Choosing between this and subagent-driven-development" (deciding axis is dependency structure, not task count). Upstream's body above that point is unmodified, so upstream hunks diff-merge cleanly; keep the fork sections at the tail |
 | skills/requesting-code-review | patched | obra/superpowers | MIT | **followed upstream** to general-purpose dispatch + improved template (incl. Read-Only Review guard); only fork adaptation is the `docs/plans/` example path. v6.2.0: **adopted** both hunks — intro trim and Integration-with-Workflows → Common Rationalizations. v6.3.0: **adopted** code-reviewer.md's "You Do Not Dispatch Subagents" section verbatim |
 
@@ -81,7 +81,8 @@ security wins.**
 
 ## Fork-original skills (no upstream counterpart)
 
-`readme-sync`, `record-decision`, `security-review`, `writing-agents` — fork additions; no
+`readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`,
+`writing-agents` — fork additions; no
 upstream file to diff against. 2026-08-08: `record-decision` had hardcoded "Joe" references;
 replaced with upstream's "your human partner" convention (already used throughout the rest of
 the plugin) so the personalization doesn't leak into a redistributable skill. 2026-08-08:
@@ -90,6 +91,13 @@ finishing-a-development-branch Step 1.5) gained a "Working Directory Safety" cla
 `git checkout`/`switch`/`pull`/`fetch`/`merge` — observed a dispatched reviewer subagent run
 `git checkout main && git pull` in the shared working directory mid-session, moving HEAD off the
 branch the main session had checked out. See `docs/decisions/security-reviewer-shared-worktree-safety.md`.
+2026-08-14: added `scripted-browser-verification` (SKILL.md + reusable `verify.js` template) —
+browser verification is ONE Playwright script run via Bash, assertions in code, compact pass/fail
+output plus screenshot paths only, headless, viewports from project config. Deliberately a new
+fork-original skill rather than a section in the **patched** `verification-before-completion`, which
+gained only a two-line pointer inside its existing fork-added Visual Verification section (keeps the
+upstream hand-merge surface flat and gives `verify.js` a home). See
+`docs/decisions/scripted-browser-verification-skill.md`.
 
 ## Vendored skills (== upstream head; take head each sync)
 

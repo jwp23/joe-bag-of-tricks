@@ -51,6 +51,9 @@ BEFORE claiming UI work is complete:
    - If YES: State claim WITH the screenshot as evidence
 ```
 
+For a web UI, step 2-3 are a single scripted Playwright run — see scripted-browser-verification.
+Never step through interactive browser tool calls.
+
 **When to apply:** Any change to canvas drawing, overlay rendering, layout calculations, coordinate transformations, widget styling, or visual state transitions.
 
 **Not needed for:** Pure logic changes, backend code, test-only changes, documentation.
