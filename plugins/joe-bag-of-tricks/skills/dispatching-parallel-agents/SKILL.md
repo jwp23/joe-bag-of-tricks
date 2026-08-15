@@ -212,7 +212,7 @@ less shared context, no sequential review to catch a disagreement early. When ag
 do not settle it yourself in prose. You cannot reliably see what you are missing, and running
 on a top-tier model does not change that.
 
-The escalation triggers and the adjudicator's dispatch contract are stated once, in
+The escalation triggers and the orchestrator-side dispatch instructions are stated once, in
 /joe-bag-of-tricks:subagent-driven-development under **Escalation** — read them there. They
 apply unchanged to this path, except trigger 3, whose bound is counted differently: here it
 fires when **the same gate fails twice on one branch after a fix aimed at it**. The gates are

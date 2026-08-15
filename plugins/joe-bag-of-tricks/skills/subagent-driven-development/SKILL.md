@@ -79,7 +79,7 @@ digraph process {
         "Dispatch scoped re-review\n(./re-review-prompt.md)" [shape=box];
         "All findings addressed?" [shape=diamond];
         "R = 5?" [shape=diamond];
-        "Adjudicate each open finding" [shape=box];
+        "Dispatch adjudicator: all open\nfindings as one question packet" [shape=box];
         "Any load-bearing finding?" [shape=diamond];
         "Rule and continue; stop only if\nevery path forward is a guess" [shape=box];
         "Park findings on the task bead\nwith rulings (bd note)" [shape=box];
@@ -118,8 +118,8 @@ digraph process {
     "All findings addressed?" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" [label="yes"];
     "All findings addressed?" -> "R = 5?" [label="no"];
     "R = 5?" -> "Fix round R of 5: R<=3 resume implementer;\nR>=4 fresh implementer, next agent tier up" [label="no - next round"];
-    "R = 5?" -> "Adjudicate each open finding" [label="yes - breaker trips"];
-    "Adjudicate each open finding" -> "Any load-bearing finding?";
+    "R = 5?" -> "Dispatch adjudicator: all open\nfindings as one question packet" [label="yes - breaker trips"];
+    "Dispatch adjudicator: all open\nfindings as one question packet" -> "Any load-bearing finding?";
     "Any load-bearing finding?" -> "Rule and continue; stop only if\nevery path forward is a guess" [label="yes"];
     "Any load-bearing finding?" -> "Park findings on the task bead\nwith rulings (bd note)" [label="no"];
     "Park findings on the task bead\nwith rulings (bd note)" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"";
@@ -251,10 +251,11 @@ fires, each detectable by counting or comparing:
 | 3 | The fix-loop breaker trips — round 5 with findings still open |
 | 4 | A Critical finding touches data loss, security, or user files |
 
-**Name the governing decisions up front.** Trigger 2 is checked against a list you state in
-the task brief: the task's own design, plus whichever recorded decisions bear on the work.
-Decisions recorded during the run join the list as they are written. Checking against every
-doc in the project instead is a scan you will silently skip, which defeats the trigger.
+**Name the governing decisions up front.** Trigger 2 is checked against a list you name in
+every dispatch you compose — the brief is generated from bd and cannot carry it: the task's
+own design, plus whichever recorded decisions bear on the work. Decisions recorded during the
+run join the list as they are written. Checking against every doc in the project instead is a
+scan you will silently skip, which defeats the trigger.
 
 When several triggers fire at once, that is still ONE dispatch — one question packet naming
 every fired trigger. Dispatch `joe-bag-of-tricks:adjudicator`, passing the artifact file
@@ -399,7 +400,9 @@ needed.
   relationships between components ("same layout as X", "matches Y"). The
   reviewer's template already carries the process rules (YAGNI, test
   hygiene, review method) — the constraints block is for what THIS
-  project's spec demands.
+  project's spec demands. Name the governing-decision paths in that block
+  and ask for any conflict with them: the reviewer is what performs
+  trigger 2's comparison.
 - Do not add open-ended directives like "check all uses" or "run race tests
   if useful" without a concrete, task-specific reason
 - Do not ask a reviewer to re-run tests the implementer already ran on the
@@ -488,8 +491,9 @@ Never fix findings yourself in the controller session — your context stays
 clean for coordination, and controller fixes skip review.
 
 **The breaker.** When round 5's re-review still leaves findings open, stop
-dispatching. Adjudicate each open finding yourself — you hold the plan and
-the cross-task context the reviewer lacks:
+dispatching fixes. Trigger 3 has fired: dispatch the adjudicator once with
+every open finding as one question packet (see Escalation). You route each
+ruling it returns — you hold the plan and the cross-task context it lacks:
 
 - **The reviewer is wrong, or the point is contestable:** park it —
   `bd note <task-id> "Parked: <finding> — Ruling: <why the code stands>"`.
@@ -503,8 +507,8 @@ the cross-task context the reviewer lacks:
   failure silently lets every dependent task build on it. Stop only when the
   defect leaves every path forward a guess.
 
-Adjudicate only at the cap. Adjudicating earlier to end a loop is
-pre-judging with a different name. Every adjudication is a `bd note` — a
+Escalate only at the cap. Escalating earlier to end a loop is
+pre-judging with a different name. Every ruling is a `bd note` — a
 silent discard is forbidden.
 
 ### 5. Complete the task

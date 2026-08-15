@@ -7,23 +7,27 @@
   tier. `subagent-driven-development`'s framing of the mechanism as "how a MID-TIER controller
   rules without stalling" is removed.
 - **The adjudicator becomes a fork-original agent**, `agents/adjudicator.md`, pinning
-  `model: fable`. The agent definition is the single statement of the dispatch contract —
-  clean context, the artifact file paths, one narrow question naming every fired trigger, and
-  a ruling recorded as a `bd note`. Both skills dispatch it by name and neither restates it.
+  `model: fable`. The contract splits by side. The agent definition states the agent-side
+  half — what it reads, the RULING / WHY / COST IF WRONG shape it returns, and its bounds.
+  The skills state the orchestrator-side half — clean context, the artifact and decision
+  paths, one narrow question naming every fired trigger, and the ruling recorded as a
+  `bd note`. Both skills dispatch the agent by name; neither side restates the other.
 - **One shared trigger set, not one per skill.** The four triggers are path-independent.
   `subagent-driven-development` states them; `dispatching-parallel-agents` cross-references
   that statement by namespace, as it already does for SDD's Task Loop. They live in the skills
   rather than in the agent definition because the orchestrator never reads an agent's body —
   it sees only the roster's name, description, and tool list, so triggers placed in the agent
-  would be invisible to the party that fires them. The agent definition carries the dispatch
+  would be invisible to the party that fires them. The agent definition carries the agent-side
   contract, which is the subagent's own operating instruction. Only the fix-loop bound in
   trigger 3 is counted per path — SDD counts fix rounds, the parallel path counts repeated gate failures on
   one branch — so each skill states its own count and nothing else.
 - **Trigger 2 is bounded by a named list.** "An agent's output conflicts with a governing
   decision" is checked against the decision docs the orchestrator names up front in the batch
-  setup or task brief, plus any recorded during the run — not against all of `docs/adr/` and
-  `docs/decisions/`. The adjudicator dispatch carries those paths so it reads the decision
-  itself rather than the orchestrator's paraphrase.
+  setup or in each dispatch it composes, plus any recorded during the run — not against all of
+  `docs/adr/` and `docs/decisions/`. The same list goes into the task reviewer's
+  global-constraints block, which is what performs the comparison. The adjudicator dispatch
+  carries those paths so it reads the decision itself rather than the orchestrator's
+  paraphrase.
 - **Scope is the two orchestration skills.** `executing-plans` and the shepherding agents are
   out of scope; they do not fan out independent work and produce no cross-agent conflicts.
 - **Extends the joe-bag-of-tricks-p5x ruling.** That ruling gave agent definitions to
@@ -65,7 +69,7 @@
   detected by counting or by comparing two reports; this one asks whether work violates a
   recorded decision, which a model can silently fail to notice — the same self-assessment
   failure the triggers exist to avoid. Naming the governing decisions up front moves that
-  judgment to batch setup, where it is made once, in the open, and is visible in the brief.
+  judgment to batch setup, where it is made once, in the open, and is visible in the dispatch.
   A decision nobody thought to name can still be violated silently; that hole is accepted, not
   closed. It is kept despite the weakness because the catch is high-value: an agent adding
   backward compatibility, or editing an upstream `replaced` file to express a divergent

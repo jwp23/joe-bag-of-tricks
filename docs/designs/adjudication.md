@@ -17,13 +17,14 @@ orchestrator can detect by counting or comparing, never on self-assessed difficu
 
 ## The Adjudicator
 
-`agents/adjudicator.md` pins `model: fable` and states the dispatch contract once. Both
-orchestration skills dispatch it by name; neither restates what it does.
+`agents/adjudicator.md` pins `model: fable` and states the agent-side contract once — what it
+reads, what it returns, its bounds. Both orchestration skills dispatch it by name and hold the
+orchestrator-side half; neither restates what it does.
 
-The agent definition carries the contract, not the triggers. An agent's body becomes the
-subagent's system prompt, and the orchestrator sees only the name, description, and tool list
-from the agent roster — so triggers placed there would be invisible to the one party that has
-to fire them. Triggers live in the skills the orchestrator reads.
+The agent definition carries the agent-side contract, not the triggers. An agent's body
+becomes the subagent's system prompt, and the orchestrator sees only the name, description,
+and tool list from the agent roster — so triggers placed there would be invisible to the one
+party that has to fire them. Triggers live in the skills the orchestrator reads.
 
 **Inputs.** The artifact file paths — brief, report, review, and the governing decision docs —
 plus one narrow question naming every trigger that fired.
@@ -64,10 +65,12 @@ what the path loops over, so each skill states its own bound and nothing else:
 
 ### Naming the governing decisions
 
-Trigger 2 checks against a list the orchestrator names up front, in the batch setup or the task
-brief: the task's own design, plus whichever recorded decisions bear on the work. Decisions
-recorded during the run join the list as they are written. The adjudicator receives those paths
-and reads the decision itself, rather than the orchestrator's paraphrase of it.
+Trigger 2 checks against a list the orchestrator names up front, in the batch setup or in every
+dispatch it composes: the task's own design, plus whichever recorded decisions bear on the
+work. Decisions recorded during the run join the list as they are written. The list also goes
+into the task reviewer's global-constraints block, which is what performs the comparison. The
+adjudicator receives those paths and reads the decision itself, rather than the orchestrator's
+paraphrase of it.
 
 Bounding the list this way keeps the check mechanical. Comparing every report against all of
 `docs/adr/` and `docs/decisions/` would be a scan the orchestrator could silently skip, which
