@@ -141,3 +141,5 @@ Licensed under the [MIT License](LICENSE).
 Thirteen of the twenty-one skills are adapted from the [Superpowers](https://github.com/obra/superpowers) project by Jesse Vincent (MIT-licensed): `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
 
 The remaining skills (`implementer-contract`, `readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`, `using-skills`, `ux-audit`, `writing-agents`) and all six agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
+
+See [NOTICE](NOTICE) for the full upstream attribution and [docs/licensing.md](docs/licensing.md) for the licensing policy.
