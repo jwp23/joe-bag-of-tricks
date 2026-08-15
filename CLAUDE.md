@@ -69,8 +69,8 @@ No TDD and no behavioral evals — deferred by docs/adr/006-defer-behavioral-eva
   rejects it. Divergence ordering and `--tier diverged` need docs/customizations.md, which covers
   joe-bag-of-tricks only; elsewhere order is alphabetical and that tier is refused.
 - `.claude/scripts/check-context-budget.sh` — hard fail when the always-loaded surface (skill
-  descriptions + the SessionStart injection) exceeds the committed token budget. Cheap; run it
-  every time. SKILL.md bodies are reported, not gated.
+  descriptions + agent roster lines + the SessionStart injection) exceeds the committed token
+  budget. Cheap; run it every time. SKILL.md bodies are reported, not gated.
 - `plugins/joe-magic-bootstrap` has its own, identical validation gate:
   `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root, plus
   `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-bootstrap`.
