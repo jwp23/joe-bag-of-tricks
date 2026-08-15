@@ -67,7 +67,9 @@ fork does not support those harnesses and the manifest should be true.
 net −1,194 tokens on disk — of which only the 193 recur per session.
 
 `BUDGET` in `check-context-budget.sh` drops 4100 → 3900. That preserves the original ~20%
-headroom rule over the new 3,223 surface (677 tokens spare) while still absorbing the ~50-token
-description of the skill an in-flight branch adds, plus a dozen more after it. The budget tracks
-the measured surface; it is not shaved to the bone and not left slack enough to hide a
-regression.
+headroom rule over the new 3,223 surface, leaving 677 tokens spare. Three in-flight branches each
+add a skill, and their listed descriptions measure 106 (`implementer-contract`), 63
+(`scripted-browser-verification`) and 79 (`ux-audit`) — 248 tokens, landing the surface at ~3,471
+with ~429 to spare. At this repo's ~76-token average listed description that remaining headroom is
+about five more skills, not a dozen. The budget tracks the measured surface; it is not shaved to
+the bone and not left slack enough to hide a regression.
