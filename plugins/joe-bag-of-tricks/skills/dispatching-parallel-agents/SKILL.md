@@ -205,6 +205,31 @@ batch, and within each batch item, subagent-driven-development's task-brief/impl
 loop still governs how that one item gets built — parallelism picks the branch layout, SDD
 still governs the work inside each branch.
 
+### Escalating a hard call
+
+Parallel dispatch produces the most cross-agent conflict of any workflow here — more agents,
+less shared context, no sequential review to catch a disagreement early. When agents disagree,
+do not settle it yourself in prose. You cannot reliably see what you are missing, and running
+on a top-tier model does not change that.
+
+The escalation triggers and the orchestrator-side dispatch instructions are stated once, in
+/joe-bag-of-tricks:subagent-driven-development under **Escalation** — read them there. They
+apply unchanged to this path, except trigger 3, whose bound is counted differently: here it
+fires when **the same gate fails twice on one branch after a fix aimed at it**. The gates are
+whatever the project commits to — for this repo, `claude plugin validate`,
+`verify-skills-load.sh`, `check-context-budget.sh`, and CI.
+
+Name the governing decisions at batch setup rather than per task, and carry the list into
+every branch's dispatch. A batch touching one subsystem usually shares one list.
+
+Dispatch `joe-bag-of-tricks:adjudicator` and record its ruling as a `bd note`
+(`Ruling: <what> — <why> — <cost if wrong>`), the same as the SDD path. In a bead crunch the
+roll-up at the end is the only place your human partner sees these, so an unrecorded ruling is
+an invisible one.
+
+Branch-vs-branch conflicts are NOT an escalation trigger — `branch-shepherd` reconciles those
+during delivery.
+
 ## Integration
 
 **Pairs with:**
@@ -218,3 +243,5 @@ still governs the work inside each branch.
 **Dispatches:**
 - **branch-shepherd** agent (sonnet) - Delivers the accumulated train of review-clean
   branches unattended (Delivering Parallel Work)
+- **adjudicator** agent (fable) - One-shot ruling when an escalation trigger fires
+  (Escalating a hard call)

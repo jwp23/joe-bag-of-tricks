@@ -49,6 +49,7 @@ Two plugins.
 | `implementer-mechanical` | haiku | low | Executes a single, fully-specified SDD task — transcription-grade work where the plan already contains the code to write |
 | `implementer` | sonnet | medium | Implements a single SDD task — the default tier for ordinary multi-file integration work |
 | `implementer-complex` | opus | high | Implements an SDD task that needs design judgment or broad context; also the fix-loop escalation target |
+| `adjudicator` | fable | high | Rules on one escalated question from an orchestrator — contradictory reports, a governing-decision conflict, an exhausted fix loop, a Critical finding — and edits nothing |
 
 `joe-magic-bootstrap` — interactively generates a project's CLAUDE.md + `.claude/` structure (one skill, `project`).
 
@@ -76,7 +77,7 @@ joe-bag-of-tricks/
     │   ├── .claude-plugin/
     │   │   └── plugin.json       # plugin manifest (semver version)
     │   ├── skills/               # 21 skills
-    │   └── agents/               # 6 agents
+    │   └── agents/               # 7 agents
     └── joe-magic-bootstrap/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)

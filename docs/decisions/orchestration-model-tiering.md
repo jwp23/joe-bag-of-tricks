@@ -1,5 +1,9 @@
 # Orchestration Model Tiering: Opus Controller, Fable Adjudicator, Opus-Capped Implementers
 
+> Amended 2026-08-14 by [adjudicator-as-shared-agent](adjudicator-as-shared-agent.md):
+> escalation is tier-independent and covers the parallel-dispatch path. The tiering rulings
+> below stand.
+
 ## Decision
 
 - **Implementer roster tops out at opus.** The `implementer-mechanical` (haiku) /
@@ -10,13 +14,12 @@
   mid-tier work; running it on the top tier mostly buys more expensive
   bookkeeping.
 - **Fable is the adjudicator tier.** The occasional controller-level decisions
-  that benefit from top-tier reasoning are exactly the ones the SDD skill routes
-  to the one-shot adjudicator on structural triggers (fix-loop breaker,
-  finding-vs-design conflict, implementer/reviewer factual contradiction,
-  Critical finding touching data loss/security/user files). Those dispatches pin
-  Fable. The skill's "`model: "opus"` or above if available" phrasing becomes an
-  explicit Fable pin when joe-bag-of-tricks-p5x converts dispatches to agent
-  types.
+  that benefit from top-tier reasoning are exactly the ones `subagent-driven-development`
+  and `dispatching-parallel-agents` route to the one-shot adjudicator on structural triggers
+  (factual contradiction between agents, an agent's output conflicting with a named governing
+  decision, the fix-loop breaker tripping, a Critical finding touching data loss/security/user
+  files). Those dispatches pin Fable. The skill's old "`model: "opus"` or above if available"
+  phrasing is now an explicit Fable pin: `agents/adjudicator.md`.
 - **Fable also owns the design-side phases**: brainstorming, roadmap discussion,
   and plan authoring against real code — a subtly wrong plan costs more
   downstream than top-tier reasoning costs upfront.
@@ -28,12 +31,12 @@
   territory, while Fable earned its cost exactly at the judgment calls — design
   catches during plan authoring and adjudication rulings (e.g. the strip-on-open
   render bug caught at plan time, the fingerprint-scope finding ruling).
-- Escalation is a **dispatch, never a model switch**: an autonomous opus
-  controller fires a one-shot Fable adjudicator with clean context, the artifact
-  file paths, and one narrow question — on structural triggers only, because
-  "this feels hard" is precisely the judgment a mid-tier model cannot make about
-  itself. Rulings land as `bd note`s so Joe can audit every judgment call after
-  a run.
+- Escalation is a **dispatch, never a model switch**: an autonomous controller
+  fires a one-shot Fable adjudicator with clean context, the artifact
+  file paths, and one narrow question — on structural triggers only, because a
+  model cannot reliably see what it is missing, a property of models, not of
+  tiers, so "this feels hard" is never a trigger even on the top tier. Rulings
+  land as `bd note`s so Joe can audit every judgment call after a run.
 - Structural triggers keep Fable dispatches rare and well-scoped. Extending the
   implementer ladder to Fable would instead make it the default escalation for
   every stuck task, defeating the tiering. Opus implementers sufficed in
