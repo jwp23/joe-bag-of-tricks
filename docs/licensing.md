@@ -10,6 +10,7 @@ hygiene is non-negotiable.
 - Record source + license for every vendored/patched/replaced file in `customizations.md`.
 
 ## Attribution discipline (public repo)
-- Keep upstream `LICENSE` files; add a top-level `NOTICE` crediting obra/superpowers (MIT) and
-  any other upstreams.
+- Keep upstream `LICENSE` files; the top-level [`NOTICE`](../NOTICE) credits obra/superpowers
+  (MIT) and any other upstreams — keep it in sync with `docs/customizations.md` as upstreams are
+  added or dropped.
 - Do not strip authorship headers from vendored or patched files.
