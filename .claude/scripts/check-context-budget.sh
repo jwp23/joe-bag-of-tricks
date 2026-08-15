@@ -31,11 +31,11 @@ NAMESPACE="joe-bag-of-tricks"
 MODEL="claude-opus-5"
 
 # Committed budget for tiers 1+2, in claude-opus-5 tokens. Set from the measured
-# surface at the time it was committed — 1,284 descriptions + 2,132 hook = 3,416
+# surface at the time it was committed — 1,284 descriptions + 1,939 hook = 3,223
 # — plus ~20% headroom, which is room for two or three more skills before anyone
 # has to think about it. Raising this is a decision, not a formality: every token
 # here is paid on every session, before the user has said anything.
-BUDGET=4100
+BUDGET=3900
 
 usage() {
     sed -n '2,21p' "$0" | sed 's/^# \?//'
