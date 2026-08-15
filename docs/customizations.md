@@ -82,7 +82,12 @@ security wins.**
 ## Fork-original skills (no upstream counterpart)
 
 `readme-sync`, `record-decision`, `security-review`, `writing-agents` — fork additions; no
-upstream file to diff against. 2026-08-08: `record-decision` had hardcoded "Joe" references;
+upstream file to diff against. 2026-08-14: `record-decision`'s description was replaced with the
+winner of a skill-creator description-optimization run (held-out test 4/6 → 5/6; see
+`docs/skill-description-optimization.md` for the run record and
+`docs/decisions/skill-description-eval-loop.md` for the workflow). Fork-original skills are the
+preferred targets for that loop precisely because a rewritten description here adds no upstream
+merge surface. 2026-08-08: `record-decision` had hardcoded "Joe" references;
 replaced with upstream's "your human partner" convention (already used throughout the rest of
 the plugin) so the personalization doesn't leak into a redistributable skill. 2026-08-08:
 `security-review/security-reviewer.md` (the subagent-dispatch prompt used by

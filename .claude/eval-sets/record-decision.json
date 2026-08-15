@@ -1,0 +1,21 @@
+[
+  { "query": "We're going with Postgres instead of SQLite for this service. That's settled.", "should_trigger": true },
+  { "query": "I've decided we'll use pnpm rather than npm across all of our repos from now on.", "should_trigger": true },
+  { "query": "Let's standardize on kebab-case for every new source file in this project.", "should_trigger": true },
+  { "query": "We talked it through and picked Redis for the job queue. Write that down somewhere so we don't relitigate it in three months.", "should_trigger": true },
+  { "query": "Why did we end up choosing REST instead of gRPC for the internal API? There's no explanation anywhere in the repo.", "should_trigger": true },
+  { "query": "We're accepting slower cold starts in exchange for a much smaller bundle. That's the trade-off we've agreed on.", "should_trigger": true },
+  { "query": "Should this go in an ADR or in a lighter-weight decision doc?", "should_trigger": true },
+  { "query": "Before I implement any of this, capture the reasoning behind dropping the caching layer entirely.", "should_trigger": true },
+  { "query": "We settled on Vitest over Jest as the test runner. Make sure whoever picks this up next knows why.", "should_trigger": true },
+
+  { "query": "Rename the variable `tmp` to `parsedConfig` in src/loader.ts.", "should_trigger": false },
+  { "query": "The build fails with \"cannot find module ./utils\". Figure out why and fix it.", "should_trigger": false },
+  { "query": "Write a unit test for the slugify function in src/utils.js.", "should_trigger": false },
+  { "query": "What's the difference between a mutex and a semaphore?", "should_trigger": false },
+  { "query": "Reformat config.json so it's indented with two spaces and commit it.", "should_trigger": false },
+  { "query": "Should I use a for loop or map here? Just pick whichever and move on.", "should_trigger": false },
+  { "query": "CONTRIBUTING.md already says we squash-merge, so squash this branch when you land it.", "should_trigger": false },
+  { "query": "We already have an ADR saying we use Postgres. Wire the new service up to it.", "should_trigger": false },
+  { "query": "Which of these two error message wordings reads better to you?", "should_trigger": false }
+]

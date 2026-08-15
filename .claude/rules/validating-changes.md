@@ -30,6 +30,15 @@ and reports which skill fired. **Always exits 0 by design.** Measured 1/2 hit ra
 prompts for some skills, so it is a signal to go read a description, never a pass/fail. Run it
 where description drift is the real risk: after a sync.
 
+## On Demand: Description Triggering (NOT a gate)
+`.claude/scripts/optimize-skill-description.sh <skill>` drives Anthropic's installed
+`skill-creator` eval loop — train/test split, three runs per query, description rewritten from
+train failures, winner picked by held-out test score. **Nothing blocks on it**; it is a deep tool
+for when a skill loads but fires on the wrong prompts. ~$6 and ~3 minutes for 18 queries x 3 runs
+x 3 iterations, and spend is not locally measurable. Apply a new description ONLY if it beats the
+current one on the held-out test score. Full procedure, eval-set conventions, model choice, and
+the Claude-Code compatibility shim: `docs/skill-description-optimization.md`.
+
 ## When Editing or Creating a Skill
 Follow the `/joe-bag-of-tricks:writing-skills` skill — it carries the skill-testing method.
 
