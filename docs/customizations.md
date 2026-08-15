@@ -86,8 +86,16 @@ security wins.**
 2026-08-14: `implementer-contract` is the single source for the SDD implementer contract,
 preloaded into the three implementer agents via their `skills:` frontmatter rather than invoked
 by a human or the model — it is a context payload, not a workflow skill. It deliberately carries
-no `disable-model-invocation`, which would break the preload. 2026-08-08: `record-decision` had
-hardcoded "Joe" references;
+no `disable-model-invocation`, which would break the preload. 2026-08-14: `record-decision`'s
+description was put through a skill-creator description-optimization run and the candidate was
+**not adopted** — the shipped description is unchanged. The candidate gained one held-out query
+(4/6 → 5/6) from a single split of a single run, inside the triggering variance
+`docs/adr/006-defer-behavioral-evals.md` documents, and it violated `writing-skills/SKILL.md`
+L217-235 by putting workflow instructions in the description. Fork-original skills remain the
+preferred targets for that loop, because a rewritten description here adds no upstream merge
+surface; see `docs/skill-description-optimization.md` for the run record and
+`docs/decisions/skill-description-eval-loop.md` for the workflow. 2026-08-08: `record-decision`
+had hardcoded "Joe" references;
 replaced with upstream's "your human partner" convention (already used throughout the rest of
 the plugin) so the personalization doesn't leak into a redistributable skill. 2026-08-08:
 `security-review/security-reviewer.md` (the subagent-dispatch prompt used by
@@ -111,6 +119,20 @@ existing `verify.js` — deliberately NOT a second harness and NOT a section of
 `scripted-browser-verification`, which it names as REQUIRED BACKGROUND and whose rule/output
 contract it inherits. The skill states which checks are mechanical assertions and which are agent
 judgment over captured evidence. See `docs/decisions/ux-audit-skill.md`.
+
+## Derived from a non-superpowers upstream
+
+`.claude/scripts/skill-eval-shim/sitecustomize.py` — **derived**, authoring-only, never shipped in
+either plugin. Roughly eight lines reproduce the probe-file construction and the
+`<skill>-skill-<id>` naming of `run_single_query` in
+**`anthropics/skills` → `skills/skill-creator/scripts/run_eval.py`**, licensed **Apache-2.0** per
+`skills/skill-creator/LICENSE.txt`. Not a convenience copy: the shim's probe must carry a
+byte-identical description to upstream's for the eval to measure the same thing, and it must
+predict the probe name upstream will pick. Attribution is carried in the file's docstring.
+Nothing else of skill-creator is copied, and nothing under `~/.claude/plugins/` is modified. This
+is not an upstream-sync file — skill-creator is installed tooling, not vendored source, so it has
+no `vendored`/`patched`/`replaced` state and no sync obligation. Delete the shim when
+skill-creator registers its probe as a skill. See `docs/decisions/skill-description-eval-loop.md`.
 
 ## Vendored skills (== upstream head; take head each sync)
 

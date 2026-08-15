@@ -126,6 +126,8 @@ first. Load the full context before making changes.
 - docs/architecture.md — Read when unsure where a component belongs (root vs .claude/).
 - docs/licensing.md — Read before vendoring from any upstream. Compatibility rules and the
   attribution/NOTICE discipline for a public repo.
+- docs/skill-description-optimization.md — Read when a skill loads but triggers on the wrong
+  prompts. On-demand skill-creator eval loop; not a gate. Cost model and eval-set conventions.
 
 ## Project Structure
 Plugin layout and the root-vs-.claude/ split: see docs/architecture.md.
