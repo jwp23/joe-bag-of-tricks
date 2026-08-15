@@ -2,19 +2,20 @@
 # Context-budget gate: measures the plugin surface that is loaded into EVERY
 # session and fails when it exceeds the committed budget.
 #
-# Three tiers, measured separately because only the first two are the recurring
+# Four tiers, measured separately because only the first three are the recurring
 # per-session tax:
 #   1. descriptions — the skill descriptions in the available-skills list
-#   2. hook         — what the SessionStart hook injects (using-skills, verbatim)
-#   3. bodies       — every SKILL.md body, loaded on demand only
+#   2. agents       — the plugin's lines in the Agent tool's roster
+#   3. hook         — what the SessionStart hook injects (using-skills, verbatim)
+#   4. bodies       — every SKILL.md body, loaded on demand only
 #
-# Tiers 1+2 are gated. Tier 3 is reported for information and never fails.
+# Tiers 1-3 are gated. Tier 4 is reported for information and never fails.
 #
 # Counting runs through count-tokens.py (the Anthropic count_tokens endpoint).
 # Counts are model-specific; chars/4 and tiktoken are OpenAI heuristics and
 # undercount Claude markdown, so they are never acceptable here.
 #
-# Cost: three count_tokens calls. The endpoint is not billed as inference.
+# Cost: four count_tokens calls. The endpoint is not billed as inference.
 #
 # Usage:
 #   .claude/scripts/check-context-budget.sh
@@ -26,19 +27,25 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 PLUGIN_DIR="${REPO_ROOT}/plugins/joe-bag-of-tricks"
 SKILLS_DIR="${PLUGIN_DIR}/skills"
+AGENTS_DIR="${PLUGIN_DIR}/agents"
 NAMESPACE="joe-bag-of-tricks"
 
 MODEL="claude-opus-5"
 
-# Committed budget for tiers 1+2, in claude-opus-5 tokens. Set from the measured
-# surface at the time it was committed — 1,284 descriptions + 1,939 hook = 3,223
+# Committed budget for tiers 1-3, in claude-opus-5 tokens. First set at 3,900
+# from the measured surface at the time — 1,284 descriptions + 1,939 hook = 3,223
 # — plus ~20% headroom, which is room for two or three more skills before anyone
 # has to think about it. Raising this is a decision, not a formality: every token
 # here is paid on every session, before the user has said anything.
-BUDGET=3900
+#
+# Raised to 4,771 when the agents tier was added: 3,900 + the 871 tokens the
+# seven agent roster lines were already costing every session unmeasured. That
+# recognises surface that existed before the tier did, so headroom is unchanged
+# at 423 — it does not buy room for anything new.
+BUDGET=4771
 
 usage() {
-    sed -n '2,21p' "$0" | sed 's/^# \?//'
+    sed -n '2,22p' "$0" | sed 's/^# \?//'
     exit "${1:-0}"
 }
 
@@ -68,21 +75,25 @@ fi
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-# The description as the available-skills list renders it: single-line YAML,
+# One frontmatter scalar as the injected listings render it: single-line YAML,
 # optionally double-quoted, read from the frontmatter block only.
-description_for() {
-    local file="$1" line
-    line="$(awk '
+#
+# Returns 2 when the key is absent — the caller decides whether that is an error
+# — and 1 when the key is there but its value is not a single-line scalar. A
+# folded or block scalar (`description: >-`), or a nested list, leaves nothing
+# usable on the key's line; measuring that as empty would silently under-report
+# the entry's entire per-session cost, so refuse to measure it at all.
+frontmatter_scalar() {
+    local file="$1" key="$2" line status
+    line="$(awk -v key="$key" '
         NR == 1 && $0 !~ /^---/ { exit }
         NR == 1 { next }
         /^---/ { exit }
-        /^description:[[:space:]]/ { sub(/^description:[[:space:]]*/, ""); print; exit }
-    ' "$file")"
-    # A folded or block scalar (`description: >-`) leaves nothing usable on the
-    # `description:` line. Measuring that as empty would silently under-report
-    # the skill's entire per-session cost, so refuse to measure it at all.
+        $0 ~ "^" key ":([[:space:]]|$)" { found = 1; sub(/^[^:]*:[[:space:]]*/, ""); print; exit }
+        END { if (!found) exit 2 }
+    ' "$file")" && status=0 || status=$?
+    [[ "$status" -eq 0 ]] || return "$status"
     if [[ -z "$line" || "$line" =~ ^[\>\|][0-9]*[-+]?$ ]]; then
-        echo "no single-line description scalar in ${file}" >&2
         return 1
     fi
     if [[ "$line" == \"*\" ]]; then
@@ -94,6 +105,40 @@ description_for() {
     printf '%s' "$line"
 }
 
+# The roster's parenthesised tool phrase. An agent with no `tools:` key inherits
+# every tool and the roster says so. `disallowedTools` renders differently again
+# ("All tools except …", and a set difference when combined with `tools:`); no
+# agent here uses it, so it is refused rather than modelled wrong. A `tools:`
+# list is refused the same way, in either YAML spelling: block style leaves the
+# key's line empty, and flow style (`[Read, Grep]`, `[]`) is caught here.
+tools_for() {
+    local file="$1" tools status
+    frontmatter_scalar "$file" disallowedTools >/dev/null 2>&1 && status=0 || status=$?
+    if [[ "$status" -ne 2 ]]; then
+        echo "disallowedTools in ${file} is not modelled by this gate; extend tools_for" >&2
+        return 1
+    fi
+    tools="$(frontmatter_scalar "$file" tools)" && status=0 || status=$?
+    if [[ "$status" -eq 2 ]]; then
+        printf 'All tools'
+        return 0
+    elif [[ "$status" -ne 0 ]]; then
+        echo "no single-line tools scalar in ${file}" >&2
+        return 1
+    fi
+    if [[ "$tools" == \[* ]]; then
+        echo "flow-style tools list in ${file} is not modelled by this gate; extend tools_for" >&2
+        return 1
+    fi
+    # The harness parses the allowlist and re-joins it with ", ", so `Bash,Read`
+    # is injected as `Bash, Read`. Emitting the raw string would under-report,
+    # which is the one direction a budget gate must never round. Separators
+    # collapse to ", "; whitespace and commas dangling off either end, which the
+    # parse would discard, are trimmed rather than counted.
+    printf '%s' "$tools" \
+        | sed 's/[[:space:]]*,[[:space:]]*/, /g; s/^[[:space:],]*//; s/[[:space:],]*$//'
+}
+
 # Tier 1. A skill with `disable-model-invocation: true` is kept out of the
 # available-skills list on purpose, so its description costs nothing per session.
 listed=0
@@ -102,7 +147,8 @@ for dir in "${SKILLS_DIR}"/*/; do
     [[ -f "${dir}SKILL.md" ]] || continue
     cat "${dir}SKILL.md" >>"${WORK}/bodies.txt"
     grep -qE '^disable-model-invocation:[[:space:]]*true' "${dir}SKILL.md" && continue
-    description="$(description_for "${dir}SKILL.md")" || exit 1
+    description="$(frontmatter_scalar "${dir}SKILL.md" description)" \
+        || { echo "no single-line description scalar in ${dir}SKILL.md" >&2; exit 1; }
     printf -- '- %s:%s: %s\n' "$NAMESPACE" "$skill" "$description" \
         >>"${WORK}/descriptions.txt"
     listed=$((listed + 1))
@@ -110,7 +156,27 @@ done
 
 [[ -s "${WORK}/descriptions.txt" ]] || { echo "no skill descriptions found in ${SKILLS_DIR}" >&2; exit 1; }
 
-# Tier 2. Run the hook and decode what it actually injects, rather than
+# Tier 2. The Agent tool's roster, one line per agent, injected as a
+# <system-reminder> at the top of every session. The line format is the harness's
+# — `- <type>: <description> (Tools: <list>)`, namespaced for a plugin agent —
+# and only the plugin's own lines are counted: the header, the built-in agents,
+# and the concurrency note are there whether this plugin is installed or not.
+agent_count=0
+for file in "${AGENTS_DIR}"/*.md; do
+    [[ -f "$file" ]] || continue
+    name="$(frontmatter_scalar "$file" name)" \
+        || { echo "no single-line name scalar in ${file}" >&2; exit 1; }
+    description="$(frontmatter_scalar "$file" description)" \
+        || { echo "no single-line description scalar in ${file}" >&2; exit 1; }
+    tools="$(tools_for "$file")" || exit 1
+    printf -- '- %s:%s: %s (Tools: %s)\n' "$NAMESPACE" "$name" "$description" "$tools" \
+        >>"${WORK}/agents.txt"
+    agent_count=$((agent_count + 1))
+done
+
+[[ -s "${WORK}/agents.txt" ]] || { echo "no agent definitions found in ${AGENTS_DIR}" >&2; exit 1; }
+
+# Tier 3. Run the hook and decode what it actually injects, rather than
 # reassembling the wrapper text here and drifting from it.
 "${PLUGIN_DIR}/hooks/session-start" \
     | jq -r '.hookSpecificOutput.additionalContext' >"${WORK}/hook.txt"
@@ -119,19 +185,23 @@ done
 
 counts="$(jq -n \
     --rawfile descriptions "${WORK}/descriptions.txt" \
+    --rawfile agents "${WORK}/agents.txt" \
     --rawfile hook "${WORK}/hook.txt" \
     --rawfile bodies "${WORK}/bodies.txt" \
-    '{descriptions: $descriptions, hook: $hook, bodies: $bodies}' \
+    '{descriptions: $descriptions, agents: $agents, hook: $hook, bodies: $bodies}' \
     | "${SCRIPT_DIR}/count-tokens.py" "$MODEL")"
 
-read -r descriptions hook bodies < <(jq -r '"\(.descriptions) \(.hook) \(.bodies)"' <<<"$counts")
-always=$((descriptions + hook))
+read -r descriptions agents hook bodies \
+    < <(jq -r '"\(.descriptions) \(.agents) \(.hook) \(.bodies)"' <<<"$counts")
+always=$((descriptions + agents + hook))
 
 echo "Context budget for ${PLUGIN_DIR} (model=${MODEL})"
 echo
 printf '%-14s %-11s %8s  %s\n' "TIER" "WHEN" "TOKENS" "WHAT"
 printf '%-14s %-11s %8s  %s\n' "descriptions" "per-session" "$descriptions" \
     "${listed} skill descriptions in the available-skills list"
+printf '%-14s %-11s %8s  %s\n' "agents" "per-session" "$agents" \
+    "${agent_count} agent lines in the Agent tool's roster"
 printf '%-14s %-11s %8s  %s\n' "hook" "per-session" "$hook" \
     "SessionStart injection of ${NAMESPACE}:using-skills"
 printf '%-14s %-11s %8s  %s\n' "bodies" "on-demand" "$bodies" \
@@ -142,7 +212,7 @@ printf 'always-loaded total: %s / %s budget\n' "$always" "$BUDGET"
 if [[ "$always" -gt "$BUDGET" ]]; then
     echo
     echo "FAIL: always-loaded surface exceeds the budget by $((always - BUDGET)) token(s)."
-    echo "Shrink a description or the using-skills injection, or raise BUDGET in $0 deliberately."
+    echo "Shrink a skill or agent description or the using-skills injection, or raise BUDGET in $0 deliberately."
     exit 1
 fi
 

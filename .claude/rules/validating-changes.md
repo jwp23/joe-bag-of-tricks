@@ -32,12 +32,14 @@ skill still resolves, before committing.
   prompt — see `docs/adr/006-defer-behavioral-evals.md`. It is not an eval; don't call it one.
 - `.claude/scripts/check-context-budget.sh` — context-budget gate. Hard fail. Counts, via the
   Anthropic `count_tokens` endpoint at `claude-opus-5`, the surface loaded into **every**
-  session: skill descriptions in the available-skills list, plus what the SessionStart hook
-  injects. Fails when the two together exceed the `BUDGET` committed in the script — read the
-  current value and the measured surface from the script and its output, never from here, so
-  there is one source of truth to drift from. SKILL.md bodies are reported but not gated — they
-  load on demand. Not billed as inference, so unlike `verify-skills-load.sh` this one is cheap to run
-  every time. Raising `BUDGET` is a deliberate decision, not a way to make the gate pass.
+  session: skill descriptions in the available-skills list, the plugin's lines in the Agent
+  tool's roster, plus what the SessionStart hook injects. Fails when the three together exceed
+  the `BUDGET` committed in the script — read the current value and the measured surface from
+  the script and its output, never from here, so there is one source of truth to drift from.
+  SKILL.md bodies are reported but not gated — they load on demand. Not billed as inference, so
+  unlike `verify-skills-load.sh` this one is cheap to run every time. Raising `BUDGET` is a
+  deliberate decision, not a way to make the gate pass. A new agent spends gated budget exactly
+  as a new skill does; see `../../docs/decisions/agent-roster-in-the-context-budget.md`.
   NEVER estimate these counts with tiktoken or chars/4 — OpenAI tokenizers undercount Claude
   markdown. Needs the `anthropic` Python SDK and an `ant auth login` profile; a set (even empty)
   `ANTHROPIC_API_KEY` shadows that profile — check with `ant auth status`.

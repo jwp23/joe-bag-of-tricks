@@ -140,6 +140,9 @@ For each item, present the reasoning to the user and ask if they agree:
 - Write in third person
 - Include trigger phrases users would say
 - Keep under 500 characters
+- The name, description, and tool list are injected into **every** session as the Agent tool's
+  roster, so they are always-loaded surface. In the joe-bag-of-tricks repo they are gated:
+  `.claude/scripts/check-context-budget.sh` counts them, and a new agent has to fit the budget.
 
 **Prompt body (token efficiency):**
 - Reference existing docs instead of inlining large reference tables
