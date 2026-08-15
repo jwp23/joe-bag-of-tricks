@@ -3,10 +3,11 @@
 Use this template when dispatching an implementer subagent.
 
 ```
-Subagent (general-purpose):
+Subagent ([AGENT TYPE — REQUIRED: joe-bag-of-tricks:implementer-mechanical |
+          joe-bag-of-tricks:implementer | joe-bag-of-tricks:implementer-complex,
+          chosen per SKILL.md Model Selection]):
   description: "Implement Task N: [task name]"
-  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
-         model silently inherits the session's most expensive one]
+  # No model param — the agent definition pins its own model and reasoning effort.
   prompt: |
     You are implementing Task N: [task name]
 
