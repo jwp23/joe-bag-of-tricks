@@ -15,9 +15,11 @@
 #
 # Scope: skill DIRECTORIES, derived from docs/customizations.md — the `skills/`
 # table rows plus the catch-all ("skills not listed above are vendored"). Adding a
-# vendored skill needs no edit here. Individually-vendored FILES inside a `patched`
-# or `replaced` skill (named only in the manifest's narrative "Vendored skills"
-# prose, negations included) are out of scope and stay a hand check.
+# vendored skill needs no edit here. Individually-vendored FILES inside an otherwise
+# `patched`/`replaced` skill directory are covered too, via their own
+# `| skills/<name>/<path> | vendored |` row in the manifest's "Individually-vendored
+# files" table — give the file a row and it's checked, independent of the
+# containing directory's own state.
 #
 # Cost: no model calls. One GitHub API call for the upstream tree, plus one per
 # drifted file when a diff is shown. Requires an authenticated `gh`.
@@ -102,20 +104,27 @@ done < <(awk -F'|' '
     }
 ' "$MANIFEST")
 
-# Only the leading comma-separated backticked list of that section names skills.
-# Everything after it is narrative prose that backticks unrelated words (`switch`,
-# `merge`, `pull`), and a skill that ever shares a name with one of those would be
-# classified fork-original, dropped from the check, and wiped by the next sync —
-# a green gate destroying content. A false PASS is worse here than a false FAIL,
-# so the list is parsed strictly rather than grepped.
+# The section's list wraps (e.g. "writing-agents" and "implementer-contract" sit
+# on its second line), so a fixed one-line scan misses names on the wrap — but
+# scanning every line to the next "## " is looser than it needs to be: the
+# narrative prose after the list also backticks things (`switch`, `merge`, `pull`,
+# camelCase identifiers, slash-containing paths), and while none of THOSE happen to
+# match this pattern today, a future prose line that opens with a backticked
+# lowercase-hyphen token equal to a real skill name would silently reclassify that
+# skill fork-original, drop it from the gate, and let the next sync wipe it. So the
+# scan is bounded instead: it stops at the first non-blank line that does not
+# itself open with a matching backticked token, which is exactly the boundary
+# between the list and the prose that follows it. Verified empirically against the
+# current manifest: this stops after the list's second line and extracts exactly
+# the 7 named fork-original skills.
 declare -A FORK_ORIGINAL=()
 while read -r name; do
     [[ -n "$name" && -d "${SKILLS_DIR}/${name}" ]] && FORK_ORIGINAL["$name"]=1
 done < <(awk '
     /^## Fork-original skills/ { in_section = 1; next }
     /^## / { in_section = 0 }
-    in_section && !seen && NF {
-        seen = 1
+    in_section && NF {
+        if (!match($0, /^`[a-z0-9]/)) { in_section = 0; next }
         line = $0
         while (match(line, /^`[a-z0-9][a-z0-9-]*`(,[[:space:]]*)?/)) {
             token = substr(line, 1, RLENGTH)
@@ -145,11 +154,28 @@ for dir in "${SKILLS_DIR}"/*/; do
     [[ "$(classify "$skill")" == "vendored" ]] && VENDORED+=("$skill")
 done
 
+# Individually-vendored files: `| skills/<name>/<path> | vendored |` rows inside an
+# otherwise `patched`/`replaced` skill directory. These are a STATE-map key with a
+# "/" in it (a skill dir basename never contains one), so they never collide with
+# the directory-level classification above; they are checked in addition to it.
+VENDORED_FILES=()
+for key in "${!STATE[@]}"; do
+    [[ "$key" == */* && "${STATE[$key]}" == "vendored" ]] && VENDORED_FILES+=("$key")
+done
+IFS=$'\n' VENDORED_FILES=($(sort <<<"${VENDORED_FILES[*]}")); unset IFS
+
 if [[ $LIST_ONLY -eq 1 ]]; then
     printf '%-34s %s\n' "SKILL" "STATE (from ${MANIFEST#"${REPO_ROOT}/"})"
     for skill in "${ALL_SKILLS[@]}"; do
         printf '%-34s %s\n' "$skill" "$(classify "$skill")"
     done
+    if [[ ${#VENDORED_FILES[@]} -gt 0 ]]; then
+        echo
+        printf '%-50s %s\n' "INDIVIDUALLY-VENDORED FILE" "STATE"
+        for f in "${VENDORED_FILES[@]}"; do
+            printf '%-50s %s\n' "$f" "vendored"
+        done
+    fi
     exit 0
 fi
 
@@ -163,14 +189,18 @@ if [[ ${#ONLY[@]} -gt 0 ]]; then
         SELECTED+=("$want")
     done
     VENDORED=("${SELECTED[@]}")
+    # --only scopes to named skill directories; individually-vendored files have no
+    # selector of their own yet, so they sit out of a scoped run rather than always
+    # tagging along.
+    VENDORED_FILES=()
 fi
 
-if [[ ${#VENDORED[@]} -eq 0 ]]; then
-    echo "no vendored skills in the manifest; nothing to check"
+if [[ ${#VENDORED[@]} -eq 0 && ${#VENDORED_FILES[@]} -eq 0 ]]; then
+    echo "no vendored skills or files in the manifest; nothing to check"
     exit 0
 fi
 
-echo "Checking ${#VENDORED[@]} vendored skill(s) against ${UPSTREAM} @ ${REF}"
+echo "Checking ${#VENDORED[@]} vendored skill(s) and ${#VENDORED_FILES[@]} individually-vendored file(s) against ${UPSTREAM} @ ${REF}"
 echo
 
 # One tree call covers every vendored path. The tree's blob `sha` is a plain git
@@ -258,10 +288,45 @@ for skill in "${VENDORED[@]}"; do
     fi
 done
 
+# Individually-vendored files (a single manifest row, not a whole skill dir): the
+# same byte comparison, against the same upstream tree already fetched above.
+files_drifted=0
+for rel in "${VENDORED_FILES[@]}"; do
+    # Defense in depth: `rel` comes straight from a manifest row, not attacker
+    # input, but a typo'd or mis-pasted row (e.g. `skills/../../etc/passwd`) should
+    # fail loudly rather than silently read outside SKILLS_DIR.
+    [[ "$rel" == *..* ]] && {
+        echo "manifest row 'skills/${rel}' contains '..' — refusing to check it" >&2
+        exit 1
+    }
+    local_file="${SKILLS_DIR}/${rel}"
+    upstream_path="skills/${rel}"
+    expected="${UPSTREAM_SHA[$upstream_path]:-}"
+    if [[ ! -f "$local_file" ]]; then
+        files_drifted=$((files_drifted + 1))
+        printf '  DRIFT %s\n' "$rel"
+        printf '      marked vendored but missing from the fork\n'
+    elif [[ -z "$expected" ]]; then
+        files_drifted=$((files_drifted + 1))
+        printf '  DRIFT %s\n' "$rel"
+        printf '      marked vendored but absent from %s @ %s — reclassify it\n' "$UPSTREAM" "$REF"
+    else
+        actual="$(git hash-object "$local_file")"
+        if [[ "$expected" != "$actual" ]]; then
+            files_drifted=$((files_drifted + 1))
+            printf '  DRIFT %s\n' "$rel"
+            printf '      differs from %s (%s upstream, %s here)\n' "$REF" "${expected:0:9}" "${actual:0:9}"
+            report_diff "$upstream_path" "$local_file"
+        else
+            printf '  ok    %s\n' "$rel"
+        fi
+    fi
+done
+
 echo
-if [[ $drifted -gt 0 ]]; then
+if [[ $drifted -gt 0 || $files_drifted -gt 0 ]]; then
     cat >&2 <<EOF
-${drifted} skill(s) marked vendored have diverged from ${UPSTREAM} @ ${REF}.
+${drifted} skill(s) and ${files_drifted} file(s) marked vendored have diverged from ${UPSTREAM} @ ${REF}.
 The next sync takes vendored files to upstream head wholesale, so this content
 would be silently wiped. Decide per file: reclassify the row to \`patched\` in
 docs/customizations.md (fork delta is wanted) or revert to the upstream blob.
@@ -269,4 +334,4 @@ EOF
     exit 1
 fi
 
-echo "All ${#VENDORED[@]} vendored skill(s) match ${UPSTREAM} @ ${REF}."
+echo "All ${#VENDORED[@]} vendored skill(s) and ${#VENDORED_FILES[@]} individually-vendored file(s) match ${UPSTREAM} @ ${REF}."

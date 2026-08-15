@@ -55,9 +55,12 @@ judge whether the drift was intentional — you decide reclassify-to-`patched` v
 The file list is derived from the manifest — the `| skills/<name> |` rows plus its catch-all
 ("skills not listed above are vendored") — so a new vendored skill needs no script edit. Use
 `--list` to see the classification it derived, `--only <skill>`, or `--ref <tag>` to measure
-against a different upstream ref. **Scope limit:** skill *directories*. Individually-vendored
-FILES inside a `patched`/`replaced` skill (named only in the manifest's narrative "Vendored
-skills" prose, negations and all) are not machine-checkable and remain a hand check.
+against a different upstream ref. Individually-vendored FILES inside an otherwise
+`patched`/`replaced` skill directory are covered too: give the file its own
+`| skills/<name>/<path> | vendored |` row in the manifest's "Individually-vendored files" table
+and the script picks it up and checks it directly, independent of the containing directory's own
+state. `--only` scopes to named skill directories only; individually-vendored files are always
+included in a full run and sit out of an `--only` run.
 
 Cost: no model calls — one GitHub API call for the upstream tree, plus one per drifted file to
 render the diff. It is still **not** a git pre-commit hook: it needs the network and an
