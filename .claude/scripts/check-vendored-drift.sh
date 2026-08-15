@@ -102,20 +102,27 @@ done < <(awk -F'|' '
     }
 ' "$MANIFEST")
 
-# Only the leading comma-separated backticked list of that section names skills.
-# Everything after it is narrative prose that backticks unrelated words (`switch`,
-# `merge`, `pull`), and a skill that ever shares a name with one of those would be
-# classified fork-original, dropped from the check, and wiped by the next sync —
-# a green gate destroying content. A false PASS is worse here than a false FAIL,
-# so the list is parsed strictly rather than grepped.
+# Only a leading comma-separated backticked list of lowercase-hyphen tokens counts —
+# checked on EVERY line of the section, not just the first, because the fork-original
+# list wraps (e.g. "writing-agents" and "implementer-contract" sit on its second
+# line). The narrative prose that follows backticks unrelated things too (`switch`,
+# `merge`, `pull`, camelCase identifiers, slash-containing paths), but none of those
+# match this pattern: it requires the backtick content to be lowercase/digits/hyphens
+# only and to start at the line's first character, so "`git checkout`" (a space),
+# "`assertPrimaryContentShare`" (uppercase), and "`docs/adr/...md`" (a slash) all
+# fail to match. Verified empirically against the current manifest: this extracts
+# exactly the 7 named fork-original skills and nothing else. A skill that ever
+# shares a name with a stray matching token would be classified fork-original,
+# dropped from the check, and wiped by the next sync — a green gate destroying
+# content — so a false PASS is worse here than a false FAIL; re-verify against the
+# manifest text whenever this section's prose changes.
 declare -A FORK_ORIGINAL=()
 while read -r name; do
     [[ -n "$name" && -d "${SKILLS_DIR}/${name}" ]] && FORK_ORIGINAL["$name"]=1
 done < <(awk '
     /^## Fork-original skills/ { in_section = 1; next }
     /^## / { in_section = 0 }
-    in_section && !seen && NF {
-        seen = 1
+    in_section && NF {
         line = $0
         while (match(line, /^`[a-z0-9][a-z0-9-]*`(,[[:space:]]*)?/)) {
             token = substr(line, 1, RLENGTH)
