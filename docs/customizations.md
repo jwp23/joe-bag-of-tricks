@@ -75,6 +75,7 @@ security wins.**
 |------|-------|--------|---------|-----------|
 | agents/code-reviewer.md | removed | obra/superpowers | MIT | followed upstream v6.1.1 removal; fork copy was byte-identical to base (zero custom value); reviews now dispatch a `general-purpose` subagent |
 | agents/branch-shepherd.md | fork-original | — | — | no upstream counterpart. Added 2026-08-09: autonomous multi-branch delivery (push → PR → CI → CodeRabbit → conflict reconciliation → squash-merge → worktree cleanup), dispatched with a branch list by `finishing-a-development-branch`, `subagent-driven-development`, and `dispatching-parallel-agents` |
+| agents/implementer-mechanical.md, implementer.md, implementer-complex.md | fork-original | — | — | no upstream counterpart. Added 2026-08-14: effort-pinned implementer roster for SDD agent-type dispatch (feature joe-bag-of-tricks-b2o) |
 | agents/coderabbit-reviewer.md, pr-merger.md | fork-original | — | — | no upstream counterpart (merge/CodeRabbit automation). 2026-08-08: pr-merger.md had a hardcoded "Joe" reference; replaced with "your human partner" |
 | agents/pr-creator.md | removed | — | — | fork-original, retired 2026-07-26 — PR creation folded inline into `finishing-a-development-branch` Step 3. See `adr/005-retire-pr-creator-single-ci-wait.md` |
 
