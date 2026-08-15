@@ -21,6 +21,12 @@ If either ref is unknown, ask before proceeding.
 the local object store. A wide catch-up range can exceed one page of files; paginate with `?page=N`
 (or use the raw diff) if `.files` looks capped.
 
+## Check for vendored drift first
+Run `.claude/scripts/check-vendored-drift.sh` **before** porting anything. It compares every skill
+the manifest classifies `vendored` against upstream at the current **Last synced** ref and fails on
+any that has quietly diverged — content this sync would otherwise overwrite wholesale. Reclassify
+the row to `patched` or revert the file before continuing. See `../.claude/rules/validating-changes.md`.
+
 ## Translate the path
 Upstream is a single plugin at its repo root; this fork nests it. Translate by zone:
 - **Plugin payload** (`skills/`, `agents/`, `hooks/`, `.claude-plugin/plugin.json`, …) →

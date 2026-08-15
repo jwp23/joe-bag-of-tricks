@@ -35,6 +35,26 @@ skill still resolves, before committing.
   `ANTHROPIC_API_KEY` shadows that profile — check with `ant auth status`.
 - `betterleaks git --pre-commit --staged --redact` — secret scan. Hard fail.
 
+## Before a Sync, and Before Any PR That Touches a Skill
+`.claude/scripts/check-vendored-drift.sh` — proves every skill classified `vendored` is still
+byte-identical to `obra/superpowers` at the **Last synced** ref in `docs/customizations.md`. A
+`vendored` file is taken to upstream head wholesale by the next sync, so a fork edit that lands
+while the row still says `vendored` gets silently wiped — that already happened once
+(`dispatching-parallel-agents/SKILL.md`, caught by hand). Hard fail: it names each drifted file,
+shows the drift size (`--diff` for the full unified diff), and exits non-zero. It does **not**
+judge whether the drift was intentional — you decide reclassify-to-`patched` vs. revert.
+
+The file list is derived from the manifest — the `| skills/<name> |` rows plus its catch-all
+("skills not listed above are vendored") — so a new vendored skill needs no script edit. Use
+`--list` to see the classification it derived, `--only <skill>`, or `--ref <tag>` to measure
+against a different upstream ref. **Scope limit:** skill *directories*. Individually-vendored
+FILES inside a `patched`/`replaced` skill (named only in the manifest's narrative "Vendored
+skills" prose, negations and all) are not machine-checkable and remain a hand check.
+
+Cost: no model calls — one GitHub API call for the upstream tree, plus one per drifted file to
+render the diff. It is still **not** a git pre-commit hook: it needs the network and an
+authenticated `gh`, which a hook must not depend on. Sync time and pre-PR are the natural moments.
+
 ## While Authoring a Skill
 `.claude/scripts/token-diff.sh [PATH...]` — prints the `claude-opus-5` token delta for each
 changed file between HEAD and the working tree (no arguments = everything changed vs HEAD;
