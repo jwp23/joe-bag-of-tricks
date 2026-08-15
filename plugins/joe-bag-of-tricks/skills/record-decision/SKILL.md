@@ -1,6 +1,6 @@
 ---
 name: record-decision
-description: "Use whenever someone asks why a past technical decision was made in this project (e.g. \"why did we choose X over Y\", \"what was the reasoning behind this approach\") and no existing ADR or decision doc answers it - treat this as a cue to research and record the rationale now, not just explain it in chat. Also use when a technical decision is actively being made, discussed, or debated - choosing between approaches, selecting libraries/tools, establishing a convention meant to apply project-wide (including naming, formatting, or file-organization standards), or accepting a trade-off - so it gets written down as an ADR or decision doc. Do not use for one-off implementation choices scoped to a single file or line (renaming one variable, reformatting one file, fixing a bug), or for decisions already covered by an existing ADR/decision doc."
+description: Use when a technical decision is being discussed or has been made - choosing between approaches, selecting libraries, establishing conventions, or making trade-offs
 argument-hint: "[decision topic]"
 ---
 

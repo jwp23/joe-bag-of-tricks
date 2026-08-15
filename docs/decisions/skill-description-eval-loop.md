@@ -11,15 +11,20 @@ never by a harness of our own. Four choices make that concrete:
 
 **The loop runs on `claude-sonnet-5`.** `--model` is required and has no default.
 
-**A compatibility shim, `.claude/scripts/skill-eval-shim/sitecustomize.py`, is fork-owned code —
-not a copy of skill-creator.** skill-creator advertises the description under test by writing
-`.claude/commands/<probe>.md`; Claude Code 2.1.220 exposes that only as a slash command, with no
-tool for the model to invoke it, so every query scores zero triggers. The shim republishes the
-same probe as `.claude/skills/<probe>/SKILL.md` and hands off to the upstream function. It is
-deleted the day skill-creator registers its probe as a skill.
+**A compatibility shim, `.claude/scripts/skill-eval-shim/sitecustomize.py`, is fork-owned code
+that carries a small derived fragment of skill-creator.** skill-creator advertises the description
+under test by writing `.claude/commands/<probe>.md`; Claude Code 2.1.220 exposes that only as a
+slash command, with no tool for the model to invoke it, so every query scores zero triggers. The
+shim republishes the same probe as `.claude/skills/<probe>/SKILL.md` and hands off to the upstream
+function. Roughly eight lines — the probe-file body and the `<skill>-skill-<id>` naming —
+reproduce `run_single_query` because the two probes must carry identical descriptions for the eval
+to mean anything. Source: `anthropics/skills`, `skills/skill-creator/scripts/run_eval.py`,
+**Apache-2.0** per that skill's `LICENSE.txt`; attributed in the shim and in
+`docs/customizations.md` as `docs/licensing.md` requires. The shim is deleted the day
+skill-creator registers its probe as a skill.
 
 **A candidate description is applied only if it beats the incumbent on the HELD-OUT TEST score.**
-Ties on test are broken by train score.
+A tie is not a win — keep the incumbent.
 
 `.claude/scripts/optimize-skill-description.sh` wraps all of it. It is an **on-demand tool, not a
 gate** — the pre-commit floor in `.claude/rules/validating-changes.md` is unchanged. Procedure,
@@ -49,16 +54,30 @@ never gets past its first tool call — the extra capability is spent on nothing
 
 **Why a shim rather than a patch, a fork, or a copy.** Editing
 `~/.claude/plugins/marketplaces/.../skill-creator` would be lost on the next plugin update and
-would edit tooling this repo does not own. Vendoring skill-creator would put a copy of a moving
-upstream under our maintenance for one stale line. The shim is ~60 lines that add a file and
-delegate; it names its own expiry condition.
+would edit tooling this repo does not own. Vendoring skill-creator wholesale would put a copy of a
+moving upstream under our maintenance for one stale line. The shim is ~60 lines that add a file
+and delegate, of which ~8 are the derived probe-file format it has to match; it names its own
+expiry condition.
 
-**Why held-out test, and why the tie-break is not test-score shopping.** The train score is what
-the rewriting model optimized against, so treating it as evidence is grading an exam against its
-own answer key. The holdout exists to stop an overfit description winning. When two candidates
-tie on the holdout, the holdout has said all it can, and the larger sample is the only signal
-left — the proving run hit exactly this: iterations 2 and 3 both scored 5/6 on test, and
-iteration 3 scored 12/12 on train against iteration 2's 10/12, so iteration 3 shipped.
+**Why held-out test, and why a tie is not a win.** The train score is what the rewriting model
+optimized against, so treating it as evidence is grading an exam against its own answer key. An
+earlier draft of this decision broke ties by train score. That was wrong and is reversed:
+`run_loop.py` strips every `test_*` key before handing history to the improver (L195-196) and
+rewrites from the previous iteration's **train** failures (L203), so a higher train score is the
+signature of one more round of fitting the train set — precisely what the holdout exists to
+prevent. Upstream's own selection agrees: `max(history, key=test_passed)` (L218) returns the first
+maximum, so on a tie the tool picks the **earliest**, least-fitted iteration. The proving run hit
+this case — iterations 2 and 3 both scored 5/6 on test — and under the corrected rule neither
+displaced the incumbent.
+
+**What the proving run actually established.** That skill-creator as installed is unusable against
+Claude Code 2.1.220 without the shim: 0/3 on all 18 queries, positives and negatives alike. The
+candidate description was **not** adopted. 4/6 → 5/6 is one query, from one split of one run with
+no repeats, well inside the triggering variance `docs/adr/006-defer-behavioral-evals.md`
+documents; and the candidate also violated `writing-skills/SKILL.md` L217-235 (Description =
+Capabilities + Triggers, NOT Process/Workflow) by carrying workflow instructions, one of which
+described a research step `record-decision`'s body does not implement. The loop is worth having;
+this particular result was not worth shipping.
 
 **Why not a gate.** `docs/adr/006-defer-behavioral-evals.md` measured identical triggering
 prompts flipping between runs and concluded a flaky blocking gate is worse than none. This loop

@@ -7,9 +7,11 @@ fine but you suspect it fires on the wrong prompts or misses the right ones — 
 `probe-skill-triggering.sh` only gestures at.
 
 It runs Anthropic's **skill-creator** eval loop, which is already installed
-(`example-skills@anthropic-agent-skills`). Nothing from skill-creator is vendored here — it is
-Apache-2.0 and could be, but there is no reason to carry a copy of installed tooling. Point at
-it; copy nothing.
+(`example-skills@anthropic-agent-skills`). skill-creator itself is not vendored here — it is
+Apache-2.0 and could be, but there is no reason to carry a copy of installed tooling. The one
+exception is the compatibility shim, which reproduces ~8 lines of upstream's probe-file format
+because it must match byte for byte to interoperate; that fragment is attributed in the file and
+in `docs/customizations.md`.
 
 ## Run it
 
@@ -91,9 +93,15 @@ enough to act on, and shrinking the eval set below ~15 breaks the holdout.
 worse means keep what you have — the train score is the thing the rewriting model optimized
 against and is not evidence.
 
-When two candidates tie on test, break the tie by train score. That is not test-score shopping:
-the holdout exists to stop an overfit description winning, and between two descriptions the
-holdout cannot separate, the larger sample is the only signal left.
+**A tie on test is not a win.** Do not break it by train score. That rule was written into an
+earlier draft of this doc and is wrong: `run_loop.py` builds `blinded_history` by stripping every
+`test_*` key (L195-196) and improves each iteration from the previous one's **train** failures
+(L203), so a higher train score is the signature of one more round of fitting the train set —
+exactly what the holdout exists to prevent. Upstream agrees: `max(history, key=test_passed)`
+(L218) returns the *first* maximum, so on a tie the tool itself picks the **earliest**, least-fitted
+iteration. Prefer the incumbent on a tie; if you must choose between two candidates, take the
+earlier iteration, and if the tie actually matters, enlarge the eval set so the holdout can
+separate them.
 
 After applying, `claude plugin validate plugins/joe-bag-of-tricks` and
 `.claude/scripts/verify-skills-load.sh --only <skill>`. A description containing `: ` or leading
@@ -118,7 +126,16 @@ triggers before the shim; with it, the current description scored 15/18 queries 
 
 The shim wraps `run_single_query` so the probe is also written as a real skill at
 `.claude/skills/<probe>/SKILL.md`, which is what skill-creator's own detector already matches on.
-It copies nothing from skill-creator and modifies nothing under `~/.claude/plugins/`.
+It modifies nothing under `~/.claude/plugins/` — the upstream function still does the work.
+
+The probe body it writes is **derived from** upstream: the frontmatter block scalar, the heading,
+and the `This skill handles: ...` line reproduce `run_single_query`'s `command_content`, and the
+`<skill>-skill-<id>` naming and module-global `uuid` use are reproduced so the shim can predict
+the name upstream will pick. Matching that format is a correctness requirement, not a copy of
+convenience: the two probes have to carry identical descriptions for the eval to mean anything.
+Source: `anthropics/skills`, `skills/skill-creator/scripts/run_eval.py`, Apache-2.0 per that
+skill's `LICENSE.txt`. Attributed in the shim's docstring and recorded in `docs/customizations.md`
+per `docs/licensing.md`.
 
 Two non-obvious details are load-bearing:
 
@@ -150,4 +167,26 @@ available for either.
 
 | Date | Skill | Model | Budget | Held-out before | Held-out after | Applied |
 |------|-------|-------|--------|-----------------|----------------|---------|
-| 2026-08-14 | `record-decision` | claude-sonnet-5 | 18 queries x 3 runs x 3 iterations | 4/6 | 5/6 | yes (iteration 3; tied 5/6 with iteration 2 on test, 12/12 vs 10/12 on train) |
+| 2026-08-14 | `record-decision` | claude-sonnet-5 | 18 queries x 3 runs x 3 iterations | 4/6 | 5/6 | **no** — see below |
+
+The first end-to-end run's real finding was about the harness, not the description: as installed,
+skill-creator scores every query 0/3 against Claude Code 2.1.220 and is unusable without the shim.
+That is what the run bought.
+
+The candidate description was **not adopted**, for two reasons:
+
+- **4/6 → 5/6 is one query, from a single split of a single run with no repeats.** Each query
+  passes on triggers/runs >= 0.5 over three runs, so one query flipping 1/3 → 2/3 moves the
+  headline. That is inside the run-to-run variance `docs/adr/006-defer-behavioral-evals.md`
+  documents for triggering, and a six-query holdout cannot separate it from noise. Iterations 2
+  and 3 tied at 5/6 on test; under the tie-break rule above, a tie is not a win.
+- **The candidate violated `plugins/joe-bag-of-tricks/skills/writing-skills/SKILL.md` (L217-235):
+  Description = Capabilities + Triggers, NOT Process/Workflow.** It carried "treat this as a cue
+  to research and record the rationale now, not just explain it in chat" and "so it gets written
+  down as an ADR or decision doc" — workflow instructions, in the field that is supposed to say
+  when the skill applies. Worse, the skill body has no "research a past decision's rationale"
+  step, so the description promised behavior the skill does not implement. A description that
+  wins on triggering by describing a skill that does not exist is a regression, whatever the
+  score says.
+
+The shipped `record-decision` description is unchanged from `main`.

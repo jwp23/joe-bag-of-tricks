@@ -40,6 +40,13 @@ doc uses `joe-bag-of-tricks` as the running example unless a rule is specific to
 - `.claude/skills/upstream-sync/` — maintains the fork; never distributed.
 - `.claude/rules/*.md` — team rules loaded alongside CLAUDE.md.
 - `.claude/settings.json` — permission allowlist.
+- `.claude/scripts/` — validation and measurement tooling (`verify-skills-load.sh`,
+  `probe-skill-triggering.sh` + its `triggering-prompts/`, `optimize-skill-description.sh` + its
+  `skill-eval-shim/`).
+- `.claude/eval-sets/<skill>.json` — triggering eval sets, one per skill, consumed by
+  skill-creator's description-optimization loop. Input to a tool that lives outside this repo, so
+  it is authoring data rather than skill content and must not sit beside the `SKILL.md` it grades.
+  See `docs/skill-description-optimization.md`.
 - `docs/` (repo root) — fork-maintenance docs: customizations, upstream-sync, licensing, architecture,
   the hands-on-keyboard workflow guide, and all ADRs (`docs/adr/`). Not shipped — not installed by
   `/plugin install`, but not maintainer-only either: `workflow-guide.md` is written for whoever is

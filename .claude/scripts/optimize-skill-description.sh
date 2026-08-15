@@ -76,7 +76,11 @@ CONFIG_DIR="${WORK}/config"
 FIXTURE="${WORK}/fixture"
 
 mkdir -p "$CONFIG_DIR" "${FIXTURE}/src" "${FIXTURE}/.claude"
+# OAuth credentials land here. mkdir gives 0755; do not rely on the mktemp
+# parent's 0700 for the only thing keeping them private.
+chmod 700 "$CONFIG_DIR"
 cp -f "${HOME}/.claude/.credentials.json" "${CONFIG_DIR}/"
+chmod 600 "${CONFIG_DIR}/.credentials.json"
 cat >"${FIXTURE}/package.json" <<'JSON'
 { "name": "fixture", "version": "1.0.0", "scripts": { "test": "node --test" } }
 JSON
