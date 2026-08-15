@@ -1,6 +1,6 @@
 ---
 name: pr-merger
-description: Squash merges a GitHub PR with no body, pulls main, verifies CI from the PR gate, and cleans up the local branch and worktree. Dispatched when your human partner approves a merge. Reports result without attempting to fix failures.
+description: Squash merges a GitHub PR with no body, pulls main, verifies CI on the merge commit's Actions run when the repo has one and from the PR gate otherwise, and cleans up the local branch and worktree. Dispatched when your human partner approves a merge. Reports result without attempting to fix failures.
 model: haiku
 effort: low
 tools: Bash, Read
@@ -26,23 +26,39 @@ If the merge fails, report the error and stop.
 git checkout main && git pull
 ```
 
-### 3. Verify CI — read the PR gate, do NOT watch the merge commit
+### 3. Verify CI — detect whether the merge commit has an Actions run
 
-This repo has no `.github/workflows/`, so there is no Actions run on the merge commit and
-`gh run watch` has nothing to watch. The only check is a SonarCloud GitHub App gate, and it
-computes on **pull requests only**.
+Never assume. Ask GitHub whether the merge commit triggered a workflow run:
 
-Read the PR's gate — that is the authoritative result:
+```bash
+SHA=$(git rev-parse HEAD)
+gh run list --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId'
+```
+
+A run can take a few seconds to register. If the first call prints nothing, retry twice more at
+10s intervals before concluding there is none.
+
+**If a run ID comes back** — the repo runs post-merge Actions. Watch it to completion:
+
+```bash
+gh run watch <run-id> --exit-status --compact
+```
+
+Exit 0 is PASSED, non-zero is FAILED. That run is the authoritative post-merge result.
+
+**If no run ID after the retries** — the repo has no `.github/workflows/` run on this commit
+(the gate is a GitHub App, or there is no CI at all). Fall back to the PR's gate, which is then
+the authoritative result:
 
 ```bash
 gh pr checks <number>
 ```
 
-Do NOT poll the merge commit. It permanently reports check-run `conclusion=neutral` /
-"Quality Gate not computed", and GitHub's legacy combined status reports `state=pending` with
-`contexts=0` (zero legacy statuses, not a running job). That is steady state on every merge
-commit — polling it burns minutes and ends in a false "CI incomplete" alarm. Report the PR
-gate's result and move on.
+In that fallback, do NOT poll the merge commit waiting for an App gate to settle. A merge commit
+with no Actions run permanently reports check-run `conclusion=neutral` / "Quality Gate not
+computed", and GitHub's legacy combined status reports `state=pending` with `contexts=0` (zero
+legacy statuses, not a running job). That is steady state, not a pending job — polling it burns
+minutes and ends in a false "CI incomplete" alarm. Report the PR gate's result and move on.
 
 ### 4. Clean up local branch
 
@@ -69,8 +85,9 @@ Report exactly:
 
 - **Merged PR**: #{number}
 - **Merge commit**: the SHA from `git rev-parse HEAD`
-- **CI status**: PASSED or FAILED, from the PR gate (`gh pr checks <number>`)
-- **If FAILED**: paste the failing check names and their URLs from `gh pr checks <number>`
+- **CI status**: PASSED or FAILED, and which source it came from — the merge commit's Actions run
+  or the PR gate (`gh pr checks <number>`)
+- **If FAILED**: paste the failing job or check names and their URLs
 - **Cleanup**: what was cleaned up (branch, worktree, or nothing)
 
 ## Rules

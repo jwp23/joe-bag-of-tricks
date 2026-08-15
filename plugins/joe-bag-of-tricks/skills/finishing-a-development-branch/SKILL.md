@@ -218,7 +218,7 @@ When your human partner says to merge or close a PR, dispatch the `joe-bag-of-tr
 
 - **number**: the PR number
 
-The agent squash merges with no body, checks out main, pulls, watches CI on the merge commit, and cleans up the local branch and worktree. It reports back with the merge SHA and CI status.
+The agent squash merges with no body, checks out main, pulls, verifies CI — watching the merge commit's Actions run when the repo triggers one, falling back to the PR gate when it does not — and cleans up the local branch and worktree. It reports back with the merge SHA and CI status.
 
 **Dispatch it in the background** and keep working while it runs.
 

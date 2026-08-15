@@ -81,7 +81,14 @@ gh pr merge <number> --squash --body "" --delete-branch
 git checkout main && git pull
 ```
 
-Verify CI on the merge commit if the project runs post-merge checks; if its only gate runs on PRs, the PR gate from Step 3/4 already confirms it and there is nothing further to poll.
+Detect whether the merge commit triggered an Actions run rather than assuming either way:
+
+```bash
+SHA=$(git rev-parse HEAD)
+gh run list --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId'
+```
+
+Retry twice at 10s if the first call is empty — runs take a few seconds to register. If a run ID comes back, watch it (`gh run watch <run-id> --exit-status --compact`); a non-zero exit is a post-merge failure, report the branch as merged-but-broken with the failing job. If none comes back, the project's only gate runs on PRs and the PR gate from Step 3/4 already confirms it — do not poll the merge commit, a merge commit with no Actions run sits permanently at check-run `conclusion=neutral` / legacy status `state=pending` with zero contexts, which is steady state, not a running job.
 
 Remove the worktree **only if it lives under `.worktrees/`** — anything else belongs to the host environment:
 
