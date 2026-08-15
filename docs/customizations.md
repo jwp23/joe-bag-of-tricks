@@ -61,7 +61,7 @@ security wins.**
 
 | Path | State | Source | License | Reason(s) |
 |------|-------|--------|---------|-----------|
-| skills/writing-skills | patched | obra/superpowers | MIT | Anthropic skill-creator + best-practices (sidecar: anthropic-skill-creator.md). **Deliberate exception to adopt-by-default:** the v6.1.1 `Claude`→`agents` / CSO→SDO sweep is NOT adopted — heavy fork content + the Anthropic sidecar mean this file stays patched regardless, so hand-applying the 89-line sweep is high-effort/low-benefit. persuasion-principles `TodoWrite`→`todos` ported (removes a banned-tool ref). v6.2.0: adopted the Bottom Line deletion; skipped the skills-directory line rewrite (it adds codex/gemini reference links this fork drops — the fork's line already names `~/.claude/skills`). v6.3.0 (render-graphs.js): **adopted** `execFileSync` for both dot calls and the Windows-safe `dot -V` availability probe; **skipped** the CJS→ESM conversion — upstream's ESM only works via its repo-root `package.json` `"type": "module"`, which this fork intentionally drops, so `import` would throw at parse time here; kept `require()`. Fork addition in "Token Efficiency": points at this repo's `.claude/scripts/token-diff.sh` / `check-context-budget.sh` and bans tiktoken/chars-4 estimation — measurement beats the word-count proxy |
+| skills/writing-skills | patched | obra/superpowers | MIT | Anthropic skill-creator + best-practices (sidecar: anthropic-skill-creator.md). **Deliberate exception to adopt-by-default:** the v6.1.1 `Claude`→`agents` / CSO→SDO sweep is NOT adopted — heavy fork content + the Anthropic sidecar mean this file stays patched regardless, so hand-applying the 89-line sweep is high-effort/low-benefit. persuasion-principles `TodoWrite`→`todos` fork patch (removed a banned-tool ref) has since been absorbed upstream — the file is now byte-identical to upstream and carries its own `vendored` row in the "Individually-vendored files" table under "Vendored skills" below; this row no longer applies to it. v6.2.0: adopted the Bottom Line deletion; skipped the skills-directory line rewrite (it adds codex/gemini reference links this fork drops — the fork's line already names `~/.claude/skills`). v6.3.0 (render-graphs.js): **adopted** `execFileSync` for both dot calls and the Windows-safe `dot -V` availability probe; **skipped** the CJS→ESM conversion — upstream's ESM only works via its repo-root `package.json` `"type": "module"`, which this fork intentionally drops, so `import` would throw at parse time here; kept `require()`. Fork addition in "Token Efficiency": points at this repo's `.claude/scripts/token-diff.sh` / `check-context-budget.sh` and bans tiktoken/chars-4 estimation — measurement beats the word-count proxy |
 | skills/systematic-debugging | patched | obra/superpowers | MIT | de-prefixed skill refs + record-decision hook + desc/argument-hint. v6.1.1: **adopted** `Ultra-think`. v6.2.0: **adopted** all hunks — overview trim, the Phase-4 verification-before-completion step (de-prefixed), Related-skills + Real-World-Impact removal. 2026-07-26: the fork-added `description` is now **double-quoted** — it contains `: ` (`mid-task:`), which as an unquoted YAML plain scalar failed to parse and made `claude plugin validate` fail with all frontmatter silently dropped. Keep it quoted when re-editing the description |
 | skills/test-driven-development | patched | obra/superpowers | MIT | fork-added "Choose Test Level" section. v6.1.1: **adopted** the `[testing-anti-patterns.md](...)` markdown link (`@`-import is a CLAUDE.md mechanism, not a skill-body one). v6.2.0: **adopted** all hunks — `testing-anti-patterns.md` deleted and replaced by vendored `writing-good-tests.md`, Why-Order-Matters folded into the Common Rationalizations table |
 | skills/receiving-code-review | patched | obra/superpowers | MIT | KEEPS the "Strange things are afoot at the Circle K" signal (skipped that deletion — Joe wants it) + desc. v6.1.1: **adopted** CLAUDE.md→instruction-file. v6.2.0: **adopted** the Bottom Line deletion |
@@ -151,11 +151,16 @@ Skills not listed above are vendored.
 
 ### Individually-vendored files inside patched skills
 
-These files are byte-identical to upstream even though the skill directory holding them is
-`patched` overall — the directory's own row governs every other file in it; the row below is a
-file-level exception, letting `check-vendored-drift.sh` check the file directly instead of
-leaving it a hand check. Verified byte-identical against `obra/superpowers` @ `v6.3.0`
-(the current Last-synced ref) when these rows were added.
+The selector for a row here is **declared vendored by this file's own sync history below**
+(brought to head / taken to head at a named sync, as opposed to hand-reconciled) — NOT "happens
+to be byte-identical to upstream today". Several other files inside these same `patched`/
+`replaced` directories are also byte-identical to upstream right now without being individually
+vendored; that's coincidence, not a sync commitment, and giving them a row here would wrongly
+promise the next sync it can take them to head wholesale. The directory's own row (in the
+`patched`/`replaced` tables above) governs every file in it except the ones listed below; each
+row here is a named, deliberate file-level exception, letting `check-vendored-drift.sh` check
+that one file directly instead of leaving it a hand check. Verified byte-identical against
+`obra/superpowers` @ `v6.3.0` (the current Last-synced ref) when these rows were added.
 
 | Path | State | Source | License | Reason(s) |
 |------|-------|--------|---------|-----------|

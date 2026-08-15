@@ -104,20 +104,19 @@ done < <(awk -F'|' '
     }
 ' "$MANIFEST")
 
-# Only a leading comma-separated backticked list of lowercase-hyphen tokens counts —
-# checked on EVERY line of the section, not just the first, because the fork-original
-# list wraps (e.g. "writing-agents" and "implementer-contract" sit on its second
-# line). The narrative prose that follows backticks unrelated things too (`switch`,
-# `merge`, `pull`, camelCase identifiers, slash-containing paths), but none of those
-# match this pattern: it requires the backtick content to be lowercase/digits/hyphens
-# only and to start at the line's first character, so "`git checkout`" (a space),
-# "`assertPrimaryContentShare`" (uppercase), and "`docs/adr/...md`" (a slash) all
-# fail to match. Verified empirically against the current manifest: this extracts
-# exactly the 7 named fork-original skills and nothing else. A skill that ever
-# shares a name with a stray matching token would be classified fork-original,
-# dropped from the check, and wiped by the next sync — a green gate destroying
-# content — so a false PASS is worse here than a false FAIL; re-verify against the
-# manifest text whenever this section's prose changes.
+# The section's list wraps (e.g. "writing-agents" and "implementer-contract" sit
+# on its second line), so a fixed one-line scan misses names on the wrap — but
+# scanning every line to the next "## " is looser than it needs to be: the
+# narrative prose after the list also backticks things (`switch`, `merge`, `pull`,
+# camelCase identifiers, slash-containing paths), and while none of THOSE happen to
+# match this pattern today, a future prose line that opens with a backticked
+# lowercase-hyphen token equal to a real skill name would silently reclassify that
+# skill fork-original, drop it from the gate, and let the next sync wipe it. So the
+# scan is bounded instead: it stops at the first non-blank line that does not
+# itself open with a matching backticked token, which is exactly the boundary
+# between the list and the prose that follows it. Verified empirically against the
+# current manifest: this stops after the list's second line and extracts exactly
+# the 7 named fork-original skills.
 declare -A FORK_ORIGINAL=()
 while read -r name; do
     [[ -n "$name" && -d "${SKILLS_DIR}/${name}" ]] && FORK_ORIGINAL["$name"]=1
@@ -125,6 +124,7 @@ done < <(awk '
     /^## Fork-original skills/ { in_section = 1; next }
     /^## / { in_section = 0 }
     in_section && NF {
+        if (!match($0, /^`[a-z0-9]/)) { in_section = 0; next }
         line = $0
         while (match(line, /^`[a-z0-9][a-z0-9-]*`(,[[:space:]]*)?/)) {
             token = substr(line, 1, RLENGTH)
