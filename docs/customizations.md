@@ -147,11 +147,31 @@ skill-creator registers its probe as a skill. See `docs/decisions/skill-descript
 
 ## Vendored skills (== upstream head; take head each sync)
 
-Skills not listed above are vendored. v6.1.1: `dispatching-parallel-agents/SKILL.md`,
+Skills not listed above are vendored.
+
+### Individually-vendored files inside patched skills
+
+These files are byte-identical to upstream even though the skill directory holding them is
+`patched` overall — the directory's own row governs every other file in it; the row below is a
+file-level exception, letting `check-vendored-drift.sh` check the file directly instead of
+leaving it a hand check. Verified byte-identical against `obra/superpowers` @ `v6.3.0`
+(the current Last-synced ref) when these rows were added.
+
+| Path | State | Source | License | Reason(s) |
+|------|-------|--------|---------|-----------|
+| skills/systematic-debugging/root-cause-tracing.md | vendored | obra/superpowers | MIT | brought to head at v6.1.1; unmodified since |
+| skills/systematic-debugging/CREATION-LOG.md | vendored | obra/superpowers | MIT | brought to head at v6.1.1; unmodified since |
+| skills/systematic-debugging/find-polluter.sh | vendored | obra/superpowers | MIT | already byte-identical at v6.1.1; its v6.2.0 change was taken to head |
+| skills/writing-skills/persuasion-principles.md | vendored | obra/superpowers | MIT | fork's `TodoWrite`→`todos` patch now matches upstream's own wording; byte-identical as of v6.3.0 (previously tracked as a patched-row delta — see history below) |
+| skills/test-driven-development/writing-good-tests.md | vendored | obra/superpowers | MIT | upstream's replacement for the removed `testing-anti-patterns.md`; vendored at v6.2.0 |
+
+v6.1.1: `dispatching-parallel-agents/SKILL.md`,
 `systematic-debugging/root-cause-tracing.md`, and `systematic-debugging/CREATION-LOG.md` were all
 brought to head and are now byte-identical to v6.1.1 (`dispatching-parallel-agents` dropped from
-patched to vendored under the adopt-by-default policy). `writing-skills/persuasion-principles.md` is
-covered by the writing-skills (patched) row.
+patched to vendored under the adopt-by-default policy; the other two are the table rows above).
+`writing-skills/persuasion-principles.md` was, at the time, a `TodoWrite`→`todos` fork patch
+tracked as a delta on the writing-skills (patched) row rather than separately — see the table
+above for its current (converged) state.
 
 v6.2.0: `using-git-worktrees/SKILL.md` **dropped from patched to vendored** — taken to head
 wholesale (byte-identical to v6.2.0). The fork had been carrying upstream's pre-v6.1.1 spine with
@@ -167,9 +187,10 @@ v6.2.0: `dispatching-parallel-agents/SKILL.md` was taken to head again (byte-ide
 — **but it has since diverged and moved to the patched table above (2026-08-09); do not take it to
 head.** `test-driven-development/testing-anti-patterns.md` was byte-identical to v6.1.1 and follows
 upstream's removal; its replacement `test-driven-development/writing-good-tests.md` is vendored at
-v6.2.0. `systematic-debugging/find-polluter.sh` was already byte-identical to v6.1.1; its v6.2.0
-change was taken to head. `subagent-driven-development/re-review-prompt.md` is a NEW upstream file,
-vendored with bd/script-signature adaptations — tracked under the SDD (replaced) row, not here.
+v6.2.0 (see the table above). `systematic-debugging/find-polluter.sh` was already byte-identical to
+v6.1.1; its v6.2.0 change was taken to head (see the table above). `subagent-driven-development/re-review-prompt.md`
+is a NEW upstream file, vendored with bd/script-signature adaptations — tracked under the SDD
+(replaced) row, not here.
 
 ## SonarCloud (CI gate) — accepted findings on the visual-companion server
 
