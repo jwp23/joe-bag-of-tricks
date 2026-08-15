@@ -155,6 +155,10 @@ Intentionally not vendored — record why here so future syncs don't re-litigate
   visual companion), `.pre-commit-config.yaml`, `.version-bump.json`, `scripts/*`, `tests/*`,
   `commands/*`, `CHANGELOG.md`, `RELEASE-NOTES.md`, `.github/ISSUE_TEMPLATE/*`,
   `.github/PULL_REQUEST_TEMPLATE.md`, `assets/*` (superpowers branding).
+  `tests/claude-code/analyze-token-usage.py` was evaluated on its own merits 2026-08-14 and
+  **stays dropped** despite being vendorable (superpowers is MIT): it parses session-transcript
+  `.jsonl` rather than the `stream-json` this repo already produces, and its cost math is stale.
+  Re-vendor only under the conditions in `docs/decisions/defer-behavioral-token-cost-measurement.md`.
 - **.gitignore** additions from v6.1.1 (`.superpowers/`, `evals/`) and v6.3.0 (Python/pytest
   entries for upstream's hermes tests) — none apply to this fork.
 

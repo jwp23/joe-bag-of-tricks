@@ -160,3 +160,8 @@ Reopen this decision when any of these happen:
 - `prime-radiant-inc/superpowers-evals` gains a license compatible with `docs/licensing.md`,
   which would remove the write-everything-from-scratch cost.
 - This repo gains CI that could host evals, changing the cost calculus.
+
+Behavioral **token cost** — "does loading this skill make the session cheaper?" — is the same
+family and was deferred separately on the same grounds, with the verified `result`-event
+telemetry and its own flip conditions recorded in
+`docs/decisions/defer-behavioral-token-cost-measurement.md`.
