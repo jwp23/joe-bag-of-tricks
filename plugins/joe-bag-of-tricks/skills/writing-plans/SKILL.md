@@ -169,8 +169,12 @@ Every task design must contain the actual content an engineer needs. These are *
 - "Similar to Task N" (repeat the code — tasks are dispatched to fresh subagents that may run out of order)
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
+- "Invoke the X skill" or "run `/command`" — tasks are dispatched to implementer subagents that
+  have no Skill tool, so the step is impossible as written. Name the procedure's file instead
+  ("follow the procedure in `<path>`"), and where that file will not be readable from the
+  worktree, write out the steps the task actually needs
 
-When a task involves a technical choice (tool selection, patterns, library choices), invoke **record-decision**.
+When a task involves a technical choice (tool selection, patterns, library choices), invoke **record-decision** yourself while planning — never as a step in the task.
 
 ## Self-Review
 

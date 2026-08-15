@@ -185,6 +185,11 @@ Scan for, writing down what you checked as you check it:
 - anything a task's design explicitly mandates that the review rubric treats
   as a defect (a test that asserts nothing, verbatim duplication of a logic
   block)
+- steps telling the implementer to invoke a skill or run a `/` command —
+  implementer agents carry no Skill tool, so the step cannot be followed as
+  written. Rule it into "follow the procedure in `<path>`" where that file is
+  readable from the worktree; where it is not, put what the step needs into
+  that dispatch's task-specific instructions yourself
 
 The scan's output is a table, not a verdict. One row for every pair of tasks
 that share a file or an interface: the two tasks, what one produces against
