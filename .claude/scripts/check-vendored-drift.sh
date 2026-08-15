@@ -292,6 +292,13 @@ done
 # same byte comparison, against the same upstream tree already fetched above.
 files_drifted=0
 for rel in "${VENDORED_FILES[@]}"; do
+    # Defense in depth: `rel` comes straight from a manifest row, not attacker
+    # input, but a typo'd or mis-pasted row (e.g. `skills/../../etc/passwd`) should
+    # fail loudly rather than silently read outside SKILLS_DIR.
+    [[ "$rel" == *..* ]] && {
+        echo "manifest row 'skills/${rel}' contains '..' — refusing to check it" >&2
+        exit 1
+    }
     local_file="${SKILLS_DIR}/${rel}"
     upstream_path="skills/${rel}"
     expected="${UPSTREAM_SHA[$upstream_path]:-}"
