@@ -10,9 +10,20 @@
   `model: fable`. The agent definition is the single statement of the dispatch contract —
   clean context, the artifact file paths, one narrow question naming every fired trigger, and
   a ruling recorded as a `bd note`. Both skills dispatch it by name and neither restates it.
-- **Each skill owns its own trigger list.** The triggers are phrased in the vocabulary of the
-  path that fires them, so `dispatching-parallel-agents` gets the parallel/bead-crunch
-  analogues rather than a copy of the SDD four.
+- **One shared trigger set, not one per skill.** The four triggers are path-independent.
+  `subagent-driven-development` states them; `dispatching-parallel-agents` cross-references
+  that statement by namespace, as it already does for SDD's Task Loop. They live in the skills
+  rather than in the agent definition because the orchestrator never reads an agent's body —
+  it sees only the roster's name, description, and tool list, so triggers placed in the agent
+  would be invisible to the party that fires them. The agent definition carries the dispatch
+  contract, which is the subagent's own operating instruction. Only the fix-loop bound in
+  trigger 3 is counted per path — SDD counts fix rounds, the parallel path counts repeated gate failures on
+  one branch — so each skill states its own count and nothing else.
+- **Trigger 2 is bounded by a named list.** "An agent's output conflicts with a governing
+  decision" is checked against the decision docs the orchestrator names up front in the batch
+  setup or task brief, plus any recorded during the run — not against all of `docs/adr/` and
+  `docs/decisions/`. The adjudicator dispatch carries those paths so it reads the decision
+  itself rather than the orchestrator's paraphrase.
 - **Scope is the two orchestration skills.** `executing-plans` and the shepherding agents are
   out of scope; they do not fan out independent work and produce no cross-agent conflicts.
 - **Extends the joe-bag-of-tricks-p5x ruling.** That ruling gave agent definitions to
@@ -42,12 +53,25 @@
   agents, and no such mechanism applies here — two SKILL.md bodies linking to it get the same
   result from a file. The shared-file option would have made `dispatching-parallel-agents`
   (`patched`) point into `subagent-driven-development`'s directory (`replaced`), coupling a
-  diff-merged skill to a hand-ported one across syncs.
+  diff-merged skill to a hand-ported one across syncs. The trigger cross-reference adopted
+  instead is a namespace reference in prose, not a path into another skill's files, and that
+  skill already cross-references SDD's Task Loop the same way.
 - Preserved properties, unchanged from the SDD-local version: escalation is a **dispatch, never
   a main-loop model switch**; several triggers firing at once is still ONE dispatch carrying one
   question packet; the ruling is recorded as a `bd note` so it is audited after the run, not
   during; and the adjudicator is never dispatched as a fork, because a fork inherits the full
   session context.
+- **Trigger 2 is deliberately the weakest of the four, and known to be.** The others are
+  detected by counting or by comparing two reports; this one asks whether work violates a
+  recorded decision, which a model can silently fail to notice — the same self-assessment
+  failure the triggers exist to avoid. Naming the governing decisions up front moves that
+  judgment to batch setup, where it is made once, in the open, and is visible in the brief.
+  A decision nobody thought to name can still be violated silently; that hole is accepted, not
+  closed. It is kept despite the weakness because the catch is high-value: an agent adding
+  backward compatibility, or editing an upstream `replaced` file to express a divergent
+  workflow, violates a standing decision that no review finding is guaranteed to surface.
+  Note that SDD's shipped finding-vs-design trigger is *not* evidence for this one — it has
+  never fired in a recorded run and is equally unvalidated.
 - Cost if wrong: a second escalation surface means more Fable dispatches on the parallel path,
   each with real cost. Bounded by the same discipline that bounds the SDD side — triggers are
   structural and mechanically detectable, so they fire rarely and never on a hunch.
