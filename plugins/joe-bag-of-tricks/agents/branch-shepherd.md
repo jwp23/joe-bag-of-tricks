@@ -81,14 +81,49 @@ gh pr merge <number> --squash --body "" --delete-branch
 git checkout main && git pull
 ```
 
-Detect whether the merge commit triggered an Actions run rather than assuming either way:
+Now verify CI on main. Never assume either way: ask GitHub which workflow runs the merge commit triggered. A push to main starts *every* workflow whose triggers match, usually several, so enumerate all of them — one green run says nothing about the others.
+
+Launch this with `Bash` using `run_in_background` and do the worktree cleanup below while it polls. A post-merge suite can run for many minutes, and the Bash tool kills a foreground command at 600s.
 
 ```bash
 SHA=$(git rev-parse HEAD)
-gh run list --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId'
+
+# Detection window: a triggered run registers within seconds. 60s of nothing means none exist.
+for _ in $(seq 1 6); do
+  [ "$(gh run list --commit "$SHA" --limit 100 --json databaseId --jq 'length')" != "0" ] && break
+  sleep 10
+done
+
+# Settle loop: only meaningful once at least one run exists. Capped at 20 minutes so a starved
+# runner cannot hang the train. Re-enumerating each poll also picks up runs that register late
+# (a `workflow_run` chain, or a queue that was backed up).
+if [ "$(gh run list --commit "$SHA" --limit 100 --json databaseId --jq 'length')" != "0" ]; then
+  for _ in $(seq 1 40); do
+    gh run list --commit "$SHA" --limit 100 --json status \
+      --jq 'length > 0 and (map(select(.status != "completed")) | length == 0)' 2>/dev/null \
+      | grep -qx true && break
+    sleep 30
+  done
+fi
 ```
 
-Retry twice at 10s if the first call is empty — runs take a few seconds to register. If a run ID comes back, watch it (`gh run watch <run-id> --exit-status --compact`); a non-zero exit is a post-merge failure, report the branch as merged-but-broken with the failing job. If none comes back, the project's only gate runs on PRs and the PR gate from Step 3/4 already confirms it — do not poll the merge commit, a merge commit with no Actions run sits permanently at check-run `conclusion=neutral` / legacy status `state=pending` with zero contexts, which is steady state, not a running job.
+Do NOT use `gh run watch`. This fork has one CI-wait idiom — the backgrounded polling settle loop, the same shape as Step 3 above. See `docs/adr/005-retire-pr-creator-single-ci-wait.md`.
+
+Read the verdict off the settled list. Every run must have succeeded:
+
+```bash
+gh run list --commit "$SHA" --limit 100 --json workflowName,status,conclusion,url \
+  --jq '.[]
+        | select(.status != "completed" or (.conclusion != "success" and .conclusion != "skipped"))
+        | "\(.workflowName)\t\(.status)\t\(.conclusion)\t\(.url)"'
+```
+
+- **Nothing printed, at least one run listed** — merged and verified against the merge commit's Actions runs.
+- **Rows printed, all `completed`** — report the branch as merged-but-broken, naming those workflows and URLs. Do not attempt a post-merge fix; the train continues.
+- **Rows printed, any still `queued` or `in_progress`** — the 20-minute cap expired with runs outstanding. Report merged, post-merge result UNKNOWN, naming them. Never round this up to green.
+- **No runs listed at all** — the project's only gate runs on PRs, so report the PR gate from Step 3/4. Say plainly that this is the pre-merge gate and does not cover post-merge failures; it is not verification of the merge commit. Do not poll the merge commit — one with no Actions run sits permanently at check-run `conclusion=neutral` / legacy status `state=pending` with zero contexts, which is steady state, not a running job.
+
+This procedure is shared verbatim with `agents/pr-merger.md` Step 3 — edit them together; drift between copies is a defect.
 
 Remove the worktree **only if it lives under `.worktrees/`** — anything else belongs to the host environment:
 
@@ -106,7 +141,11 @@ One outcome table, ≤5 lines per branch:
 
 | Branch | Outcome | Escalations |
 |---|---|---|
-| `<branch>` | merged `<sha>` / BLOCKED: `<reason>` | list, or none |
+| `<branch>` | merged `<sha>` / merged `<sha>`, post-merge BROKEN: `<workflows>` / merged `<sha>`, post-merge UNKNOWN: `<reason>` / BLOCKED: `<reason>` | list, or none |
+
+A plain `merged <sha>` means every Actions run on the merge commit succeeded. If the outcome
+rested on the PR gate because no run was detected, say `merged <sha> (PR gate only — no
+post-merge run detected)`.
 
 ## Rules
 
@@ -116,4 +155,5 @@ One outcome table, ≤5 lines per branch:
 - Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides.
 - Only remove worktrees rooted at `.worktrees/`.
+- Never report a post-merge green you did not observe. A missing, unsettled, or unenumerated run is UNKNOWN, not passing.
 - Do not modify files outside the branch's own worktree.
