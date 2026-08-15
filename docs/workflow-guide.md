@@ -107,6 +107,7 @@ where a role's work profile diverges from the medium baseline:
 | `pr-merger` | haiku | low | Mechanical `gh` operations: squash merge, pull main, verify CI. |
 | `coderabbit-reviewer` | sonnet | low | Evaluate and apply a fixed suggestion list. |
 | `branch-shepherd` | sonnet | medium | Delivery-tail orchestration: CI fix loop, conflict reconciliation, sequencing a branch train. |
+| `adjudicator` | fable | high | One-shot ruling on an escalated question — dispatched with clean context, edits nothing. |
 
 Everything else — task reviewers, the final whole-branch reviewer, the controller loop itself —
 runs at the session baseline unless you've raised it for a specific run.
