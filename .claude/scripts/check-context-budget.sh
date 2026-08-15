@@ -55,6 +55,16 @@ for tool in jq python3; do
     command -v "$tool" >/dev/null || { echo "required tool not found: $tool" >&2; exit 1; }
 done
 
+python3 -c 'import anthropic' 2>/dev/null \
+    || { echo "the anthropic Python SDK is not importable: pip install anthropic" >&2; exit 1; }
+
+# A set-but-empty ANTHROPIC_API_KEY shadows the `ant auth login` profile and the
+# SDK then fails deep in a request with an opaque TypeError.
+if [[ -n "${ANTHROPIC_API_KEY+set}" && -z "${ANTHROPIC_API_KEY}" ]]; then
+    echo "ANTHROPIC_API_KEY is set but empty; it shadows the ant auth profile — unset it or give it a value" >&2
+    exit 1
+fi
+
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
@@ -68,6 +78,13 @@ description_for() {
         /^---/ { exit }
         /^description:[[:space:]]/ { sub(/^description:[[:space:]]*/, ""); print; exit }
     ' "$file")"
+    # A folded or block scalar (`description: >-`) leaves nothing usable on the
+    # `description:` line. Measuring that as empty would silently under-report
+    # the skill's entire per-session cost, so refuse to measure it at all.
+    if [[ -z "$line" || "$line" =~ ^[\>\|][0-9]*[-+]?$ ]]; then
+        echo "no single-line description scalar in ${file}" >&2
+        return 1
+    fi
     if [[ "$line" == \"*\" ]]; then
         line="${line#\"}"
         line="${line%\"}"
@@ -85,7 +102,8 @@ for dir in "${SKILLS_DIR}"/*/; do
     [[ -f "${dir}SKILL.md" ]] || continue
     cat "${dir}SKILL.md" >>"${WORK}/bodies.txt"
     grep -qE '^disable-model-invocation:[[:space:]]*true' "${dir}SKILL.md" && continue
-    printf -- '- %s:%s: %s\n' "$NAMESPACE" "$skill" "$(description_for "${dir}SKILL.md")" \
+    description="$(description_for "${dir}SKILL.md")" || exit 1
+    printf -- '- %s:%s: %s\n' "$NAMESPACE" "$skill" "$description" \
         >>"${WORK}/descriptions.txt"
     listed=$((listed + 1))
 done

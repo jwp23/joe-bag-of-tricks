@@ -40,6 +40,21 @@ for tool in jq git python3; do
     command -v "$tool" >/dev/null || { echo "required tool not found: $tool" >&2; exit 1; }
 done
 
+# Arguments are relative to the caller's directory, but everything below runs
+# from the repo root, so rewrite them before the cd. Without this, running from
+# inside a skill directory silently reads as "nothing on either side" — +0.
+if [[ ${#PATHS[@]} -gt 0 ]]; then
+    relative=()
+    for path in "${PATHS[@]}"; do
+        absolute="$(realpath -m -- "$path")"
+        case "$absolute" in
+            "$REPO_ROOT"/*) relative+=("${absolute#"$REPO_ROOT"/}") ;;
+            *) echo "path is outside ${REPO_ROOT}: $path" >&2; exit 1 ;;
+        esac
+    done
+    PATHS=("${relative[@]}")
+fi
+
 cd "$REPO_ROOT"
 
 if [[ ${#PATHS[@]} -eq 0 ]]; then
@@ -51,11 +66,14 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 # Two blobs per path, in one request: "<rev>:path" and "worktree:path". A path
-# missing on either side counts as empty, so an add or a delete reads as the
-# whole file gained or lost.
+# missing on one side counts as empty, so an add or a delete reads as the whole
+# file gained or lost. Missing on both sides is a bad path, not a zero delta.
 blobs="{}"
 for path in "${PATHS[@]}"; do
-    git show "${REV}:${path}" >"${WORK}/before" 2>/dev/null || : >"${WORK}/before"
+    if ! git show "${REV}:${path}" >"${WORK}/before" 2>/dev/null; then
+        : >"${WORK}/before"
+        [[ -f "$path" ]] || { echo "path is in neither ${REV} nor the working tree: $path" >&2; exit 1; }
+    fi
     if [[ -f "$path" ]]; then
         cp -f "$path" "${WORK}/after"
     else

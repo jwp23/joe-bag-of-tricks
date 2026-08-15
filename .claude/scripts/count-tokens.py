@@ -7,12 +7,15 @@ token-diff.sh both call it, and neither knows how tokens are counted.
 
 Counting goes through the Anthropic count_tokens endpoint. Token counts are
 model-specific, so the model id matters and is passed in. NEVER substitute
-tiktoken or chars/4 — those are OpenAI heuristics that undercount Claude on
-prose and undercount markdown, which is what skills are.
+tiktoken or chars/4 — those are OpenAI heuristics that undercount Claude on the
+prose and markdown that skills are made of.
 
-Every count includes the fixed ~7-token envelope the endpoint adds for the
-message wrapper. It is constant per blob, so it neither grows with content nor
-survives a HEAD-vs-worktree subtraction.
+Every non-empty count includes the fixed ~7-token envelope the endpoint adds for
+the message wrapper. It is constant per blob, so it does not grow with content
+and it cancels out when one version of a file is subtracted from another. Empty
+text short-circuits to a bare 0 with no envelope, so a subtraction where one
+side is empty — an added or deleted file — carries the envelope and overstates
+the delta by ~7.
 
 Credentials come from the `ant auth login` profile, which the SDK reads on its
 own. A set ANTHROPIC_API_KEY — even an empty one — shadows that profile; check
@@ -31,7 +34,7 @@ DEFAULT_MODEL = "claude-opus-5"
 
 
 def count(client, model, text):
-    """Token count for one blob; empty text costs nothing, envelope included."""
+    """Token count for one blob, envelope included; empty text costs nothing."""
     if not text.strip():
         return 0
     counted = client.messages.count_tokens(
