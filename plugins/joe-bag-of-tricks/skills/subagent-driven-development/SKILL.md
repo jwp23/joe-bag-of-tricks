@@ -217,7 +217,7 @@ one of them. Use this table:
 | Implementer (complex) | `joe-bag-of-tricks:implementer-complex` (opus, high effort) | Design judgment, broad codebase understanding, architectural decisions. |
 | Task reviewer (spec + quality) | `model: "sonnet"` | One dispatch covers both a structured spec comparison and a judgment-heavy quality read. Escalate to `opus` for a subtle or high-risk diff (see Review tasks below) — never drop to `haiku`: it caught 0/10 planted defects in upstream's own evaluation and rationalized them away. |
 | Scoped re-reviewer | `model: "haiku"` or `"sonnet"` | Verifying a small fix diff against a fixed findings list. Match the tier to the fix diff's size and risk. |
-| Final reviewer | `model: "opus"` | Holistic assessment across the entire branch. |
+| Final reviewer | `model: "fable"` (top tier; if Fable is not in this session's roster, use the top tier that is) | Holistic assessment across the entire branch. |
 
 **Most implementation tasks are mechanical when the plan is well-specified.** Plans from writing-plans include code snippets, file paths, and acceptance criteria — enough context for `implementer-mechanical` to succeed.
 
@@ -535,7 +535,8 @@ The final whole-branch review gets a package too: run
 `scripts/review-package MERGE_BASE HEAD` (MERGE_BASE = the commit the branch
 started from, e.g. `git merge-base main HEAD`) and include the printed path in
 the final review dispatch, so the final reviewer reads one file instead of
-re-deriving the branch diff with git commands. Dispatch on `opus` using
+re-deriving the branch diff with git commands. Dispatch on `model: "fable"` (top tier; if Fable
+is not in this session's roster, use the top tier that is) using
 requesting-code-review's
 [code-reviewer.md](../requesting-code-review/code-reviewer.md). Point it at
 the deferred-minor and parked notes on the epic's closed tasks so it can
@@ -669,7 +670,8 @@ Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
 [All features closed — bd close <epic-id> --reason "All features complete"]
 
 [Run scripts/review-package MERGE_BASE HEAD; dispatch final code reviewer
- (model: opus) with the printed path — requesting-code-review's code-reviewer.md]
+ (model: fable; top-available-tier fallback if not in roster) with the printed path —
+ requesting-code-review's code-reviewer.md]
 Final reviewer: All requirements met. Deferred minors triaged: none block merge.
 
 [Delete the SDD workspace — the record now lives in bd and git]

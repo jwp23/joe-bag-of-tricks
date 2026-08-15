@@ -101,7 +101,7 @@ Present this analysis to the user. If the answer isn't "subagent," recommend the
 | `hooks` | No | Lifecycle hooks (PreToolUse, PostToolUse, Stop) |
 | `memory` | No | `user`, `project`, or `local` — persistent cross-session learning |
 | `background` | No | `true` to always run as background task |
-| `effort` | No | `low`, `medium`, `high`, `max` |
+| `effort` | No | `low`, `medium`, `high`, `xhigh`, `max` |
 | `isolation` | No | `worktree` for isolated repo copy |
 
 ### Design Checklist — Challenge Each Choice
@@ -113,7 +113,7 @@ For each item, present the reasoning to the user and ask if they agree:
 - `sonnet` — Multi-file coordination, structured analysis. Good default.
 - `opus` — Design judgment, broad codebase understanding, nuanced reasoning.
 - `inherit` — When the parent model is always appropriate. Be explicit about why.
-- Follow the model selection table in `subagent-driven-development` if the agent will be used in that workflow.
+- Follow the Model Selection table in `subagent-driven-development` if the agent will be used in that workflow.
 
 **Tool restrictions:**
 - Start with the minimum set. What tools does this agent NEED?
