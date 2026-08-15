@@ -189,7 +189,9 @@ Scan for, writing down what you checked as you check it:
   implementer agents carry no Skill tool, so the step cannot be followed as
   written. Rule it into "follow the procedure in `<path>`" where that file is
   readable from the worktree; where it is not, put what the step needs into
-  that dispatch's task-specific instructions yourself
+  that dispatch's task-specific instructions yourself. Either way the rewrite
+  reaches the implementer only through item (4) of the dispatch below —
+  `task-brief` copies the task verbatim, so a `bd note` alone never gets there
 
 The scan's output is a table, not a verdict. One row for every pair of tasks
 that share a file or an interface: the two tasks, what one produces against
