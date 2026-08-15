@@ -64,9 +64,13 @@ No TDD and no behavioral evals — deferred by docs/adr/006-defer-behavioral-eva
 - `.claude/scripts/verify-skills-load.sh` — loads every skill and asserts it resolved, divergent
   skills first; also asserts the SessionStart hook injected using-skills. `--only <name>` while
   iterating. One billed model call per skill. Proves a skill LOADS, not that it TRIGGERS.
-  `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace.
+  `--plugin-dir <plugin root>` targets another plugin; the namespace comes from its plugin.json.
+  `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace, and the script
+  rejects it. Divergence ordering and `--tier diverged` need docs/customizations.md, which covers
+  joe-bag-of-tricks only; elsewhere order is alphabetical and that tier is refused.
 - `plugins/joe-magic-bootstrap` has its own, identical validation gate:
-  `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root.
+  `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root, plus
+  `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-bootstrap`.
 - Editing/creating a skill: follow /joe-bag-of-tricks:writing-skills.
 NEVER claim a change works until you've loaded it and observed it — no "should work."
 Inherited tests/pre-commit suites are kept-or-stripped per docs/customizations.md.

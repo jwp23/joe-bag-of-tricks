@@ -18,8 +18,16 @@ skill still resolves, before committing.
   skill and `--tier diverged` for the 12 fork-owned ones; the bare command covers all 18.
   **One model call per skill — it is billed**, which is why it is an explicitly-run gate and not
   a git pre-commit hook.
-  The plugin-root rule still applies to anything you run by hand: `--plugin-dir .` silently loads
-  no skills; it must be `--plugin-dir plugins/joe-bag-of-tricks`.
+  `--plugin-dir <path>` points the same gate at any plugin root — use it to verify
+  `plugins/joe-magic-bootstrap` rather than replicating the probe by hand. The namespace asserted
+  in the `Skill` tool_use is read from that plugin's `.claude-plugin/plugin.json` `name`.
+  `docs/customizations.md` classifies `plugins/joe-bag-of-tricks` only, so against another plugin
+  the ordering degrades to alphabetical (the script says so) and `--tier diverged` is refused
+  instead of silently selecting nothing. The `using-skills` SessionStart assertion likewise applies
+  only to the plugin that ships that skill.
+  The plugin-root rule applies to the script's flag and to anything you run by hand: the path must
+  hold `.claude-plugin/plugin.json`. `--plugin-dir .` is the repo-root marketplace and loads no
+  skills — the script now rejects it outright.
   This proves a skill **loads when named**. It does NOT prove a skill **triggers** from a natural
   prompt — see `docs/adr/006-defer-behavioral-evals.md`. It is not an eval; don't call it one.
 - `betterleaks git --pre-commit --staged --redact` — secret scan. Hard fail.
