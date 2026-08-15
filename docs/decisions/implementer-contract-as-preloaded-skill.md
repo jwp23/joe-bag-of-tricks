@@ -6,9 +6,10 @@
   subagents", code organization, escalation, self-review, report format — lives
   in exactly one file: `plugins/joe-bag-of-tricks/skills/implementer-contract/SKILL.md`.
 - The three implementer agents (`implementer-mechanical`, `implementer`,
-  `implementer-complex`) pull it in with `skills: implementer-contract` in their
-  frontmatter. Each agent body keeps only what differs: the model/effort pin and
-  the paragraph saying which tier it is. 167 lines each → 16.
+  `implementer-complex`) pull it in with a `skills:` list naming
+  `implementer-contract` in their frontmatter. Each agent body keeps only what
+  differs: the model/effort pin and the paragraph saying which tier it is.
+  167 lines each → 17.
 - `subagent-driven-development/implementer-prompt.md` no longer restates the
   contract. It is a dispatch envelope: which task, brief path, report path,
   working directory, context, and task-specific overrides.
@@ -25,12 +26,23 @@
   reference would have cost a Read round-trip and a path the agent cannot resolve
   reliably once the plugin is installed elsewhere. `skills:` is the mechanism
   Claude Code actually provides for injecting shared text into an agent's context.
+- `skills:` is written as a YAML **sequence**, the only form the sub-agents
+  documentation shows. A bare scalar (`skills: implementer-contract`) is coerced
+  today but is undocumented, and the failure mode is silent: a listed skill that
+  cannot be resolved is skipped with only a debug-log warning, so a parser that
+  tightened to sequence-only would strip the whole contract from all three
+  implementers with no error anywhere in the pipeline.
 - Verified empirically before adopting, with a throwaway probe plugin (a canary
   phrase in a preloaded skill, an agent instructed to use no tools):
   - with `skills:` → the agent quoted the phrase, zero tool calls;
   - without `skills:` → the agent returned the absence sentinel.
   Confirmed again against the real artifacts: `implementer-mechanical` quoted a
-  verbatim sentence from the contract with zero tool calls.
+  verbatim sentence from the contract with zero tool calls. Re-proved after the
+  move to the sequence form; the full probe transcript is on
+  `bd show joe-bag-of-tricks-bq7`. To re-run it, the probe MUST dispatch a real
+  subagent — `claude -p --agent implementer` sets the agent for the *main*
+  session and does not exercise subagent preloading at all, returning the
+  absence sentinel whatever `skills:` says.
 - **`disable-model-invocation: true` breaks the preload.** The same probe with
   that flag added returned the absence sentinel. A hidden-from-the-model skill is
   not preloadable, so the contract skill is an ordinary skill and pays ~50 tokens

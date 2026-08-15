@@ -4,7 +4,8 @@ description: Implements a single task from an SDD plan that needs design judgmen
 model: opus
 effort: high
 tools: Bash, Read, Edit, Write, Grep, Glob
-skills: implementer-contract
+skills:
+  - implementer-contract
 ---
 
 You implement a task that needs design judgment or broad codebase context — architecturally

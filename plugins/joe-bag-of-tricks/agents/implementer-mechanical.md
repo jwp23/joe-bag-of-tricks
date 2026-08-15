@@ -4,7 +4,8 @@ description: Executes a single, fully-specified implementation task from an SDD 
 model: haiku
 effort: low
 tools: Bash, Read, Edit, Write, Grep, Glob
-skills: implementer-contract
+skills:
+  - implementer-contract
 ---
 
 You implement transcription-grade tasks with complete specs — jobs where the plan already

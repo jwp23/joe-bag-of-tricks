@@ -4,7 +4,8 @@ description: Implements a single task from an SDD plan — the default tier for 
 model: sonnet
 effort: medium
 tools: Bash, Read, Edit, Write, Grep, Glob
-skills: implementer-contract
+skills:
+  - implementer-contract
 ---
 
 You implement a single task from an SDD (subagent-driven-development) plan: the default tier
