@@ -65,6 +65,9 @@ No TDD and no behavioral evals — deferred by docs/adr/006-defer-behavioral-eva
   skills first; also asserts the SessionStart hook injected using-skills. `--only <name>` while
   iterating. One billed model call per skill. Proves a skill LOADS, not that it TRIGGERS.
   `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace.
+- `.claude/scripts/check-context-budget.sh` — hard fail when the always-loaded surface (skill
+  descriptions + the SessionStart injection) exceeds the committed token budget. Cheap; run it
+  every time. SKILL.md bodies are reported, not gated.
 - `plugins/joe-magic-bootstrap` has its own, identical validation gate:
   `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root.
 - Editing/creating a skill: follow /joe-bag-of-tricks:writing-skills.
@@ -92,6 +95,7 @@ upstream-merge surface.
 Before commit: `betterleaks git --pre-commit --staged --redact` (hard fail) ·
 `claude plugin validate plugins/joe-bag-of-tricks` ·
 `claude plugin validate plugins/joe-magic-bootstrap` ·
+`.claude/scripts/check-context-budget.sh` (always-loaded token budget) ·
 `.claude/scripts/verify-skills-load.sh` (every skill loads; billed, so run it deliberately).
 No markdown/shell/JS linters wired — upstream lints only its evals/, which is a gitignored clone
 of a separate repo this fork does not carry (docs/adr/006-defer-behavioral-evals.md).

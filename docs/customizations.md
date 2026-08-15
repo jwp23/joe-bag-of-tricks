@@ -55,17 +55,17 @@ security wins.**
 | skills/writing-plans | replaced | obra/superpowers | MIT | 2026-08-09: added "Survey by delegation, read by the slice" to File Structure — dispatch an Explore agent for the module survey, then Read only the specific functions a task design prescribes edits to, so survey tokens die with the subagent instead of being re-billed every planning turn. bd-hierarchy planning (the bd hierarchy IS the plan). v6.1.1: ported plan-crispness (Task Right-Sizing, Global Constraints on the epic, per-task Interfaces blocks, No Placeholders); adopted inline **self-review**, dropped the subagent plan-review loop (deleted plan-document-reviewer-prompt.md). v6.2.0: adopted the Remember-section deletion, preserving the fork's record-decision bullet as a one-liner. v6.3.0: ported the plan-header **Spec:** field idea as `--spec-id` on the ad-hoc epic-creation block ("the plan argues from the spec; executors read both") — the fork has no plan-file header to add it to |
 | skills/executing-plans | replaced | obra/superpowers | MIT | bd-based execution. v6.1.1 change was a multi-harness note expansion — skipped. v6.2.0: ported the Step-1 worktree-first item and dropped the Integration roll-up |
 | skills/finishing-a-development-branch | replaced | obra/superpowers | MIT | 2026-08-09: new "Orchestrating Multiple Branches" section at the top — Steps 1-2 (tests, security review, base-branch confirmation) stay per-branch in the main session; once branches are review-clean, delivery of Step 3-through-Merging hands off to the fork-original `branch-shepherd` agent (dispatched in the background, one branch or a train). Steps 3-5 remain the reference procedure branch-shepherd executes. PR-based flow (inline PR creation + pr-merger agent; no CI/CodeRabbit here). v6.1.1: ported Step-5 worktree-remove safety (cd to main root first, `prune`, `.worktrees/`-only guard). v6.2.0: ported the base-branch confirmation wording and replaced Common Mistakes + Red Flags with a Common Rationalizations table adapted to the PR flow; upstream's menu/discard/local-merge restructure does not apply (fork has no menu). Fork-only (2026-07-26): Steps 4/4.5 make the main-thread CI wait **unconditionally backgrounded** (`Bash` `run_in_background` + a `gh pr checks --json bucket` settle loop); the blocking `--watch` is removed from the skill entirely — an "unless you have nothing else to do" carve-out is a rationalization loophole, not a fallback. `--watch` is gone from the fork entirely. Step 3 now opens the PR inline (push + `gh pr create`) and the pr-creator agent is retired; every CI wait, initial run included, uses the one loop. See `adr/005-retire-pr-creator-single-ci-wait.md`. 2026-08-08: replaced hardcoded "Joe" references with upstream's "your human partner" convention. v6.3.0: ported the Step-5 removal-refused safety flow (never `--force`; show untracked files, ask commit/move/delete) + its rationalization row. 2026-08-14: Merging section restated to match pr-merger's detection-based CI verification — every Actions run on the merge commit must succeed when the repo triggers any, PR gate otherwise, waited on by the same backgrounded settle loop as Step 4 (pr-merger polls `gh run list --commit`, this skill polls `gh pr checks`; neither uses `--watch`, so the "gone from the fork entirely" ruling above still holds), plus explicit handling for an INCOMPLETE or PR-gate-only verdict as *unverified* main |
-| skills/using-skills | replaced | obra/superpowers | MIT | fork rebrand of upstream `using-superpowers`; Claude-only, harness reference files (codex/gemini/pi/antigravity) dropped. v6.3.0: skipped the Hermes-Agent reference line (harness) |
+| skills/using-skills | replaced | obra/superpowers | MIT | fork rebrand of upstream `using-superpowers`; Claude-only, harness reference files (pi/antigravity/hermes) never vendored. v6.3.0: skipped the Hermes-Agent reference line (harness). 2026-08-14: `references/{codex,gemini}-tools.md` had in fact still been carried, contradicting this row — **now deleted**, making the manifest true. Same pass stripped the dead multi-harness prose from the always-injected body: the Gemini-CLI activation paragraph, the "In other environments" line, and the whole Platform Adaptation section (its only content was a pointer to the deleted `references/codex-tools.md`); the Instruction Priority list and its example were edited to name CLAUDE.md + AGENTS.md only, dropping GEMINI.md. SessionStart injection 2132 → 1939 tokens, always-loaded surface 3416 → 3223, `BUDGET` 4100 → 3900. The reference-file deletion is a **correctness** fix worth zero per-session context — the hook never injected them. Behavior-shaping content (the `dot` digraph, Red Flags table, Skill Priority, Skill Types) deliberately untouched: cutting it needs eval evidence this fork does not have. See docs/decisions/trim-multi-harness-prose-from-using-skills.md |
 
 ## Skills — patched (fork diverged; reconcile upstream hunks by hand)
 
 | Path | State | Source | License | Reason(s) |
 |------|-------|--------|---------|-----------|
-| skills/writing-skills | patched | obra/superpowers | MIT | Anthropic skill-creator + best-practices (sidecar: anthropic-skill-creator.md). **Deliberate exception to adopt-by-default:** the v6.1.1 `Claude`→`agents` / CSO→SDO sweep is NOT adopted — heavy fork content + the Anthropic sidecar mean this file stays patched regardless, so hand-applying the 89-line sweep is high-effort/low-benefit. persuasion-principles `TodoWrite`→`todos` ported (removes a banned-tool ref). v6.2.0: adopted the Bottom Line deletion; skipped the skills-directory line rewrite (it adds codex/gemini reference links this fork drops — the fork's line already names `~/.claude/skills`). v6.3.0 (render-graphs.js): **adopted** `execFileSync` for both dot calls and the Windows-safe `dot -V` availability probe; **skipped** the CJS→ESM conversion — upstream's ESM only works via its repo-root `package.json` `"type": "module"`, which this fork intentionally drops, so `import` would throw at parse time here; kept `require()` |
+| skills/writing-skills | patched | obra/superpowers | MIT | Anthropic skill-creator + best-practices (sidecar: anthropic-skill-creator.md). **Deliberate exception to adopt-by-default:** the v6.1.1 `Claude`→`agents` / CSO→SDO sweep is NOT adopted — heavy fork content + the Anthropic sidecar mean this file stays patched regardless, so hand-applying the 89-line sweep is high-effort/low-benefit. persuasion-principles `TodoWrite`→`todos` ported (removes a banned-tool ref). v6.2.0: adopted the Bottom Line deletion; skipped the skills-directory line rewrite (it adds codex/gemini reference links this fork drops — the fork's line already names `~/.claude/skills`). v6.3.0 (render-graphs.js): **adopted** `execFileSync` for both dot calls and the Windows-safe `dot -V` availability probe; **skipped** the CJS→ESM conversion — upstream's ESM only works via its repo-root `package.json` `"type": "module"`, which this fork intentionally drops, so `import` would throw at parse time here; kept `require()`. Fork addition in "Token Efficiency": points at this repo's `.claude/scripts/token-diff.sh` / `check-context-budget.sh` and bans tiktoken/chars-4 estimation — measurement beats the word-count proxy |
 | skills/systematic-debugging | patched | obra/superpowers | MIT | de-prefixed skill refs + record-decision hook + desc/argument-hint. v6.1.1: **adopted** `Ultra-think`. v6.2.0: **adopted** all hunks — overview trim, the Phase-4 verification-before-completion step (de-prefixed), Related-skills + Real-World-Impact removal. 2026-07-26: the fork-added `description` is now **double-quoted** — it contains `: ` (`mid-task:`), which as an unquoted YAML plain scalar failed to parse and made `claude plugin validate` fail with all frontmatter silently dropped. Keep it quoted when re-editing the description |
 | skills/test-driven-development | patched | obra/superpowers | MIT | fork-added "Choose Test Level" section. v6.1.1: **adopted** the `[testing-anti-patterns.md](...)` markdown link (`@`-import is a CLAUDE.md mechanism, not a skill-body one). v6.2.0: **adopted** all hunks — `testing-anti-patterns.md` deleted and replaced by vendored `writing-good-tests.md`, Why-Order-Matters folded into the Common Rationalizations table |
 | skills/receiving-code-review | patched | obra/superpowers | MIT | KEEPS the "Strange things are afoot at the Circle K" signal (skipped that deletion — Joe wants it) + desc. v6.1.1: **adopted** CLAUDE.md→instruction-file. v6.2.0: **adopted** the Bottom Line deletion |
-| skills/verification-before-completion | patched | obra/superpowers | MIT | **Reclassified at v6.2.0 — previously (wrongly) listed as fork-original; it has had an upstream counterpart all along.** Fork delta: shortened description + a fork-added Visual Verification section. v6.2.0: **adopted** all hunks — overview trim, Why-This-Matters and Bottom Line removal |
+| skills/verification-before-completion | patched | obra/superpowers | MIT | **Reclassified at v6.2.0 — previously (wrongly) listed as fork-original; it has had an upstream counterpart all along.** Fork delta: shortened description + a fork-added Visual Verification section. v6.2.0: **adopted** all hunks — overview trim, Why-This-Matters and Bottom Line removal. 2026-08-14: two-line pointer to `scripted-browser-verification` added *inside* the fork-added Visual Verification section (the rule itself lives in that fork-original skill, not here — see `docs/decisions/scripted-browser-verification-skill.md`) |
 | skills/dispatching-parallel-agents | patched | obra/superpowers | MIT | **Reclassified 2026-08-09 (was vendored through v6.2.0).** Fork appended two sections after upstream's Integration block: "Delivering Parallel Work (the bead-crunch pattern)" — one worktree/branch per independent item, per-branch review to clean, accumulate rather than deliver one-at-a-time, then ONE `branch-shepherd` dispatch with the full train — and "Choosing between this and subagent-driven-development" (deciding axis is dependency structure, not task count). Upstream's body above that point is unmodified, so upstream hunks diff-merge cleanly; keep the fork sections at the tail |
 | skills/requesting-code-review | patched | obra/superpowers | MIT | **followed upstream** to general-purpose dispatch + improved template (incl. Read-Only Review guard); only fork adaptation is the `docs/plans/` example path. v6.2.0: **adopted** both hunks — intro trim and Integration-with-Workflows → Common Rationalizations. v6.3.0: **adopted** code-reviewer.md's "You Do Not Dispatch Subagents" section verbatim |
 
@@ -81,7 +81,8 @@ security wins.**
 
 ## Fork-original skills (no upstream counterpart)
 
-`readme-sync`, `record-decision`, `security-review`, `writing-agents` — fork additions; no
+`readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`, `ux-audit`,
+`writing-agents` — fork additions; no
 upstream file to diff against. 2026-08-08: `record-decision` had hardcoded "Joe" references;
 replaced with upstream's "your human partner" convention (already used throughout the rest of
 the plugin) so the personalization doesn't leak into a redistributable skill. 2026-08-08:
@@ -90,6 +91,22 @@ finishing-a-development-branch Step 1.5) gained a "Working Directory Safety" cla
 `git checkout`/`switch`/`pull`/`fetch`/`merge` — observed a dispatched reviewer subagent run
 `git checkout main && git pull` in the shared working directory mid-session, moving HEAD off the
 branch the main session had checked out. See `docs/decisions/security-reviewer-shared-worktree-safety.md`.
+2026-08-14: added `scripted-browser-verification` (SKILL.md + reusable `verify.js` template) —
+browser verification is ONE Playwright script run via Bash, assertions in code, compact pass/fail
+output plus screenshot paths only, headless, viewports from project config. Deliberately a new
+fork-original skill rather than a section in the **patched** `verification-before-completion`, which
+gained only a two-line pointer inside its existing fork-added Visual Verification section (keeps the
+upstream hand-merge surface flat and gives `verify.js` a home). See
+`docs/decisions/scripted-browser-verification-skill.md`.
+2026-08-14: added `ux-audit` (SKILL.md + `ux-checks.js`) — the heuristic UI review pass run after a
+frontend batch and before a human sees it: truncation sweep, viewport matrix, crowding, label
+comprehensibility, hierarchy, empty/edge states, reported as severity-tagged findings with
+screenshot evidence. `ux-checks.js` is a probe module (`sweepTruncation`,
+`assertPrimaryContentShare`, `captureLabels`) called from the `checks` array of the project's
+existing `verify.js` — deliberately NOT a second harness and NOT a section of
+`scripted-browser-verification`, which it names as REQUIRED BACKGROUND and whose rule/output
+contract it inherits. The skill states which checks are mechanical assertions and which are agent
+judgment over captured evidence. See `docs/decisions/ux-audit-skill.md`.
 
 ## Vendored skills (== upstream head; take head each sync)
 
@@ -146,13 +163,19 @@ Intentionally not vendored — record why here so future syncs don't re-litigate
   `hooks/hooks-cursor.json`, `hooks/run-hook.cmd`: this fork is Claude-Code-only.
 - **Harness docs** — `docs/README.{codex,kimi,opencode}.md`, `docs/porting-to-a-new-harness.md`,
   `docs/testing.md`, `docs/windows/`, and the
-  `references/{codex,gemini,antigravity,pi,hermes}-tools.md` under `using-superpowers`.
+  `references/{codex,gemini,antigravity,pi,hermes}-tools.md` under `using-superpowers`. The
+  codex/gemini pair was carried by mistake despite this entry and was deleted 2026-08-14; the
+  whole `references/` dir under `skills/using-skills` is gone. Re-vendor none of them.
 - **Upstream dev archive** — `docs/superpowers/plans/*`, `docs/superpowers/specs/*` (upstream's
   internal planning; read as reference during a sync, never vendored).
 - **Project scaffolding** — `package.json` (multi-harness bootstrap, 0 deps, not used by the
   visual companion), `.pre-commit-config.yaml`, `.version-bump.json`, `scripts/*`, `tests/*`,
   `commands/*`, `CHANGELOG.md`, `RELEASE-NOTES.md`, `.github/ISSUE_TEMPLATE/*`,
   `.github/PULL_REQUEST_TEMPLATE.md`, `assets/*` (superpowers branding).
+  `tests/claude-code/analyze-token-usage.py` was evaluated on its own merits 2026-08-14 and
+  **stays dropped** despite being vendorable (superpowers is MIT): it parses session-transcript
+  `.jsonl` rather than the `stream-json` this repo already produces, and its cost math is stale.
+  Re-vendor only under the conditions in `docs/decisions/defer-behavioral-token-cost-measurement.md`.
 - **.gitignore** additions from v6.1.1 (`.superpowers/`, `evals/`) and v6.3.0 (Python/pytest
   entries for upstream's hermes tests) — none apply to this fork.
 
