@@ -240,7 +240,7 @@ the agent that got stuck. The ladder tops out at `implementer-complex`.
 **Always name the agent type or the model explicitly when dispatching.** An implementer dispatch names its agent type, which carries the model and effort with it. A reviewer dispatch names its model, and an omitted model inherits your session's model — often the most capable and most expensive — which silently defeats this section.
 
 **Escalation.** You cannot reliably see what you are missing. That is a property of models,
-not of tiers -- an orchestrator on the top tier is as blind to its own gaps as one on a
+not of tiers — an orchestrator on the top tier is as blind to its own gaps as one on a
 mid-tier model, so never escalate because a call *feels* hard. Escalate when one of these
 fires, each detectable by counting or comparing:
 
@@ -248,7 +248,7 @@ fires, each detectable by counting or comparing:
 |---|---|
 | 1 | Two agents flatly contradict each other on a fact |
 | 2 | An agent's output conflicts with a named governing decision |
-| 3 | The fix-loop breaker trips -- round 5 with findings still open |
+| 3 | The fix-loop breaker trips — round 5 with findings still open |
 | 4 | A Critical finding touches data loss, security, or user files |
 
 **Name the governing decisions up front.** Trigger 2 is checked against a list you state in
@@ -256,13 +256,13 @@ the task brief: the task's own design, plus whichever recorded decisions bear on
 Decisions recorded during the run join the list as they are written. Checking against every
 doc in the project instead is a scan you will silently skip, which defeats the trigger.
 
-When several triggers fire at once, that is still ONE dispatch -- one question packet naming
+When several triggers fire at once, that is still ONE dispatch — one question packet naming
 every fired trigger. Dispatch `joe-bag-of-tricks:adjudicator`, passing the artifact file
 paths, the governing-decision paths, and the narrow question. It pins its own model; pass no
-model param. Never dispatch it as a fork -- a fork inherits your whole session.
+model param. Never dispatch it as a fork — a fork inherits your whole session.
 
-Record the ruling as a `bd note` (`Ruling: <what> -- <why> -- <cost if wrong>`). The ruling
-stands, the run continues, and it surfaces in the "Rulings I made" roll-up at Finish -- your
+Record the ruling as a `bd note` (`Ruling: <what> — <why> — <cost if wrong>`). The ruling
+stands, the run continues, and it surfaces in the "Rulings I made" roll-up at Finish — your
 human partner audits after, not during. Only the four stop classes interrupt the run.
 
 ## The Task Loop
