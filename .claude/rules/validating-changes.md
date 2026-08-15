@@ -26,9 +26,17 @@ skill still resolves, before committing.
 
 ## After an Upstream Sync (advisory, not a gate)
 `.claude/scripts/probe-skill-triggering.sh` — sends natural prompts in a throwaway fixture repo
-and reports which skill fired. **Always exits 0 by design.** Measured 1/2 hit rates on identical
-prompts for some skills, so it is a signal to go read a description, never a pass/fail. Run it
-where description drift is the real risk: after a sync.
+and reports which skill fired. **Always exits 0 by design.** Measured at `--repeat 5` on identical
+prompts: `writing-plans` 3/5, `test-driven-development` 1/5 — so it is a signal to go read a
+description, never a pass/fail. Run it where description drift is the real risk: after a sync, and
+scope it to what actually drifted, which is free to compute:
+
+```
+.claude/scripts/probe-skill-triggering.sh --changed-since <last-release-tag> --repeat 5
+```
+
+Probe calls are billed (~$0.14–0.18 each). The probe runs `--allowedTools Skill`; that choice and
+its cost/realism trade-off are recorded in `../../docs/decisions/triggering-probe-tool-allowlist.md`.
 
 ## When Editing or Creating a Skill
 Follow the `/joe-bag-of-tricks:writing-skills` skill — it carries the skill-testing method.
