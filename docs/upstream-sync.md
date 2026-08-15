@@ -54,5 +54,22 @@ in `customizations.md`. Refuse anything unknown or incompatible.
 - Run `claude plugin validate plugins/joe-bag-of-tricks` and a
   `claude --plugin-dir plugins/joe-bag-of-tricks` smoke load. Both take the plugin root — the repo
   root is the marketplace, and passing `.` silently checks/loads nothing of the plugin's skills.
+- Probe triggering on whatever the sync moved, scoped to the skills whose descriptions actually
+  changed (advisory, always exits 0):
+
+  ```
+  .claude/scripts/probe-skill-triggering.sh --changed-since <last-release-tag> --repeat 5
+  ```
+
+  A skill triggers off its `name` + `description` frontmatter, so a sync that leaves those alone
+  cannot have broken triggering, and the script says so and exits without spending anything.
+  Selection compares the parsed `description:` entry at both refs rather than grepping the diff
+  for `^[+-]description:` — the grep misses an edit inside a `description: |` block scalar, and
+  misses a renamed skill directory, which changes the name the model matches on. Drifted skills
+  with no prompt file are reported by name so the gap is visible.
+
+  Probe calls cost roughly $0.14–0.18 each; scoping is what keeps a post-sync check near $2
+  instead of a full sweep. A miss means go read that description — see
+  `adr/006-defer-behavioral-evals.md`.
 - Squash-merge the `sync/upstream-vX.Y.Z` branch via `finishing-a-development-branch`, like any
   other feature branch. There is no upstream ancestry to preserve, so no special merge handling.
