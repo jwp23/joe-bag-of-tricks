@@ -205,8 +205,10 @@ Use the least powerful agent that can handle each role. Start cheap, escalate on
 
 Implementers dispatch as plugin **agent types** — each definition pins its own model and
 reasoning effort, so the dispatch names an agent and passes no model. Reviewers dispatch as
-general-purpose subagents with an explicit `model` param (the Agent tool accepts
-`model: "haiku" | "sonnet" | "opus"`). Use this table:
+general-purpose subagents with an explicit `model` param, drawn from
+`"haiku" | "sonnet" | "opus"`. That is the reviewer tier list, not the Agent tool's full
+set — the session's roster may offer higher tiers, and the adjudicator dispatch below pins
+one of them. Use this table:
 
 | Role | Dispatch as | Why |
 |------|-------------|-----|
