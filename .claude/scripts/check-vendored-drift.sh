@@ -42,9 +42,14 @@ SHOW_DIFF=0
 LIST_ONLY=0
 ONLY=()
 
+# The whole leading comment block is the help text, found by scanning rather than
+# by a hardcoded line range: a range silently truncates the last flags whenever
+# the header grows (it already hid --diff and --list). Errors go to stderr.
 usage() {
-    sed -n '2,28p' "$0" | sed 's/^# \?//'
-    exit "${1:-0}"
+    local status="${1:-0}" out=1
+    [[ "$status" -eq 0 ]] || out=2
+    awk 'NR > 1 { if (!/^#/) exit; sub(/^# ?/, ""); print }' "$0" >&"$out"
+    exit "$status"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -97,14 +102,29 @@ done < <(awk -F'|' '
     }
 ' "$MANIFEST")
 
+# Only the leading comma-separated backticked list of that section names skills.
+# Everything after it is narrative prose that backticks unrelated words (`switch`,
+# `merge`, `pull`), and a skill that ever shares a name with one of those would be
+# classified fork-original, dropped from the check, and wiped by the next sync —
+# a green gate destroying content. A false PASS is worse here than a false FAIL,
+# so the list is parsed strictly rather than grepped.
 declare -A FORK_ORIGINAL=()
 while read -r name; do
     [[ -n "$name" && -d "${SKILLS_DIR}/${name}" ]] && FORK_ORIGINAL["$name"]=1
 done < <(awk '
     /^## Fork-original skills/ { in_section = 1; next }
     /^## / { in_section = 0 }
-    in_section
-' "$MANIFEST" | grep -oE '`[a-z0-9][a-z0-9-]*`' | tr -d '`' | sort -u)
+    in_section && !seen && NF {
+        seen = 1
+        line = $0
+        while (match(line, /^`[a-z0-9][a-z0-9-]*`(,[[:space:]]*)?/)) {
+            token = substr(line, 1, RLENGTH)
+            gsub(/[`,[:space:]]/, "", token)
+            print token
+            line = substr(line, RLENGTH + 1)
+        }
+    }
+' "$MANIFEST" | sort -u)
 
 classify() {
     local skill="$1"
