@@ -207,8 +207,9 @@ Implementers dispatch as plugin **agent types** — each definition pins its own
 reasoning effort, so the dispatch names an agent and passes no model. Reviewers dispatch as
 general-purpose subagents with an explicit `model` param, drawn from
 `"haiku" | "sonnet" | "opus"`. That is the reviewer tier list, not the Agent tool's full
-set — the session's roster may offer higher tiers, and the adjudicator dispatch below pins
-one of them. Use this table:
+set — the session's roster may offer higher tiers. The adjudicator dispatches as an agent
+type like the implementers do, so it pins its own model and takes no model param. Use this
+table:
 
 | Role | Dispatch as | Why |
 |------|-------------|-----|
@@ -238,33 +239,31 @@ the agent that got stuck. The ladder tops out at `implementer-complex`.
 
 **Always name the agent type or the model explicitly when dispatching.** An implementer dispatch names its agent type, which carries the model and effort with it. A reviewer dispatch names its model, and an omitted model inherits your session's model — often the most capable and most expensive — which silently defeats this section.
 
-**Controller model and escalation.** The controller loop itself (claim,
-dispatch, close, roll up) is mid-tier work — running it on the top tier
-mostly buys more expensive bookkeeping. Where top-tier reasoning pays is
-plan authoring and adjudication. A controller on a mid-tier model must NOT
-try to self-assess "is this too hard for me" — a model cannot reliably see
-what it is missing. Escalate on structural triggers instead, all
-mechanically detectable:
+**Escalation.** You cannot reliably see what you are missing. That is a property of models,
+not of tiers -- an orchestrator on the top tier is as blind to its own gaps as one on a
+mid-tier model, so never escalate because a call *feels* hard. Escalate when one of these
+fires, each detectable by counting or comparing:
 
-- the fix-loop breaker trips (round 5 with findings still open)
-- a finding conflicts with the task's design in either direction — the
-  design must be overruled, or the design itself is the source of the
-  defect
-- implementer and reviewer flatly contradict each other on a fact
-- a Critical finding touches data loss, security, or user files
+| # | Fires when |
+|---|---|
+| 1 | Two agents flatly contradict each other on a fact |
+| 2 | An agent's output conflicts with a named governing decision |
+| 3 | The fix-loop breaker trips -- round 5 with findings still open |
+| 4 | A Critical finding touches data loss, security, or user files |
 
-When several triggers fire at once, that is still ONE adjudicator dispatch —
-one question packet naming every fired trigger. Dispatch the one-shot
-**adjudicator** on the top tier (`model: "fable"`; if Fable is not in this
-session's roster, use the top tier that is): clean context, the
-brief/report/review file paths, and the narrow question.
-Record its ruling as a `bd note` (`Ruling: ...`) so your human partner can
-audit every judgment call afterward. Escalation is a dispatch, not a model
-switch — the main loop's model is the user's choice, not yours. The
-adjudicator is how a mid-tier controller rules without stalling: its ruling
-stands, the run continues, and the ruling surfaces in the "Rulings I made"
-roll-up at Finish — your human partner audits after, not during. Only the
-four stop classes above interrupt the run.
+**Name the governing decisions up front.** Trigger 2 is checked against a list you state in
+the task brief: the task's own design, plus whichever recorded decisions bear on the work.
+Decisions recorded during the run join the list as they are written. Checking against every
+doc in the project instead is a scan you will silently skip, which defeats the trigger.
+
+When several triggers fire at once, that is still ONE dispatch -- one question packet naming
+every fired trigger. Dispatch `joe-bag-of-tricks:adjudicator`, passing the artifact file
+paths, the governing-decision paths, and the narrow question. It pins its own model; pass no
+model param. Never dispatch it as a fork -- a fork inherits your whole session.
+
+Record the ruling as a `bd note` (`Ruling: <what> -- <why> -- <cost if wrong>`). The ruling
+stands, the run continues, and it surfaces in the "Rulings I made" roll-up at Finish -- your
+human partner audits after, not during. Only the four stop classes interrupt the run.
 
 ## The Task Loop
 
@@ -697,6 +696,7 @@ Done! Using finishing-a-development-branch.
   escalation ladder
 - **branch-shepherd** agent (sonnet) - Runs the finishing-a-development-branch tail
   unattended for the finished branch (Finish)
+- **adjudicator** agent (fable) - One-shot ruling when an escalation trigger fires (Escalation)
 
 **Alternative workflow:**
 - **executing-plans** - Use for parallel session instead of same-session execution
