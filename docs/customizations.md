@@ -81,7 +81,7 @@ security wins.**
 
 ## Fork-original skills (no upstream counterpart)
 
-`readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`,
+`readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`, `ux-audit`,
 `writing-agents` — fork additions; no
 upstream file to diff against. 2026-08-08: `record-decision` had hardcoded "Joe" references;
 replaced with upstream's "your human partner" convention (already used throughout the rest of
@@ -98,6 +98,15 @@ fork-original skill rather than a section in the **patched** `verification-befor
 gained only a two-line pointer inside its existing fork-added Visual Verification section (keeps the
 upstream hand-merge surface flat and gives `verify.js` a home). See
 `docs/decisions/scripted-browser-verification-skill.md`.
+2026-08-14: added `ux-audit` (SKILL.md + `ux-checks.js`) — the heuristic UI review pass run after a
+frontend batch and before a human sees it: truncation sweep, viewport matrix, crowding, label
+comprehensibility, hierarchy, empty/edge states, reported as severity-tagged findings with
+screenshot evidence. `ux-checks.js` is a probe module (`sweepTruncation`,
+`assertPrimaryContentShare`, `captureLabels`) called from the `checks` array of the project's
+existing `verify.js` — deliberately NOT a second harness and NOT a section of
+`scripted-browser-verification`, which it names as REQUIRED BACKGROUND and whose rule/output
+contract it inherits. The skill states which checks are mechanical assertions and which are agent
+judgment over captured evidence. See `docs/decisions/ux-audit-skill.md`.
 
 ## Vendored skills (== upstream head; take head each sync)
 
