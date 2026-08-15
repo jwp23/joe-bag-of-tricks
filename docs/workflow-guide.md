@@ -70,7 +70,76 @@ same per-branch review discipline as a single SDD task: a task review with a fix
 security pass (combined across the batch, or per-branch, depending on batch size). As each
 branch goes review-clean, it's added to a running list rather than delivered immediately.
 
-## 3. Delivery
+**How much to run at once:** default to 4-5 concurrent subagents when the backlog has that much
+truly independent work — wall clock matters, and medium effort keeps the burn rate manageable at
+that width. Throttle toward ~3 when usage-cap headroom is tight: mid-window on a long run, or
+when running at high effort. True concurrency is bounded by independent bead families —
+implementers must never share files, so entangled work collapses into fewer, larger branches
+regardless of how many you'd like to run. Parallelism front-loads token burn rather than
+reducing it: running 5 branches at once spends roughly 5x the tokens over a shorter wall-clock
+window, so a mid-flight cap exhaustion kills that many in-progress agents at once. They're
+recoverable from their worktrees, but resuming them costs tokens and attention on top of what
+was already spent.
+
+## 3. Effort & Model Tiers
+
+Every dispatch — implementer, reviewer, or delivery agent — runs at some combination of model
+and reasoning effort. Most of the roster doesn't choose; it inherits your session's settings.
+Only a handful of roles are pinned away from that baseline, and only because their work profile
+warrants it.
+
+**Session baseline:** your session runs at `effortLevel=medium` unless you've changed it. Set it
+via the `/effort` slider (interactive), the `effortLevel` key in `settings.json`
+(`low|medium|high|xhigh`), the `--effort` CLI flag, or the `CLAUDE_CODE_EFFORT_LEVEL`
+environment variable — **not** `/config`, which doesn't carry this setting. Any dispatch that
+doesn't pin its own effort runs at whatever your session is currently set to.
+
+**Agent pins:** a subagent's frontmatter can set `effort: low|medium|high|xhigh|max`, which
+overrides the session level for that agent regardless of what you're running at. Pins exist only
+where a role's work profile diverges from the medium baseline:
+
+| Agent | Model | Effort | Why |
+|---|---|---|---|
+| `implementer-mechanical` | haiku | low | Clear spec, 1-2 files, plan provides code snippets — transcription plus testing. |
+| `implementer` | sonnet | medium | Default tier: multi-file coordination, message passing, pattern matching. |
+| `implementer-complex` | opus | high | Design judgment, broad codebase understanding — also the SDD round-4/5 escalation target. |
+| `pr-merger` | haiku | low | Mechanical `gh` operations: squash merge, pull main, verify CI. |
+| `coderabbit-reviewer` | sonnet | low | Evaluate and apply a fixed suggestion list. |
+| `branch-shepherd` | sonnet | medium | Delivery-tail orchestration: CI fix loop, conflict reconciliation, sequencing a branch train. |
+
+Everything else — task reviewers, the final whole-branch reviewer, the controller loop itself —
+runs at the session baseline unless you've raised it for a specific run.
+
+**Model tiers by phase** (from `docs/decisions/orchestration-model-tiering.md`): design-side work
+— brainstorming, roadmap discussion, plan authoring against real code — runs on Fable, because a
+subtly wrong plan costs more downstream than top-tier reasoning costs upfront. The controller
+loop (dispatch, review, close, roll up) runs on opus — well within its territory, and running
+coordination on Fable mostly buys more expensive bookkeeping. The implementer roster tops out at
+opus; Fable is not an implementer tier, and the round-4/5 escalation ladder never reaches it.
+The one place Fable participates in execution is a one-shot adjudicator, dispatched with clean
+context (never as a fork — a fork inherits the full session and gets expensive fast) on
+structural triggers only: a fix-loop breaker, a finding-vs-design conflict, an
+implementer/reviewer factual contradiction, or a Critical finding touching data loss, security,
+or user files. Structural triggers keep these dispatches rare and well-scoped — "this feels
+hard" is exactly the judgment a mid-tier model can't make about itself, so the trigger has to be
+structural, not a vibe.
+
+**Sizing philosophy:** the norm is decomposing tasks (writing-plans) down to sonnet/haiku
+granularity — most implementation work is mechanical once the plan carries the code to write.
+`implementer-complex` (opus/high) is the escape valve for tasks that stay irreducibly
+judgment-heavy even after good decomposition, not a default. The 2026-08 spe autonomous run is
+the evidence for this split: undo/session semantics, WinAnsi encoding, and canvas geometry each
+needed opus despite a well-decomposed plan.
+
+A Claude 5 note: medium effort is roughly comparable to previous-generation high for
+well-specified work, which is part of why medium is the baseline rather than high. Keep effort
+high where long-horizon judgment matters, not as a default hedge.
+
+The empirical guardrail is fix-round rate: if a role running at a lowered tier starts needing
+more review or fix rounds than it used to, raise the tier back. That rate is the signal that the
+tier was cut too far — not a hunch, not a preference.
+
+## 4. Delivery
 
 Whichever fork produced it, a review-clean branch goes to **branch-shepherd** — one branch from
 an SDD run, or the accumulated train from a parallel batch. You dispatch it once, in the
@@ -98,16 +167,31 @@ reason, per branch — plus any escalations.
   (architecture, language/framework, testing strategy, CI/CD design) or a decision doc (tool
   choice, naming, config, pre-commit setup) whenever it's uncertain.
 
-## 4. What You See During an Autonomous Run
+## 5. What You See During an Autonomous Run
 
-Narration is terse — at most one short line between tool calls; the bd state and tool results
-carry the record, not prose commentary. What actually persists:
+This mirrors Joe's own `~/.claude/CLAUDE.md` "Autonomous runs" section — read that as the
+canonical statement; this is how it plays out inside these skills.
+
+Narration is terse: at most one short line between actions. Orchestrator context gets re-read
+every turn, so verbose statuses aren't free color commentary — they're a recurring tax that adds
+up over a long run (a major driver of cap exhaustion in the 2026-08 spe run). Durable state goes
+in bd, git, or memory — never conversation prose:
 
 - **bd** is the durable record — task status, fix-round notes, close reasons, and anything
   worth remembering across a compaction (`bd remember`). Conversation memory does not survive
   compaction; bd does.
 - **Discovered work** gets filed as a bead (`bd create ... --deps discovered-from:<task-id>`),
   never silently dropped.
+
+Substantive prose is reserved for two things: decisions you need to make, and judgment calls
+made on your behalf that you should be able to audit — the "Questions that stop the line" and
+"Everything else" split below is that reservation in practice.
+
+**End-of-run summary:** when a run finishes, you get one summary, not a narration trail —
+a brief recap of the work done (short bullets, not branch-by-branch or PR-by-PR narration),
+then decisions made, judgment calls with rationale, deviations from the plan, and anything that
+wouldn't be visible from `git log --oneline` alone (rulings, rejected approaches, deferred
+work). branch-shepherd's one outcome table (§4, above) is this shape applied to delivery.
 
 **Checking progress from cold** — a fresh session, or after a compaction:
 
@@ -130,7 +214,7 @@ gh pr list             # What's open, and its CI/mergeable state
 Everything else — routine fix rounds, CodeRabbit apply/reject calls, scoped re-reviews — runs
 without a check-in.
 
-## 5. A Worked Example
+## 6. A Worked Example
 
 > **You:** "Here's a bug list: the rate limiter double-counts retries, the health check
 > endpoint times out under load, and the config loader ignores `.env.local`. They don't touch
