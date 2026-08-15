@@ -18,13 +18,18 @@
 - **Every future agent now spends measured budget**, and `writing-agents` says so at the point
   where a description gets written. That is the cost of the decision, accepted deliberately: 423
   tokens of headroom are now shared between the next skill and the next agent.
-- **The gate refuses to measure what it cannot render faithfully.** A `description:`, `name:`, or
-  `tools:` value that is a folded/block scalar or a YAML list fails the run with the file named,
-  rather than being measured as empty. `disallowedTools:` — which the harness renders as
-  "All tools except …", and as a set difference when combined with `tools:` — is refused
-  outright, because no agent here uses it and modelling it from an unexercised code path would
-  be a guess. An agent with no `tools:` key is rendered `(Tools: All tools)`, which is the
-  harness's documented default and its observed behaviour.
+- **The gate refuses to measure what it cannot render faithfully.** A `name:`, `description:`, or
+  `tools:` value that is a folded or block scalar, or a block-style list, leaves the key's line
+  empty and fails the run with the file named rather than being measured as empty. A flow-style
+  `tools: [Read, Grep]` is refused by name, being the same class in the other YAML spelling.
+  `disallowedTools:` — which the harness renders as "All tools except …", and as a set difference
+  when combined with `tools:` — is refused outright, because no agent here uses it and modelling
+  it from an unexercised code path would be a guess. An agent with no `tools:` key is rendered
+  `(Tools: All tools)`, which is the harness's documented default and its observed behaviour.
+- **A comma-separated `tools:` is normalised to `", "` before counting.** The harness parses the
+  allowlist and re-joins it, so `tools: Bash,Read` is injected as `(Tools: Bash, Read)` and costs
+  what the spaced spelling costs. Counting the raw string would under-report — the one direction
+  a budget gate must never round.
 
 ## Rationale
 
@@ -51,6 +56,15 @@ a confident number that measures nothing. Two independent pieces of evidence, bo
   seven in that captured system prompt. That is the check to repeat if the harness ever changes
   the format; it costs no model call, because the request never reaches the API.
 
+  The same capture, run again with three throwaway agent files, is where the `tools:` rules come
+  from — they are observations, not readings of the minified source:
+
+  ```
+  tools: Bash,Read      → (Tools: Bash, Read)     # parsed and re-joined with ", "
+  tools: [Read, Grep]   → (Tools: Read, Grep)     # flow list, elements rendered
+  tools: []             → (Tools: All tools)      # empty list reads as "no allowlist"
+  ```
+
 **Gated, not merely reported.** The tier could have been informational like `bodies`. It is not,
 because the roster is paid on every session before the user has said anything — the same
 property that makes tier 1 a gate. A reported-only number would be read once and then drift,
@@ -72,8 +86,9 @@ growth.
 
 - The captured request body stops matching the lines the gate generates — the harness changed
   the roster format.
-- An agent needs `disallowedTools`, or a frontmatter value that genuinely has to be a block
-  scalar. Both currently hard-fail with a named file; extend `tools_for` / `frontmatter_scalar`
-  then, rather than loosening them.
+- An agent needs `disallowedTools`, a list-valued `tools:` in either YAML spelling, or a
+  frontmatter value that genuinely has to be a block scalar. All hard-fail with a named file;
+  extend `tools_for` / `frontmatter_scalar` then, rather than loosening them. The rendering to
+  match is already measured — see the capture above.
 - Headroom runs out. The next decision is which surface to shrink — a skill description, an agent
   description, or the `using-skills` injection — and only then whether the budget is wrong.

@@ -108,7 +108,9 @@ frontmatter_scalar() {
 # The roster's parenthesised tool phrase. An agent with no `tools:` key inherits
 # every tool and the roster says so. `disallowedTools` renders differently again
 # ("All tools except …", and a set difference when combined with `tools:`); no
-# agent here uses it, so it is refused rather than modelled wrong.
+# agent here uses it, so it is refused rather than modelled wrong. A `tools:`
+# list is refused the same way, in either YAML spelling: block style leaves the
+# key's line empty, and flow style (`[Read, Grep]`, `[]`) is caught here.
 tools_for() {
     local file="$1" tools status
     frontmatter_scalar "$file" disallowedTools >/dev/null 2>&1 && status=0 || status=$?
@@ -117,11 +119,21 @@ tools_for() {
         return 1
     fi
     tools="$(frontmatter_scalar "$file" tools)" && status=0 || status=$?
-    case "$status" in
-        0) printf '%s' "$tools" ;;
-        2) printf 'All tools' ;;
-        *) echo "no single-line tools scalar in ${file}" >&2; return 1 ;;
-    esac
+    if [[ "$status" -eq 2 ]]; then
+        printf 'All tools'
+        return 0
+    elif [[ "$status" -ne 0 ]]; then
+        echo "no single-line tools scalar in ${file}" >&2
+        return 1
+    fi
+    if [[ "$tools" == \[* ]]; then
+        echo "flow-style tools list in ${file} is not modelled by this gate; extend tools_for" >&2
+        return 1
+    fi
+    # The harness parses the allowlist and re-joins it with ", ", so `Bash,Read`
+    # is injected as `Bash, Read`. Emitting the raw string would under-report,
+    # which is the one direction a budget gate must never round.
+    printf '%s' "$tools" | sed 's/[[:space:]]*,[[:space:]]*/, /g'
 }
 
 # Tier 1. A skill with `disable-model-invocation: true` is kept out of the
