@@ -24,6 +24,26 @@ skill still resolves, before committing.
   prompt — see `docs/adr/006-defer-behavioral-evals.md`. It is not an eval; don't call it one.
 - `betterleaks git --pre-commit --staged --redact` — secret scan. Hard fail.
 
+## Before a Sync, and Before Any PR That Touches a Skill
+`.claude/scripts/check-vendored-drift.sh` — proves every skill classified `vendored` is still
+byte-identical to `obra/superpowers` at the **Last synced** ref in `docs/customizations.md`. A
+`vendored` file is taken to upstream head wholesale by the next sync, so a fork edit that lands
+while the row still says `vendored` gets silently wiped — that already happened once
+(`dispatching-parallel-agents/SKILL.md`, caught by hand). Hard fail: it names each drifted file,
+shows the drift size (`--diff` for the full unified diff), and exits non-zero. It does **not**
+judge whether the drift was intentional — you decide reclassify-to-`patched` vs. revert.
+
+The file list is derived from the manifest — the `| skills/<name> |` rows plus its catch-all
+("skills not listed above are vendored") — so a new vendored skill needs no script edit. Use
+`--list` to see the classification it derived, `--only <skill>`, or `--ref <tag>` to measure
+against a different upstream ref. **Scope limit:** skill *directories*. Individually-vendored
+FILES inside a `patched`/`replaced` skill (named only in the manifest's narrative "Vendored
+skills" prose, negations and all) are not machine-checkable and remain a hand check.
+
+Cost: no model calls — one GitHub API call for the upstream tree, plus one per drifted file to
+render the diff. It is still **not** a git pre-commit hook: it needs the network and an
+authenticated `gh`, which a hook must not depend on. Sync time and pre-PR are the natural moments.
+
 ## After an Upstream Sync (advisory, not a gate)
 `.claude/scripts/probe-skill-triggering.sh` — sends natural prompts in a throwaway fixture repo
 and reports which skill fired. **Always exits 0 by design.** Measured 1/2 hit rates on identical
