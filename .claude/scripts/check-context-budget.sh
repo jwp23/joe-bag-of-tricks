@@ -132,8 +132,11 @@ tools_for() {
     fi
     # The harness parses the allowlist and re-joins it with ", ", so `Bash,Read`
     # is injected as `Bash, Read`. Emitting the raw string would under-report,
-    # which is the one direction a budget gate must never round.
-    printf '%s' "$tools" | sed 's/[[:space:]]*,[[:space:]]*/, /g'
+    # which is the one direction a budget gate must never round. Separators
+    # collapse to ", "; whitespace and commas dangling off either end, which the
+    # parse would discard, are trimmed rather than counted.
+    printf '%s' "$tools" \
+        | sed 's/[[:space:]]*,[[:space:]]*/, /g; s/^[[:space:],]*//; s/[[:space:],]*$//'
 }
 
 # Tier 1. A skill with `disable-model-invocation: true` is kept out of the
