@@ -53,7 +53,8 @@ that one item gets built.
 subagent-driven-development claims the first task (`bd update <task-id> --claim`), dispatches a
 fresh implementer subagent, and runs it through the loop: implementer builds and tests → task
 reviewer checks spec compliance and code quality → if findings, a bounded fix loop (resume the
-implementer, up to 5 rounds, escalating model on rounds 4-5) → task bead closes with the commit
+implementer, up to 5 rounds, escalating one step up the implementer agent ladder on rounds 4-5)
+→ task bead closes with the commit
 range as its reason. It repeats for every task in the feature, closes the feature, moves to the
 next feature, and so on until the epic is done — then runs one whole-branch review before
 declaring the branch review-clean. It does not check in between tasks; the only reasons it stops
