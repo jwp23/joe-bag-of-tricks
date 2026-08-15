@@ -10,32 +10,45 @@
 # model and can only be reached as /namespace:name, so it is probed that way and
 # reported in the VIA column as "slash" rather than "skill".
 #
+# --plugin-dir targets any plugin root — the dir holding .claude-plugin/plugin.json
+# — and the namespace is read from that manifest's `name`. docs/customizations.md
+# describes plugins/joe-bag-of-tricks and no other plugin, so for any other plugin
+# the divergence ordering does not exist: skills run alphabetically and
+# --tier diverged is rejected rather than silently mis-ordered. The using-skills
+# hook assertion likewise applies only to a plugin that ships that skill.
+#
 # Cost: one model call per skill. Runs are billed; the summary prints the total.
 #
 # Usage:
 #   .claude/scripts/verify-skills-load.sh                 # every skill
 #   .claude/scripts/verify-skills-load.sh --tier diverged # replaced + patched only
 #   .claude/scripts/verify-skills-load.sh --only brainstorming writing-plans
+#   .claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-bootstrap
 #   .claude/scripts/verify-skills-load.sh --jobs 1 --model opus --timeout 300
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-PLUGIN_DIR="${REPO_ROOT}/plugins/joe-bag-of-tricks"
-SKILLS_DIR="${PLUGIN_DIR}/skills"
 MANIFEST="${REPO_ROOT}/docs/customizations.md"
-NAMESPACE="joe-bag-of-tricks"
+# The manifest's skills/ rows classify this plugin's skills and no other's.
+MANIFEST_PLUGIN="${REPO_ROOT}/plugins/joe-bag-of-tricks"
 
+PLUGIN_DIR="$MANIFEST_PLUGIN"
 MODEL="sonnet"
 TIMEOUT=180
 JOBS=3
 TIER="all"
 ONLY=()
 
+# The whole leading comment block is the help text, found by scanning rather than
+# by a hardcoded line range: a range silently truncates the last flags whenever
+# the header grows, as this one just did. Errors go to stderr.
 usage() {
-    sed -n '2,19p' "$0" | sed 's/^# \?//'
-    exit "${1:-0}"
+    local status="${1:-0}" out=1
+    [[ "$status" -eq 0 ]] || out=2
+    awk 'NR > 1 { if (!/^#/) exit; sub(/^# ?/, ""); print }' "$0" >&"$out"
+    exit "$status"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -44,6 +57,7 @@ while [[ $# -gt 0 ]]; do
         --timeout) TIMEOUT="$2"; shift 2 ;;
         --jobs)    JOBS="$2"; shift 2 ;;
         --tier)    TIER="$2"; shift 2 ;;
+        --plugin-dir) PLUGIN_DIR="$2"; shift 2 ;;
         --only)
             shift
             while [[ $# -gt 0 && "$1" != --* ]]; do ONLY+=("$1"); shift; done
@@ -62,11 +76,48 @@ for tool in claude jq timeout; do
     command -v "$tool" >/dev/null || { echo "required tool not found: $tool" >&2; exit 1; }
 done
 
+# The plugin root is the dir holding .claude-plugin/plugin.json. A marketplace
+# root (the repo root) silently loads no skills, so reject anything else here
+# rather than reporting an empty, passing run.
+PLUGIN_ARG="$PLUGIN_DIR"
+PLUGIN_DIR="$(cd "$PLUGIN_ARG" 2>/dev/null && pwd)" || true
+if [[ -z "$PLUGIN_DIR" || ! -f "${PLUGIN_DIR}/.claude-plugin/plugin.json" ]]; then
+    echo "--plugin-dir must be a plugin root holding .claude-plugin/plugin.json, got: ${PLUGIN_ARG}" >&2
+    exit 1
+fi
+
+SKILLS_DIR="${PLUGIN_DIR}/skills"
+[[ -d "$SKILLS_DIR" ]] || { echo "no skills/ directory in ${PLUGIN_DIR}" >&2; exit 1; }
+
+# The namespace skills resolve under is the plugin's own manifest name.
+NAMESPACE="$(jq -r '.name // empty' "${PLUGIN_DIR}/.claude-plugin/plugin.json")"
+[[ -n "$NAMESPACE" ]] ||
+    { echo "no \"name\" in ${PLUGIN_DIR}/.claude-plugin/plugin.json" >&2; exit 1; }
+
+# docs/customizations.md classifies one plugin's skills. Against any other plugin
+# there is no divergence data, so ordering degrades to alphabetical and the
+# diverged tier — which would otherwise select nothing — is refused.
+# -ef compares device+inode, so a --plugin-dir reached through a symlink or any
+# other spelling of the same directory is still recognized as the covered plugin;
+# string equality would silently degrade ordering to alphabetical instead.
+MANIFEST_COVERED=0
+[[ "$PLUGIN_DIR" -ef "$MANIFEST_PLUGIN" ]] && MANIFEST_COVERED=1
+if [[ "$TIER" == "diverged" && "$MANIFEST_COVERED" -eq 0 ]]; then
+    echo "--tier diverged needs docs/customizations.md coverage, which exists only for ${MANIFEST_PLUGIN}" >&2
+    exit 1
+fi
+
+# Only the plugin that ships using-skills can have injected it at SessionStart.
+EXPECT_HOOK=0
+[[ -d "${SKILLS_DIR}/using-skills" ]] && EXPECT_HOOK=1
+
 # Divergence rank from the State column of docs/customizations.md, so the skills
 # this fork owns fail first. The manifest is the source of truth; a skill with no
-# row there (vendored or fork-original) sorts last.
+# row there (vendored or fork-original) sorts last, as does every skill of a
+# plugin the manifest does not cover.
 rank_for() {
     local skill="$1" state
+    [[ "$MANIFEST_COVERED" -eq 1 ]] || { echo 3; return; }
     state="$(awk -F'|' -v s=" skills/${skill} " '
         $0 ~ /^\| skills\// && $2 == s { gsub(/ /, "", $3); print $3; exit }
     ' "$MANIFEST")"
@@ -216,10 +267,13 @@ probe() {
           elif .subtype=="success" and .is_error==false then "ok"
           else "result \(.subtype) is_error=\(.is_error)" end
     ' "$stream")"
-    hook="$(jq -s --arg ns "$NAMESPACE" '
-        [ .[] | select(.subtype=="hook_response" and .hook_event=="SessionStart")
-          | select(.output | contains("\($ns):using-skills")) ] | length
-    ' "$stream")"
+    hook=1
+    if [[ "$EXPECT_HOOK" -eq 1 ]]; then
+        hook="$(jq -s --arg ns "$NAMESPACE" '
+            [ .[] | select(.subtype=="hook_response" and .hook_event=="SessionStart")
+              | select(.output | contains("\($ns):using-skills")) ] | length
+        ' "$stream")"
+    fi
 
     jq -rs '[ .[] | select(.type=="result") ] | last | .total_cost_usd // 0' \
         "$stream" >"${WORK}/${skill}.cost"
@@ -243,7 +297,11 @@ probe() {
     fi
 }
 
-echo "Loading ${#SKILLS[@]} skill(s) from ${PLUGIN_DIR} (model=${MODEL}, jobs=${JOBS})"
+echo "Loading ${#SKILLS[@]} skill(s) from ${PLUGIN_DIR} as ${NAMESPACE}: (model=${MODEL}, jobs=${JOBS})"
+[[ "$MANIFEST_COVERED" -eq 1 ]] ||
+    echo "no docs/customizations.md coverage for this plugin: order is alphabetical, not divergence-first"
+[[ "$EXPECT_HOOK" -eq 1 ]] ||
+    echo "this plugin does not ship using-skills: the SessionStart injection is not asserted"
 echo
 
 for skill in "${SKILLS[@]}"; do
