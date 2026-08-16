@@ -171,6 +171,9 @@ Then verify:
 - Description follows CSO guidelines
 - Prompt is under target word count
 
+**Behavior change to an existing agent?** The static checks above are not sufficient. Follow
+`testing-agents-with-subagents.md` in this directory — baseline first, then verify.
+
 ## Step 6: Integrate
 
 After creating the agent, consider:
