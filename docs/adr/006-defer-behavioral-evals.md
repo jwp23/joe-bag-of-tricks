@@ -101,8 +101,9 @@ set. That is what Quorum is, and deferring it stands.
 It was never a decision to ship behavioral changes untested. Nothing here rejects an ad-hoc
 pressure test scoped to the change in hand: a throwaway fixture and a handful of subagent runs,
 which needs no harness repo, no bun/tmux, and no CI to host it. The distinction went unwritten
-long enough to be read the other way, and a review-triage change shipped untested on the strength
-of that reading (joe-bag-of-tricks-4po) before a pressure test found a real defect in it.
+long enough to be read the other way: a review-triage change was implemented untested on the
+strength of that reading (joe-bag-of-tricks-4po), and only a pressure test added late in that work
+found a real defect in it before it shipped.
 
 - **Deferred:** standing eval infrastructure, scenario suites, cross-skill regression measurement.
 - **Not deferred, and required where behavior changes:** a fixture plus subagent runs for the

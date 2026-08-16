@@ -20,7 +20,7 @@ behavior changes.
 | Typo, link, rewording, manifest row, cross-reference | required | no |
 | New skill or agent | required | baseline first |
 | Description rewrite aimed at triggering | required | not a subagent test; `skill-creator`'s eval loop is the instrument, and it gates nothing |
-| **Behavior change — a new rule, bucket, or gate, or a relaxation of one** | required | **required** |
+| **Behavior change — a new rule, bucket, gate, or escalation trigger, or a relaxation of one** | required | **required** |
 
 `docs/adr/006-defer-behavioral-evals.md` defers a **plugin-wide eval harness**. It does not defer
 testing the change in front of you, and "no TDD here" covers code test suites, not this

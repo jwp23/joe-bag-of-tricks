@@ -177,7 +177,9 @@ For each item, present the reasoning to the user and ask if they agree:
 - One-line role statement, then workflow steps, then rules
 
 **Scope decision (ask user):**
-- `.claude/agents/` (project) — project-specific, checked into VCS, team-shared
+- `plugins/<plugin>/agents/` (plugin) — ships with the plugin; component dirs live at the plugin
+  ROOT, never under `.claude/`
+- `.claude/agents/` (project) — project-specific and checked into VCS, but not shipped
 - `~/.claude/agents/` (user) — personal, all projects
 
 **Memory:**
@@ -196,8 +198,9 @@ Then verify:
 - Description follows CSO guidelines
 - Prompt is under target word count
 
-**Behavior change to an existing agent?** The static checks above are not sufficient. Follow
-`testing-agents-with-subagents.md` in this directory — baseline first, then verify.
+**A new agent, or a behavior change to an existing one?** The static checks above are not
+sufficient. Follow `testing-agents-with-subagents.md` in this directory — baseline first, then
+verify. A new agent has no previous body, so its baseline is the task run with no agent at all.
 
 ## Step 6: Integrate
 

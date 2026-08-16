@@ -1,7 +1,7 @@
 # Testing Agents With Subagents
 
-**Load this reference when:** making a behavior-changing edit to an agent definition — before
-writing the fix, and again to verify it.
+**Load this reference when:** creating an agent definition, or making a behavior-changing edit to
+one — before you write it, and again to verify it.
 
 The cycle is the one in `testing-skills-with-subagents.md` (writing-skills directory): RED watch
 it fail, GREEN watch it comply, REFACTOR close the loophole the fix opens. Read that file for the
@@ -12,7 +12,8 @@ tier, and acts on a real repo — so the test needs a fixture and a sandbox, not
 ## When This Applies
 
 A behavior-changing edit to a file under `agents/`: a new rule, bucket, gate, or escalation
-trigger, or a relaxation of one. Not typos, not rewording.
+trigger, or a relaxation of one. Not typos, not rewording. A **new** agent qualifies in full — its
+whole body is new behavior, with no baseline yet showing what it has to fix.
 
 ## Build a Fixture First
 
@@ -47,6 +48,10 @@ git show HEAD~1:plugins/joe-bag-of-tricks/agents/<agent>.md > "$WORK/old-agent.m
 Dispatch a subagent whose prompt names that file as its operating instructions — "your operating
 instructions are in `$WORK/old-agent.md`; read it and follow it" — the file itself, never a
 paraphrase.
+
+**Creating a new agent?** There is no previous body, so the baseline is the same fixture and prompt
+dispatched with no agent definition at all — plain-session behavior is the status quo the new agent
+has to beat, and what it gets wrong is what the body must fix.
 
 **How to dispatch.** A top-level session dispatches through the Agent tool. A session without one
 — which includes every implementer agent here — uses a headless `claude -p` from Bash, this repo's
@@ -99,16 +104,18 @@ must carry rules that **override the agent's own instructions**:
 - Never run `gh`, or `git push`, `pull`, `merge`, `checkout`, `rebase`, `reset`, or `worktree`.
 - State what you would have done instead of doing it, for anything the rules above forbid.
 - One fixture copy per run, so runs cannot see each other's edits.
+- These rules propagate: pass them on verbatim to anything you dispatch yourself. An agent that
+  obeys them and hands a nested subagent an unrestricted prompt has not contained anything.
 
 Not belt-and-braces: `branch-shepherd`'s own body instructs it to push, open PRs, and squash-merge.
 Without the override it does exactly that.
 
 ## Dispatch at the Agent's Pinned Tier
 
-Read `model:` and `effort:` from the agent's own frontmatter and pass them (`--model` / `--effort`,
-or the equivalent Agent-tool fields). An agent pinned to sonnet, tested on opus, proves nothing
-about how it will actually run — a stronger model reasons its way out of a trap the shipped tier
-falls into.
+Read `model:` and `effort:` from the agent's own frontmatter and pass them — `--model` / `--effort`
+on the CLI; the Agent tool exposes `model` only, so a dispatch through it cannot match a pinned
+`effort`. An agent pinned to sonnet, tested on opus, proves nothing about how it will actually run
+— a stronger model reasons its way out of a trap the shipped tier falls into.
 
 ## The Negative Case Must Be Checkably False, Not Merely Unwise
 
