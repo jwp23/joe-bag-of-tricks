@@ -1,7 +1,6 @@
 ---
 name: writing-agents
-description: Use when creating, designing, or evaluating whether to create a custom subagent. Interactive process that steelmans the design against existing agents, skills, and alternatives.
-disable-model-invocation: true
+description: Use when creating, editing, or evaluating whether to create a custom subagent — including any behavior change to an existing agent definition under agents/.
 ---
 
 # Writing Agents
