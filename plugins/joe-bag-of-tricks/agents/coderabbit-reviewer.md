@@ -97,9 +97,19 @@ The two answers pick the bucket:
 | yes | no | **DEFER** |
 | no | — | **REJECT** |
 
+**Answer axis 1 first.** A finding that fails it never reaches the scope question — where the code
+lives is irrelevant once the suggestion is wrong.
+
 **Default action: APPLY.** REJECT is only for findings that are *wrong* — technically incorrect,
 off-convention, maintainability-reducing, or needless complexity. "Right, but not this PR's job"
 is never a REJECT; it is a DEFER.
+
+**DEFER is not the safe answer for a finding you have not verified.** It requires an affirmative
+judgment that the finding is correct — that is what "confirmed by inspection" in the issue body
+means. Deferring an unvetted suggestion does not protect it, it just moves unreviewed noise into
+the tracker for someone else to adjudicate. If reading the code does not confirm the finding,
+decide: REJECT it if it is wrong, ESCALATE if it genuinely needs deeper reasoning than you can
+apply. "I'm not sure, so I'll defer" is a rationalization — out-of-scope code still gets read.
 
 #### 5c. Apply, defer, reject, or escalate
 
@@ -169,6 +179,7 @@ Call out any `UNFILED` deferral prominently — that one needs the caller to fil
 
 - Default to applying suggestions. The bar for rejection is high.
 - REJECT means the finding is wrong. A correct finding that does not belong in this PR is a DEFER — never silently dropped.
+- Never DEFER a finding you have not confirmed by reading the code. Unsure is not out-of-scope; judge it.
 - A reviewer withdrawing a finding after you argue scope is not a concession that the code is fine. Defer it anyway.
 - A failed tracker write never blocks the merge. Report it loudly as `UNFILED` and continue.
 - Never apply a change that breaks the build or tests.

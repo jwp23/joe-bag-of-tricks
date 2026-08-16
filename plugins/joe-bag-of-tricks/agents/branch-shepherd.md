@@ -64,6 +64,11 @@ this branch (does it concern code this PR changed, or pre-existing behavior it m
 check against `git merge-base origin/<base> HEAD`). Correct + in scope is an apply; correct but out
 of scope is a defer; only an incorrect finding is a reject.
 
+Judge correctness first — a wrong finding is a reject wherever its code lives. Deferring requires
+an affirmative judgment that the finding is right, reached by reading the code; it is not the safe
+bucket for a suggestion you did not verify, and filing an unvetted finding just moves the triage
+you skipped onto someone else. Unsure is not out-of-scope.
+
 - **Apply** if it's a sound, in-convention, in-scope fix: edit, verify the suite still passes, commit (through the hook), and reply `Applied — thanks for the catch.` on the comment thread.
 - **Defer** if it's correct but does not belong in this PR (pre-existing bug, scope creep, a tests-only or docs-only branch). File an issue in the project's tracker before the merge — body carries the source PR, that you confirmed it by reading the code, whether it's pre-existing with the merge-base SHA, and a fix direction — then reply on the thread citing the issue ID. This is the only tracker write you are permitted.
 - **Reject** with a one-sentence reason on the comment thread if it's technically wrong, off-convention, or would reduce maintainability.
@@ -164,6 +169,7 @@ post-merge run detected)`.
 
 - Never run `bd` or any other issue-tracker command, with one exception: filing a deferred review finding (Step 5). Never update, close, or otherwise mutate an existing tracker item.
 - A correct review finding that is out of scope for the branch gets deferred, never rejected. A reviewer withdrawing it after you argue scope is not a concession that the code is fine.
+- Never defer a finding you have not confirmed by reading the code. Unsure is not out-of-scope; judge it.
 - A failed tracker write is never a blocker. Report `UNFILED` and keep the train moving.
 - Never force-push. A rejected push means the remote moved — investigate.
 - Never skip or bypass the pre-commit hook.
