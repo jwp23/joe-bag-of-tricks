@@ -86,18 +86,18 @@ digraph process {
         "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" [shape=box];
     }
 
-    "Setup: worktree, reload bd hierarchy, pre-flight review" [shape=box];
+    "Setup: worktree, render whole tree\n(bd children <epic-id> --pretty),\npre-flight review" [shape=box];
     "Load feature tasks:\nbd children <feature-id> --json" [shape=box];
     "More tasks in feature?" [shape=diamond];
-    "Close feature:\nbd close <feature-id>" [shape=box];
+    "bd children <feature-id>: all closed?\nClose feature" [shape=box];
     "More features remain?" [shape=diamond];
-    "Close epic:\nbd close <epic-id>" [shape=box];
+    "bd children <epic-id>: all closed?\nClose epic" [shape=box];
     "Run review-package MERGE_BASE HEAD,\ndispatch final code reviewer\n(../requesting-code-review/code-reviewer.md)" [shape=box];
     "Final findings? ONE fix dispatch,\none scoped re-review, adjudicate residuals" [shape=box];
     "Final review clean: delete the SDD workspace" [shape=box];
     "Use finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
-    "Setup: worktree, reload bd hierarchy, pre-flight review" -> "Load feature tasks:\nbd children <feature-id> --json";
+    "Setup: worktree, render whole tree\n(bd children <epic-id> --pretty),\npre-flight review" -> "Load feature tasks:\nbd children <feature-id> --json";
     "Load feature tasks:\nbd children <feature-id> --json" -> "Claim task:\nbd update <task-id> --claim";
     "Claim task:\nbd update <task-id> --claim" -> "Run task-brief <task-id>";
     "Run task-brief <task-id>" -> "Dispatch implementer agent\n(mechanical|integration|complex)\n(./implementer-prompt.md)";
@@ -125,11 +125,11 @@ digraph process {
     "Park findings on the task bead\nwith rulings (bd note)" -> "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"";
     "Close task bead:\nbd close <task-id> --reason \"commits <base7>..<head7>, review clean\"" -> "More tasks in feature?";
     "More tasks in feature?" -> "Claim task:\nbd update <task-id> --claim" [label="yes"];
-    "More tasks in feature?" -> "Close feature:\nbd close <feature-id>" [label="no"];
-    "Close feature:\nbd close <feature-id>" -> "More features remain?";
+    "More tasks in feature?" -> "bd children <feature-id>: all closed?\nClose feature" [label="no"];
+    "bd children <feature-id>: all closed?\nClose feature" -> "More features remain?";
     "More features remain?" -> "Load feature tasks:\nbd children <feature-id> --json" [label="yes"];
-    "More features remain?" -> "Close epic:\nbd close <epic-id>" [label="no"];
-    "Close epic:\nbd close <epic-id>" -> "Run review-package MERGE_BASE HEAD,\ndispatch final code reviewer\n(../requesting-code-review/code-reviewer.md)";
+    "More features remain?" -> "bd children <epic-id>: all closed?\nClose epic" [label="no"];
+    "bd children <epic-id>: all closed?\nClose epic" -> "Run review-package MERGE_BASE HEAD,\ndispatch final code reviewer\n(../requesting-code-review/code-reviewer.md)";
     "Run review-package MERGE_BASE HEAD,\ndispatch final code reviewer\n(../requesting-code-review/code-reviewer.md)" -> "Final findings? ONE fix dispatch,\none scoped re-review, adjudicate residuals";
     "Final findings? ONE fix dispatch,\none scoped re-review, adjudicate residuals" -> "Final review clean: delete the SDD workspace";
     "Final review clean: delete the SDD workspace" -> "Use finishing-a-development-branch";
@@ -149,12 +149,20 @@ failure observed. A separate ledger file would duplicate state a
 beads-only-tracking project already tracks for free, and bd's globally unique
 task IDs mean no two plans can ever collide over the same record.
 
-- At skill start (and after any compaction), reload the hierarchy:
-  `bd children <epic-id> --json` and, per feature, `bd children <feature-id>
-  --json` (`bd children` includes closed issues by default). Tasks bd already
-  shows `closed` are DONE — do not re-dispatch them; resume at the first task
-  not `closed`. A task that is `in_progress` with fix-round notes is mid-loop:
-  resume the loop at the next round.
+- At skill start (and after any compaction), reload the hierarchy with
+  `bd children <epic-id> --pretty`. That renders the WHOLE tree at every
+  depth, closed issues included, and ends with a `Total: N issues` footer.
+  `bd children --json` returns ONE level — a controller that walked it once
+  took five features for the task layer and never saw their seven task
+  children. Use `--json` afterwards for per-issue detail, never to learn the
+  tree's shape.
+- When you reduce bd JSON into a summary you will read later, keep
+  `issue_type`, `status`, and `parent` on every row. The controller above had
+  `"issue_type": "feature"` in its raw dump and dropped that field while
+  reformatting; nothing afterwards ever contradicted it.
+- Tasks bd already shows `closed` are DONE — do not re-dispatch them; resume
+  at the first task not `closed`. A task that is `in_progress` with fix-round
+  notes is mid-loop: resume the loop at the next round.
 - Every ruling, deferral, and fix round is a `bd note <task-id> "..."` — it
   appends to the task's notes without changing status. Closing carries the
   commit range as the reason. Those breadcrumbs name commits that exist in git
@@ -168,9 +176,14 @@ task IDs mean no two plans can ever collide over the same record.
 ### Pre-Flight Plan Review
 
 Before claiming Task 1, scan the bd hierarchy once for conflicts. The bd
-hierarchy IS the plan — there is no markdown plan file to read instead: walk
-`bd children <epic-id> --json`, then `bd children <feature-id> --json` for
-each feature, the same two-level traversal the process above uses.
+hierarchy IS the plan — there is no markdown plan file to read instead.
+
+The scan's first command is `bd children <epic-id> --pretty`. Read the depth
+off the tree it prints and the issue count off its `Total:` footer before
+reading anything else. It is one command that cannot be half-run; a
+per-feature walk can, and its partial result looks exactly like its complete
+one. Then pull the detail you need per issue with `bd show`/`bd children
+--json` — the depth question is already answered.
 
 The epic is the plan's argument for its spec: if `bd show <epic-id>` names a
 spec (`--spec-id`, pointing at the living design doc), read that too —
@@ -200,10 +213,17 @@ its own text agrees with itself — the tests it specifies against the code it
 specifies, the files it creates against the files it later touches. "The scan
 is clean" without those rows is not a scan you ran.
 
-Record the table as a `bd note` on the epic. Rule on everything you find
-before execution begins — each finding against the task text that mandates
-it, the spec as the binding authority — and record each ruling beside its
-row. If the scan is clean, proceed without comment. The review loop remains
+Record the table as a `bd note` on the epic, opening with the count:
+`Scan: N issues across D levels` — N from the `Total:` footer, D from the
+tree's depth, and every leaf-level issue accounted for in the rows below.
+A conflict table is a judgment artifact: a scan of 5 of 13 issues produces
+one that looks exactly like a complete scan. The count is the part of the
+note anyone can falsify in one command, so it is the part that has to be
+there.
+
+Rule on everything you find before execution begins — each finding against
+the task text that mandates it, the spec as the binding authority — and
+record each ruling beside its row. If the scan is clean, proceed without comment. The review loop remains
 the net for conflicts that only emerge from implementation.
 
 ## Model Selection
@@ -536,8 +556,18 @@ parked-with-ruling at the cap.
 
 When every task bead under a feature is closed, close the feature
 (`bd close <feature-id> --reason "All tasks complete"`); when every feature is
-closed, close the epic. Verify the children are actually closed first —
-closing a parent over an open child hides unfinished work.
+closed, close the epic.
+
+**Run `bd children <id>` before every parent close and refuse while any row
+is not `✓`.** It prints the whole subtree, so it catches a grandchild too.
+Nothing else does: `bd close` accepts a parent over open children silently
+and exits 0 (verified, bd 1.1.2 — `--force`'s "unsatisfied gates" are
+formula-step gates, not parent/child), and `bd epic status` /
+`bd epic close-eligible` count DIRECT children only — an epic whose one
+feature is closed reports "1/1 children closed, Eligible for closure" while
+that feature's own task is still open. Closing a parent over an open child
+hides unfinished work; four such closes are what let a whole task layer ship
+undelivered.
 
 ## Final Review
 
@@ -604,6 +634,8 @@ your behalf.
 | "This finding is obviously wrong, I'll drop it" | You adjudicate only at the cap, and every ruling is a `bd note`. Silent discards are forbidden. |
 | "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. Every round ends with a scoped re-review. |
 | "Reviews slow the loop down" | The loop without reviews is just unverified churn. Reviews are the loop's brakes and steering. |
+| "The epic's children are the tasks" | They are whatever the tree says. `bd children <epic-id> --pretty` shows every level and totals it; `--json` returns one level. A feature layer mistaken for the task layer ships its tasks undelivered — and you rule against requirements you never read. |
+| "All the beads I saw are closed, close the parent" | You saw one level. `bd children <id>` before every parent close — `bd close` and `bd epic status` both ignore grandchildren. |
 | "I'll track progress in my head, bd is bookkeeping" | bd is what survives compaction. Controllers without it have re-dispatched entire completed task sequences. |
 | "The subagent can close its own bead" | Subagents never touch bd, remotes, or PRs. You own all durable state. |
 | "That discovered issue is out of scope, skip it" | File it: `bd create ... --deps discovered-from:<task-id>`. Unfiled discoveries are lost. |
@@ -619,7 +651,9 @@ your behalf.
 You: I'm using Subagent-Driven Development to execute this plan.
 
 [Setup: worktree verified]
-[Load epic features: bd children <epic-id> --json — none closed, fresh start]
+[bd children <epic-id> --pretty — 2 features, 5 tasks, Total: 8 issues across
+ 3 levels; none closed, fresh start]
+[Pre-flight scan noted on the epic: "Scan: 8 issues across 3 levels — ..."]
 
 --- Feature 1 (bd-feat1): Hook system ---
 
@@ -673,11 +707,11 @@ Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
 [bd note bd-def "Fix round 1/5: 2 addressed, 0 open; commits d4e5f6a..b7c8d9e"]
 [bd close bd-def --reason "commits ghi789b..jkl012c, review clean"]
 
-[All tasks in feature closed — bd close bd-feat1 --reason "All tasks complete"]
+[bd children bd-feat1 — every row ✓; bd close bd-feat1 --reason "All tasks complete"]
 
 --- Feature 2 (bd-feat2): Verification ---
 ...
-[All features closed — bd close <epic-id> --reason "All features complete"]
+[bd children <epic-id> — all 8 rows ✓; bd close <epic-id> --reason "All features complete"]
 
 [Run scripts/review-package MERGE_BASE HEAD; dispatch final code reviewer
  (model: fable; top-available-tier fallback if not in roster) with the printed path —
