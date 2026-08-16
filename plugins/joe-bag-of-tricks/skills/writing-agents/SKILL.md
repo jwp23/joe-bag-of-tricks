@@ -1,7 +1,6 @@
 ---
 name: writing-agents
-description: Use when creating, designing, or evaluating whether to create a custom subagent. Interactive process that steelmans the design against existing agents, skills, and alternatives.
-disable-model-invocation: true
+description: Use when creating, editing, or evaluating whether to create a custom subagent — including any behavior change to an existing agent definition under agents/.
 ---
 
 # Writing Agents
@@ -16,6 +15,8 @@ Design and create custom subagents through interactive steelmanning. Ensures age
 digraph writing_agents {
     rankdir=TB;
 
+    "Editing an existing agent?" [shape=diamond];
+    "Classify edit; behavior change\n-> baseline first (testing-agents-with-subagents.md)" [shape=box style=filled fillcolor=lightgreen];
     "What problem does this agent solve?" [shape=box];
     "Survey existing landscape" [shape=box];
     "Does existing agent/skill\nalready cover this?" [shape=diamond];
@@ -27,6 +28,8 @@ digraph writing_agents {
     "Write agent file\n(ask: project or user scope)" [shape=box];
     "Report: what was created and why" [shape=box style=filled fillcolor=lightgreen];
 
+    "Editing an existing agent?" -> "Classify edit; behavior change\n-> baseline first (testing-agents-with-subagents.md)" [label="yes"];
+    "Editing an existing agent?" -> "What problem does this agent solve?" [label="no"];
     "What problem does this agent solve?" -> "Survey existing landscape";
     "Survey existing landscape" -> "Does existing agent/skill\nalready cover this?";
     "Does existing agent/skill\nalready cover this?" -> "Recommend existing solution\n(with modifications if needed)" [label="yes"];
@@ -38,6 +41,26 @@ digraph writing_agents {
     "Write agent file\n(ask: project or user scope)" -> "Report: what was created and why";
 }
 ```
+
+## Creating or Editing?
+
+**Editing an existing agent** — skip Steps 1-4; the should-this-exist question is settled. Go
+straight to:
+
+1. **Classify the edit.** Typo, rewording, or a link is an authoring-half edit: apply the
+   Frontmatter Reference and Design Checklist below, then verify and commit. A change to what
+   the agent DOES under pressure — a new rule, bucket, gate, or escalation trigger, or a
+   relaxation of one — is a behavior change.
+2. **A behavior change owes a baseline BEFORE the edit.** Follow
+   `testing-agents-with-subagents.md` in this directory. Establish what the current body does
+   wrong, then edit, then verify. Writing the fix first and reasoning that it obviously works is
+   the failure this exists to prevent. Baseline the body **itself** — point the dispatch at the
+   file, never at a summary or a shortened copy pasted into the prompt. A body you retyped for
+   the test is not the body you ship, so watching it fail proves nothing about the one that is.
+3. **Re-check the always-loaded surface.** Editing `description` or `tools` changes the Agent
+   roster line that loads into every session; `.claude/scripts/check-context-budget.sh` gates it.
+
+**Creating a new agent** — continue to Step 1 below.
 
 ## Step 1: Understand the Problem
 
@@ -52,8 +75,10 @@ Before anything else, articulate what the agent will do. Ask:
 
 **YOU MUST** check before building:
 
-1. List all existing agents: `ls .claude/agents/` and `ls ~/.claude/agents/`
-2. List all existing skills: `ls .claude/skills/`
+1. List existing agents. Component directories live at the PLUGIN root, not under `.claude/`:
+   `ls plugins/*/agents/` — plus `ls ~/.claude/agents/` for personal agents.
+2. List existing skills: `ls plugins/*/skills/` — plus `ls .claude/skills/` for authoring-only
+   skills that are not shipped.
 3. Check built-in agents: Explore, Plan, general-purpose, Bash, claude-code-guide
 4. Check past agentic workflow decisions: `ls docs/adr/` — read any ADR relevant to the proposed agent's domain to understand prior rationale
 5. Read any agent/skill that might overlap with the proposed function
@@ -152,7 +177,9 @@ For each item, present the reasoning to the user and ask if they agree:
 - One-line role statement, then workflow steps, then rules
 
 **Scope decision (ask user):**
-- `.claude/agents/` (project) — project-specific, checked into VCS, team-shared
+- `plugins/<plugin>/agents/` (plugin) — ships with the plugin; component dirs live at the plugin
+  ROOT, never under `.claude/`
+- `.claude/agents/` (project) — project-specific and checked into VCS, but not shipped
 - `~/.claude/agents/` (user) — personal, all projects
 
 **Memory:**
@@ -170,6 +197,10 @@ Then verify:
 - No hardcoded absolute paths in the prompt body
 - Description follows CSO guidelines
 - Prompt is under target word count
+
+**A new agent, or a behavior change to an existing one?** The static checks above are not
+sufficient. Follow `testing-agents-with-subagents.md` in this directory — baseline first, then
+verify. A new agent has no previous body, so its baseline is the task run with no agent at all.
 
 ## Step 6: Integrate
 
