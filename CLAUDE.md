@@ -60,7 +60,9 @@ Cross-reference skills/agents by namespace: /joe-bag-of-tricks:<name>.
 IMPORTANT: When your preference conflicts with upstream's existing style, match upstream.
 
 ## Validation
-No TDD and no behavioral evals — deferred by docs/adr/006-defer-behavioral-evals.md. Before any commit:
+No code test suite and no standing eval harness — the harness is deferred by
+docs/adr/006-defer-behavioral-evals.md. Behavior-changing skill/agent edits still owe a pressure
+test; see @.claude/rules/authoring-skills-and-agents.md. Before any commit:
 - `claude plugin validate plugins/joe-bag-of-tricks` — plugin manifest + skill frontmatter. Always.
   The path argument is REQUIRED. `claude plugin validate .` validates only the *marketplace*
   manifest and will NOT catch a broken skill.

@@ -1,8 +1,12 @@
 # Validation Rules
 
-No TDD and no behavioral evals for this repo — deferred by
+No code test suite and no standing eval harness for this repo — the harness is deferred by
 `docs/adr/006-defer-behavioral-evals.md`. Validation = prove the plugin still loads and every
 skill still resolves, before committing.
+
+That is a floor, not a ceiling. A behavior-changing edit to a skill or agent also owes the
+testing half of `authoring-skills-and-agents.md` — baseline first, then verify. "No TDD here"
+scopes to code test suites; it is not a licence to skip that.
 
 ## Before Every Commit
 - `claude plugin validate plugins/joe-bag-of-tricks` — plugin manifest + skill frontmatter. Hard

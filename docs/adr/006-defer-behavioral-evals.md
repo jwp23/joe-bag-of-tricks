@@ -94,6 +94,20 @@ does not prove a skill **triggers** from a natural prompt. Triggering is what th
 `triggering-*` scenarios buy, and it is the regression an upstream sync is most likely to cause.
 The gate is not an eval and no document should describe it as one.
 
+*2026-08-15 (scope clarification):* this ADR defers a **plugin-wide eval harness** — standing
+infrastructure that measures whether the plugin as a whole improved or regressed across its skill
+set. That is what Quorum is, and deferring it stands.
+
+It was never a decision to ship behavioral changes untested. Nothing here rejects an ad-hoc
+pressure test scoped to the change in hand: a throwaway fixture and a handful of subagent runs,
+which needs no harness repo, no bun/tmux, and no CI to host it. The distinction went unwritten
+long enough to be read the other way, and a review-triage change shipped untested on the strength
+of that reading (joe-bag-of-tricks-4po) before a pressure test found a real defect in it.
+
+- **Deferred:** standing eval infrastructure, scenario suites, cross-skill regression measurement.
+- **Not deferred, and required where behavior changes:** a fixture plus subagent runs for the
+  change being made. See `.claude/rules/authoring-skills-and-agents.md`.
+
 ## Trade-offs
 
 **Chosen: defer evals, script the load gate**
