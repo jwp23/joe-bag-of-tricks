@@ -110,6 +110,13 @@ something real rather than a dead reference.
 
 ## Validation
 
+Standard gates apply — `claude plugin validate`, `check-context-budget.sh`,
+`verify-skills-load.sh` — with one note specific to this area: making a skill model-invocable moves
+its description into the always-loaded surface that `check-context-budget.sh` counts. That gate
+failing is a design signal, not an obstacle to route around by raising `BUDGET`. A raise is a
+recorded decision with measured numbers, taken deliberately and scoped to the change that needs
+it; it is never a line edit that makes the gate pass.
+
 The editing path was pressure-tested against its own rule — a behavior-changing skill edit owes a
 baseline — using the method in `writing-skills/testing-skills-with-subagents.md`, with the fixture
 and sandbox mechanics from `writing-agents/testing-agents-with-subagents.md`.
