@@ -3,6 +3,11 @@
 How editing a `SKILL.md` or an `agents/*.md` file is made to reliably invoke the authoring
 discipline this repo requires, instead of skipping it.
 
+Both are instructions a model must obey, often under pressure. Neither is covered by a compiler,
+a type checker, or a test suite. The only thing standing between a careless edit and a silently
+broken workflow is a discipline someone has to invoke — so this describes what forces that
+invocation, and what it demands once invoked.
+
 ## The Problem
 
 `writing-skills` and `writing-agents` exist to keep skill and agent authoring disciplined —
@@ -26,7 +31,7 @@ cross-reference. It is cheap and mechanical.
 The **testing half** is the Iron Law from `test-driven-development`, applied to agent and skill
 behavior: establish a failing baseline before writing the fix, verify the fix closes it, then
 close whatever new rationalization the fix opens. It only applies where behavior actually
-changes — a new rule, a new bucket, a new gate, or a relaxation of one.
+changes — a new rule, a new bucket, a new gate, a new escalation trigger, or a relaxation of one.
 
 Collapsing these into one discipline is how both get skipped together: an editor facing "always
 pressure-test this" for a one-line rewording either skips the pressure test and then also skips
@@ -69,6 +74,14 @@ dated inline amendment narrowing the scope statement, following the same convent
 already uses for its own 2026-08-14 amendment — the document accretes clarifications in place
 rather than being replaced wholesale each time its boundary needs restating.
 
+The "No TDD" clause needs the same treatment. It is true of code — this repo has none to test —
+but `writing-skills` *is* TDD applied to prose, and its Iron Law is baseline-first. Left
+unqualified, "no TDD here" is the next available excuse for skipping the testing half. The
+project's exception covers code test suites; it does not cover the authoring discipline.
+
+`verify-skills-load.sh` remains what ADR-006 says it is — proof a skill *loads*, not that it
+*behaves*. It is not a substitute for either half.
+
 ## Why `writing-agents` Became Model-Invocable
 
 `writing-agents` shipped with `disable-model-invocation: true`, reachable only via its
@@ -83,6 +96,17 @@ the surface counted by `check-context-budget.sh`; headroom against that budget w
 used to do — the rule is what makes the skill reachable, and the flag was the only thing
 standing between "invocable" and "not," so removing it is what actually wires the rule to
 something real rather than a dead reference.
+
+## Components
+
+| Component | State | Role |
+|---|---|---|
+| `skills/writing-skills` | patched | Authoring rules and the Iron Law for `SKILL.md`. Carries `testing-skills-with-subagents.md`. |
+| `skills/writing-agents` | fork-original | The same job for agent definitions. Model-invocable, so a rule can require it. |
+| `skills/writing-agents/testing-agents-with-subagents.md` | fork-original | The agent pressure-testing method. |
+| `.claude/rules/authoring-skills-and-agents.md` | authoring-only | States the trigger and the two halves. Not shipped. |
+| `docs/adr/006-defer-behavioral-evals.md` | — | Carries a dated clarification narrowing its scope to a plugin-wide harness. |
+| `CLAUDE.md`, `.claude/rules/validating-changes.md` | — | Narrowed summaries; both point at the new rule. |
 
 ## Validation
 
