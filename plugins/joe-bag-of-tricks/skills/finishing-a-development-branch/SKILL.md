@@ -123,6 +123,11 @@ until gh pr checks <number> --json bucket \
 
 When the notification arrives, read the results: `gh pr checks <number>`
 
+Ending a turn "waiting" without that live background task is a stall — nothing will ever wake
+you, and the delivery strands until someone notices. A promise to wait is not a wait: if
+launching the loop did not return a task ID you can name, no wait exists — launch it before
+ending the turn. Do not substitute sleeps, scheduled wakeups, or one-off checks for the loop.
+
 Three details the loop depends on:
 - `length > 0` covers the window right after a push where no check has registered yet.
   Without it, an empty check list reads as "everything settled."
@@ -261,6 +266,7 @@ it.
 | "CI is probably just flaky" | A red check stops the merge. Investigate the failure before touching the merge button. |
 | "It's only a couple of minutes — I'll just watch CI" | Background the wait. Every time. A blocked session cannot be handed the next piece of work. |
 | "There's nothing else to do, so blocking costs nothing" | You cannot know that — your human partner can hand you work the moment the wait starts. Background it and stay reachable. |
+| "I said I'm waiting for CI, so the wait is in place" | Only a live `run_in_background` task wakes you. No task ID = no wait. Launch the loop before ending the turn. |
 
 ## Integration
 

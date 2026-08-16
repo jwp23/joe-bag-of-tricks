@@ -135,6 +135,9 @@ Report exactly:
 
 ## Rules
 
+- The Step 3 wait must be a live `run_in_background` task. Never end a turn "waiting" without a
+  background task whose ID you can name, and never report a CI status you did not read off the
+  settled listing — an unbacked promise to wait strands the report.
 - Do NOT attempt to fix CI failures. Report them and stop.
 - Never report a post-merge green you did not observe. A missing, unsettled, or unenumerated run
   is not a pass — say which source the verdict came from and what it does not cover.
