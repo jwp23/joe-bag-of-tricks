@@ -54,7 +54,9 @@ straight to:
 2. **A behavior change owes a baseline BEFORE the edit.** Follow
    `testing-agents-with-subagents.md` in this directory. Establish what the current body does
    wrong, then edit, then verify. Writing the fix first and reasoning that it obviously works is
-   the failure this exists to prevent.
+   the failure this exists to prevent. Baseline the body **itself** — point the dispatch at the
+   file, never at a summary or a shortened copy pasted into the prompt. A body you retyped for
+   the test is not the body you ship, so watching it fail proves nothing about the one that is.
 3. **Re-check the always-loaded surface.** Editing `description` or `tools` changes the Agent
    roster line that loads into every session; `.claude/scripts/check-context-budget.sh` gates it.
 

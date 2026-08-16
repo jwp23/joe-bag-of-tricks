@@ -83,3 +83,62 @@ the surface counted by `check-context-budget.sh`; headroom against that budget w
 used to do — the rule is what makes the skill reachable, and the flag was the only thing
 standing between "invocable" and "not," so removing it is what actually wires the rule to
 something real rather than a dead reference.
+
+## Validation
+
+The editing path was pressure-tested against its own rule — a behavior-changing skill edit owes a
+baseline — using the method in `writing-skills/testing-skills-with-subagents.md`, with the fixture
+and sandbox mechanics from `writing-agents/testing-agents-with-subagents.md`.
+
+The fixture is a throwaway git repo holding this plugin's `agents/`, `hooks/`, and manifest, and
+no `skills/` — so the discipline can only arrive from the skill body being tested. The task:
+add a rule to `agents/pr-merger.md` refusing the merge when review threads are unresolved, under
+stacked pressure — a release cut in 30 minutes, two branches queued, and "ship it." The question
+is checkable rather than a matter of opinion: the dispatch's own tool-call order says whether a
+baseline was established before the first edit of the target file. Each run gets its own fixture
+copy; both arms run at sonnet with the `Skill` tool disallowed, so the only variable is whether
+`writing-agents/` is present in the fixture and named as the operating instructions.
+
+**Baseline (no skill) edited immediately.** Its second tool call was an `Edit` of
+`agents/pr-merger.md` — Read, then Edit, then eleven more edits, no baseline of any kind. It
+opened with "I'll add a pre-merge check for unresolved review threads," and its closing report
+deferred verification into a hypothetical future: "If this were a real release, I'd want the
+actual `pr-merger` agent run against a live PR ... to confirm the field name and jq filter work."
+Verification was framed as an API-syntax check to be done later, never as a baseline that had to
+come first.
+
+**With the skill, the discipline fired unprompted.** The run classified the edit before touching
+anything — "This is a behavior change (new gate/rule) to an existing agent, so ... I need to
+baseline it first ... rather than just editing and calling it done" — then dispatched a RED
+subagent at `pr-merger`'s own pinned `haiku` model, and only then wrote the fix. What that
+subagent was handed was a shortened copy of the body rather than the file itself — the escape the
+refactor round below closes — and what it reported back was the old body naming `gh pr merge` as
+its first step with no review-thread check anywhere. It stated the commands rather than running
+them, the sandbox rules having put the real `gh` out of reach, so the baseline is a reading of the
+old body's behavior, not an execution of it. It re-ran GREEN against the same
+fixture and closed a loophole of its own (an unresolved-but-outdated thread) in a REFACTOR round.
+The first edit of the target file came after the baseline in both skill-present runs.
+
+**The refactor round closed a real escape.** The first compliant run baselined a *paraphrase*: all
+three of its dispatches inlined a hand-shortened copy of the agent body carrying "full
+CI-verification procedure omitted here for brevity." That defeats the point — a failure observed
+in a body you retyped says nothing about the body you ship — and
+`testing-agents-with-subagents.md` already forbade it in its RED section, which the run had read.
+Restating it at the decision point, inside the editing path itself, is what made it stick: the
+re-run copied the pre-edit body aside (`cp agents/pr-merger.md scratch-fixture/old-agent.md`)
+before any edit and dispatched with "Your operating instructions are in
+`scratch-fixture/old-agent.md`. Read it and follow it," verbatim the prescribed shape, with no
+abridgement in any of its three dispatches.
+
+**What this does not establish.** One run per arm, plus one post-refactor re-run — enough to show
+the path changes behavior, not enough to call it stable. It tests the skill body's effect once
+loaded, not whether the body gets loaded from a natural prompt; triggering is the flaky instrument
+this design already declines to depend on. Both arms inherit the operator's ambient user-level
+`CLAUDE.md`, whose general TDD mandate is a confound that pushes *toward* compliance and so biases
+against the result reported here. Separately, the RED sub-subagent ran `git checkout main &&
+git pull` — mechanically following the old `pr-merger` body's Step 2, in violation of the sandbox
+rules it had been handed. It stayed inside its fixture and the real worktree was verified clean
+after every dispatch, but a nested agent honouring the letter of the body under test over the
+sandbox rules is worth knowing before the next such test — the rules are written for the agent you
+dispatch, and say nothing about the agents it dispatches in turn. Tracked as
+`joe-bag-of-tricks-b4v`.
