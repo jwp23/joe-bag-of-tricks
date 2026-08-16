@@ -30,7 +30,12 @@ If no PR number was given, check whether one already exists (`gh pr list --head 
 
 If the push is rejected, the remote moved — investigate, never force-push.
 
-### 3. Wait for CI — background, guarded
+### 3. Wait for CI — a live background task, never a promise
+
+Launch the settle loop with `Bash` using `run_in_background`. This is mandatory, not an
+optimization: a foreground run is killed at the Bash tool's timeout mid-wait, and ending a turn
+"waiting" with no live background task means nothing ever wakes you — the delivery strands until
+someone notices. Saying you are waiting does not create a wait; only a launched task does.
 
 ```bash
 until gh pr checks <number> --json bucket \
@@ -41,6 +46,11 @@ until gh pr checks <number> --json bucket \
 - `length > 0` covers the window right after a push where no check has registered yet. Without it, an empty check list reads as "everything settled."
 - The pipe into `grep` is deliberate. `gh pr checks` exits non-zero while checks are pending (code 8) and again when one fails; taking the exit code from `grep` instead keeps the loop alive.
 - Poll at 30s. Faster only burns API quota.
+
+The loop exits on its own once every check settles, and its completion notification resumes you.
+Do not substitute sleeps, scheduled wakeups, or one-off `gh pr checks` probes for it. Before
+ending any turn while CI is outstanding, confirm the loop is live — launching it returned a task
+ID. No task ID means no wait exists: launch it now.
 
 Read the settled result with `gh pr checks <number>`.
 
@@ -177,5 +187,6 @@ post-merge run detected)`.
 - Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides.
 - Only remove worktrees rooted at `.worktrees/`.
+- Every CI wait is a `run_in_background` settle loop. Never end a turn "waiting" without a live background task whose ID you can name — an unbacked promise to wait strands the train.
 - Never report a post-merge green you did not observe. A missing, unsettled, or unenumerated run is UNKNOWN, not passing.
 - Do not modify files outside the branch's own worktree.
