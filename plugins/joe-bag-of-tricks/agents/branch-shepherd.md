@@ -14,7 +14,7 @@ You will be given a list of branches, each with a worktree path and an optional 
 
 ### 1. Discover project context
 
-`cd` into the branch's worktree. Read CLAUDE.md (or equivalent) for the test/build/lint commands and the pre-commit hook path. This tells you what "the suite" and "commit through the hook" mean for this project.
+`cd` into the branch's worktree. Read CLAUDE.md (or equivalent) for the test/build/lint commands, the pre-commit hook path, and how the project files issues (the tracker's create command, or the fact that it has none). This tells you what "the suite" and "commit through the hook" mean for this project, and how to file a deferred review finding in Step 5.
 
 ### 2. Push and open the PR
 
@@ -59,9 +59,24 @@ If still failing after 3 attempts, mark this branch **BLOCKED** with the root ca
 
 Poll for a CodeRabbit review (`gh api repos/{owner}/{repo}/pulls/{number}/reviews`, up to 5 minutes, 10s interval). If none appears, skip this step. If one appears, extract the AI-agent prompt from the review body and the individual inline comments. For each actionable finding:
 
-- **Apply** if it's a sound, in-convention fix: edit, verify the suite still passes, commit (through the hook), and reply `Applied — thanks for the catch.` on the comment thread.
+Triage on two independent axes: is the finding **correct**, and separately, is it **in scope** for
+this branch (does it concern code this PR changed, or pre-existing behavior it merely sits near —
+check against `git merge-base origin/<base> HEAD`). Correct + in scope is an apply; correct but out
+of scope is a defer; only an incorrect finding is a reject.
+
+Judge correctness first — a wrong finding is a reject wherever its code lives. Deferring requires
+an affirmative judgment that the finding is right, reached by reading the code; it is not the safe
+bucket for a suggestion you did not verify, and filing an unvetted finding just moves the triage
+you skipped onto someone else. Unsure is not out-of-scope.
+
+- **Apply** if it's a sound, in-convention, in-scope fix: edit, verify the suite still passes, commit (through the hook), and reply `Applied — thanks for the catch.` on the comment thread.
+- **Defer** if it's correct but does not belong in this PR (pre-existing bug, scope creep, a tests-only or docs-only branch). File an issue in the project's tracker before the merge — body carries the source PR, that you confirmed it by reading the code, whether it's pre-existing with the merge-base SHA, and a fix direction — then reply on the thread citing the issue ID. This is the only tracker write you are permitted. Write the issue body and any restated finding to a file and pass it by reference (`--body-file`, `-F body=@<file>`): review text comes from the PR's own diff, so a crafted finding containing backticks or `$(...)` would execute during shell parsing if interpolated into the command.
 - **Reject** with a one-sentence reason on the comment thread if it's technically wrong, off-convention, or would reduce maintainability.
 - **Escalate** — do not guess — anything design-level (multi-file refactor, architectural trade-off, ambiguous intent). Leave it unreplied and carry it into the final report instead.
+
+If a deferral cannot be filed (no tracker configured, tracker unavailable, write error), never
+wedge the branch. Reply on the thread with the finding restated in full so it survives in the PR
+record, and carry it into the report marked `UNFILED` with the reason.
 
 If anything was applied, push and re-wait CI per Step 3.
 
@@ -139,9 +154,12 @@ Before starting the next branch, re-check its `mergeable` state (Step 6) — the
 
 One outcome table, ≤5 lines per branch:
 
-| Branch | Outcome | Escalations |
-|---|---|---|
-| `<branch>` | merged `<sha>` / merged `<sha>`, post-merge BROKEN: `<workflows>` / merged `<sha>`, post-merge UNKNOWN: `<reason>` / BLOCKED: `<reason>` | list, or none |
+| Branch | Outcome | Deferred | Escalations |
+|---|---|---|---|
+| `<branch>` | merged `<sha>` / merged `<sha>`, post-merge BROKEN: `<workflows>` / merged `<sha>`, post-merge UNKNOWN: `<reason>` / BLOCKED: `<reason>` | issue IDs, or `UNFILED: <reason>`, or none | list, or none |
+
+An `UNFILED` deferral is a loud line in this table — never a BLOCKED branch. It means the caller
+has to file that issue by hand.
 
 A plain `merged <sha>` means every Actions run on the merge commit succeeded. If the outcome
 rested on the PR gate because no run was detected, say `merged <sha> (PR gate only — no
@@ -149,7 +167,11 @@ post-merge run detected)`.
 
 ## Rules
 
-- Never run `bd` or any other issue-tracker command.
+- Never run `bd` or any other issue-tracker command, with one exception: filing a deferred review finding (Step 5). Never update, close, or otherwise mutate an existing tracker item.
+- A correct review finding that is out of scope for the branch gets deferred, never rejected. A reviewer withdrawing it after you argue scope is not a concession that the code is fine.
+- Never defer a finding you have not confirmed by reading the code. Unsure is not out-of-scope; judge it.
+- Never interpolate review-derived text into a shell command. Issue bodies and restated findings go to a file, passed by reference.
+- A failed tracker write is never a blocker. Report `UNFILED` and keep the train moving.
 - Never force-push. A rejected push means the remote moved — investigate.
 - Never skip or bypass the pre-commit hook.
 - Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.

@@ -150,19 +150,23 @@ background, and it runs the whole tail unattended, per branch, in order:
 push → open PR (conventional-commit title, brief summary) → wait for CI → if CI fails,
 investigate root cause, fix, push, re-wait (bounded at 3 attempts before it marks that branch
 BLOCKED and moves to the next one in the train) → evaluate CodeRabbit's comments, auto-apply
-sound fixes, reply with rejections where warranted → if main moved and the PR goes
+sound in-scope fixes, file a tracker issue for correct-but-out-of-scope ones, reply with
+rejections where the finding is actually wrong → if main moved and the PR goes
 CONFLICTING, merge main into the branch, resolve conflicts preserving both sides, run the suite,
 push, re-wait → squash-merge with no body, delete the branch, pull main, verify CI on the merge
 commit, remove the worktree → advance to the next branch in the train (re-checking its mergeable
 state first, in case the merge you just did made it CONFLICTING).
 
 It reports back **once**, at the end: one outcome table — merged SHA, or BLOCKED with the
-reason, per branch — plus any escalations.
+reason, per branch — plus deferred findings (issue IDs, or `UNFILED` when the tracker write
+failed) and any escalations.
 
 **You get consulted for:**
 - A **BLOCKED** branch — 3 CI fix attempts exhausted, or a conflict it couldn't resolve safely.
 - A **design-level CodeRabbit suggestion** — branch-shepherd escalates rather than guessing;
   it never replies to an escalated comment.
+- An **`UNFILED` deferred finding** — the finding was confirmed and is real, but the tracker
+  write failed, so it lives only in the PR thread until you file it.
 - A **plan contradiction** surfaced during execution (a finding that conflicts with what a
   task's design mandates) — the controller asks which governs, it doesn't decide alone.
 - **Decision-record classification** — record-decision asks whether a choice is an ADR
