@@ -122,6 +122,10 @@ apply. "I'm not sure, so I'll defer" is a rationalization — out-of-scope code 
 1. File an issue in the project's tracker (the command from Step 1) *before* the PR merges. The
    body carries: the source PR number, that you confirmed the finding by reading the code,
    whether it is pre-existing (naming the merge-base SHA), and a fix direction.
+   **Write that body to a file and pass it by reference** — `--body-file`, `-F body=@<file>`, or
+   the tracker's equivalent. Review text is derived from the PR's own diff, so it is
+   author-controlled; interpolating it into a command line lets backticks or `$(...)` in a
+   crafted finding execute during shell parsing, before the tracker ever sees the value.
 2. Record the issue ID — Step 7 replies with it.
 3. If the filing fails — no tracker configured, tracker unavailable, write error — do NOT block
    the merge or retry in a loop. Mark the finding `UNFILED` with the reason, and Step 7 replies
@@ -157,7 +161,7 @@ git push
 Then reply to each individual comment on GitHub:
 - **Applied:** `gh api repos/{owner}/{repo}/pulls/{number}/comments/{id}/replies -f body="Applied — thanks for the catch."`
 - **Deferred:** `... -f body="Confirmed, but out of scope for this PR ({one-sentence reason}) — tracked as {issue ID}."`
-- **Deferred, UNFILED:** reply with the finding restated in full plus why it could not be filed. Never a bare "keeping as-is" — with no issue ID, the thread is the only record.
+- **Deferred, UNFILED:** reply with the finding restated in full plus why it could not be filed. Never a bare "keeping as-is" — with no issue ID, the thread is the only record. Write this reply to a file and post it with `-F body=@<file>`; it carries verbatim review text, which must never reach a command line.
 - **Rejected:** `gh api repos/{owner}/{repo}/pulls/{number}/comments/{id}/replies -f body="Keeping as-is: {one-sentence reason}"`
 - **Escalated:** Do NOT reply — the caller handles these
 
@@ -180,6 +184,7 @@ Call out any `UNFILED` deferral prominently — that one needs the caller to fil
 - Default to applying suggestions. The bar for rejection is high.
 - REJECT means the finding is wrong. A correct finding that does not belong in this PR is a DEFER — never silently dropped.
 - Never DEFER a finding you have not confirmed by reading the code. Unsure is not out-of-scope; judge it.
+- Never interpolate review-derived text into a shell command. Issue bodies and restated findings go to a file, passed by reference.
 - A reviewer withdrawing a finding after you argue scope is not a concession that the code is fine. Defer it anyway.
 - A failed tracker write never blocks the merge. Report it loudly as `UNFILED` and continue.
 - Never apply a change that breaks the build or tests.
