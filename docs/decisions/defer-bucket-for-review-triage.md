@@ -52,6 +52,34 @@ Blocking a merge on a failed tracker write was considered and rejected. A tracke
 code-quality signal, and blocking on one trains us to bypass the mechanism. The `UNFILED` path
 keeps the finding durable in the PR thread, which is the record that survives regardless.
 
+## Threat model this rests on
+
+The DEFER path has both agents run a command discovered from the target repo's instruction file.
+A security review flagged that as command execution from untrusted content. It is only that under
+a threat model these agents do not currently operate in.
+
+**The assumption: these agents run only on branches the operator authored.** `branch-shepherd` is
+dispatched with your own branch list; `coderabbit-reviewer` with your own PR. Under that
+assumption there is no boundary being crossed — the agent runs commands you wrote, in a repo you
+own, exactly as you would run them yourself. Both agents already executed repo-supplied
+test, build, lint, and pre-commit commands long before this change; the tracker command is one
+more of the same kind, on a narrower path.
+
+The assumption fails the moment an agent is pointed at a branch someone else wrote — an external
+PR to a public repo. Then the branch's own instruction file names the command, and running it is
+the "pwn request" pattern: untrusted code executed in a trusted context. Nothing in these agents
+defends against that, and prose cannot; it needs a harness-level answer (permission mode, sandbox,
+or refusing to read instructions from the branch under review).
+
+Recorded here so a future reader does not re-derive it, and so the assumption is visible when it
+stops holding. Tracked for design work as a separate concern.
+
+**Unrelated to that assumption:** review text is passed to tracker and reply commands by file
+reference, never interpolated into a command line. That is a correctness fix, not a security one.
+CodeRabbit quotes the diff back verbatim, and a diff in this repo routinely contains `$(...)`,
+backticks, and `$VAR` — interpolating it into `-f body="..."` lets the shell expand your own code
+while building the reply, with no adversary involved.
+
 ## Validation
 
 Pressure-tested with subagents on a throwaway fixture — a genuine tests-only branch whose
