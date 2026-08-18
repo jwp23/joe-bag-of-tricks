@@ -4,6 +4,13 @@ Personal [Claude Code](https://code.claude.com) plugins — a curated bag of eng
 
 This repository is a plugin marketplace shipping two plugins. Add the marketplace once on each machine, install the plugin(s) you want, and keep them in sync through git.
 
+## Want to build your own?
+
+If you keep skills or agents in `.claude/` and want them packaged, versioned, and installable everywhere you work, this repo doubles as a worked example:
+
+- **[Converting your workflow into a plugin](docs/guides/converting-your-workflow-to-a-plugin.md)** — the prompt-driven, step-by-step guide.
+- **[Building joe-bag-of-tricks](docs/guides/building-joe-bag-of-tricks.md)** — the case study behind it: how this repo was built, decisions included.
+
 ## What's inside
 
 Two plugins.
