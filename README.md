@@ -84,15 +84,11 @@ joe-bag-of-tricks/
 
 ## Install on a machine
 
-This is a **private** repo, so the marketplace clones over your GitHub credentials. The SSH URL form is the most reliable (it uses your SSH key directly):
-
 ```text
-/plugin marketplace add git@github.com:jwp23/joe-bag-of-tricks.git
+/plugin marketplace add jwp23/joe-bag-of-tricks
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
 /plugin install joe-magic-bootstrap@joe-bag-of-tricks
 ```
-
-The `jwp23/joe-bag-of-tricks` shorthand also works if your git credential helper is configured (e.g. `gh auth setup-git`). For the SSH form, make sure your key is loaded in `ssh-agent` and `github.com` is in `~/.ssh/known_hosts`.
 
 Plugins install at **user scope** by default, so the skills and agents are available in every project on that machine. Skills auto-trigger by description; you can also invoke them explicitly as `/joe-bag-of-tricks:<skill-name>`.
 
@@ -116,8 +112,6 @@ On every other machine:
 This git-pulls the marketplace and, because the plugin **version changed**, installs the update.
 
 > **Versioning is explicit semver.** Bump `version` in `plugin.json` on every change you want to propagate. If the version string doesn't change, other machines keep their cached copy and won't update.
-
-> **Optional background auto-update:** manual `/plugin marketplace update` uses your interactive git credentials. If you want the marketplace to refresh automatically at startup, that runs without credential helpers, so export a token with read access to the private repo (`export GITHUB_TOKEN=…` in your shell profile).
 
 ## Local development
 
