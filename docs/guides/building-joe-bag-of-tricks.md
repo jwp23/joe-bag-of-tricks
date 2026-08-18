@@ -18,7 +18,8 @@ into a standalone repo I could install on any machine — and, when I push an
 update from one machine, have it propagate to the others. Possibly share it with
 others down the line.
 
-Starting material, from `spe/.claude/`: **18 skills, 4 agents, 1 command**
+Starting material, from the `.claude/` directory of
+[`spe`](https://github.com/jwp23/spe) (a simple PDF editor): **18 skills, 4 agents, 1 command**
 (`bootstrap`), plus project `rules/`, a `brainstorm/` scratch dir, and a small
 `docs/adr/`.
 
