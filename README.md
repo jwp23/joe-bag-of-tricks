@@ -7,6 +7,15 @@ This repository is a plugin marketplace shipping two plugins. Add the marketplac
 **New to the workflow?** [`docs/workflow-guide.md`](docs/workflow-guide.md) is a hands-on-keyboard
 walkthrough — what you type, start to finish, from an idea through a merged PR.
 
+## Want to build your own?
+
+If you keep skills or agents in `.claude/` and want them packaged, versioned, and installable everywhere you work, this repo doubles as a worked example:
+
+- **[Converting your workflow into a plugin](https://jwp23.github.io/joe-bag-of-tricks/guides/converting-your-workflow-to-a-plugin.html)** — the prompt-driven, step-by-step guide ([markdown source](docs/guides/converting-your-workflow-to-a-plugin.md)).
+- **[Building joe-bag-of-tricks](https://jwp23.github.io/joe-bag-of-tricks/guides/building-joe-bag-of-tricks.html)** — the case study behind it: how this repo was built, decisions included ([markdown source](docs/guides/building-joe-bag-of-tricks.md)).
+
+The markdown files are the source of truth; the HTML editions are generated from them.
+
 ## What's inside
 
 Two plugins.
@@ -86,15 +95,11 @@ joe-bag-of-tricks/
 
 ## Install on a machine
 
-This is a **private** repo, so the marketplace clones over your GitHub credentials. The SSH URL form is the most reliable (it uses your SSH key directly):
-
 ```text
-/plugin marketplace add git@github.com:jwp23/joe-bag-of-tricks.git
+/plugin marketplace add jwp23/joe-bag-of-tricks
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
 /plugin install joe-magic-bootstrap@joe-bag-of-tricks
 ```
-
-The `jwp23/joe-bag-of-tricks` shorthand also works if your git credential helper is configured (e.g. `gh auth setup-git`). For the SSH form, make sure your key is loaded in `ssh-agent` and `github.com` is in `~/.ssh/known_hosts`.
 
 Plugins install at **user scope** by default, so the skills and agents are available in every project on that machine. Skills auto-trigger by description; you can also invoke them explicitly as `/joe-bag-of-tricks:<skill-name>`.
 
@@ -118,8 +123,6 @@ On every other machine:
 This git-pulls the marketplace and, because the plugin **version changed**, installs the update.
 
 > **Versioning is explicit semver.** Bump `version` in `plugin.json` on every change you want to propagate. If the version string doesn't change, other machines keep their cached copy and won't update.
-
-> **Optional background auto-update:** manual `/plugin marketplace update` uses your interactive git credentials. If you want the marketplace to refresh automatically at startup, that runs without credential helpers, so export a token with read access to the private repo (`export GITHUB_TOKEN=…` in your shell profile).
 
 ## Local development
 
