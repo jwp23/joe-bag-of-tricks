@@ -8,8 +8,10 @@ This repository is a plugin marketplace shipping two plugins. Add the marketplac
 
 If you keep skills or agents in `.claude/` and want them packaged, versioned, and installable everywhere you work, this repo doubles as a worked example:
 
-- **[Converting your workflow into a plugin](docs/guides/converting-your-workflow-to-a-plugin.md)** — the prompt-driven, step-by-step guide.
-- **[Building joe-bag-of-tricks](docs/guides/building-joe-bag-of-tricks.md)** — the case study behind it: how this repo was built, decisions included.
+- **[Converting your workflow into a plugin](https://jwp23.github.io/joe-bag-of-tricks/guides/converting-your-workflow-to-a-plugin.html)** — the prompt-driven, step-by-step guide ([markdown source](docs/guides/converting-your-workflow-to-a-plugin.md)).
+- **[Building joe-bag-of-tricks](https://jwp23.github.io/joe-bag-of-tricks/guides/building-joe-bag-of-tricks.html)** — the case study behind it: how this repo was built, decisions included ([markdown source](docs/guides/building-joe-bag-of-tricks.md)).
+
+The markdown files are the source of truth; the HTML editions are generated from them.
 
 ## What's inside
 
