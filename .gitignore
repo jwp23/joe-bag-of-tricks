@@ -8,6 +8,9 @@
 # Test / MCP artifacts
 .playwright-mcp/
 
+# Python bytecode (the skill-eval shim is imported by skill-creator's scripts)
+__pycache__/
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db

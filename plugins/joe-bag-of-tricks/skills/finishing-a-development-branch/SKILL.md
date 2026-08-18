@@ -13,6 +13,29 @@ Complete development work by pushing the feature branch, creating a PR, and wait
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
+## Orchestrating Multiple Branches
+
+Steps 1-2 below (verify tests, security review, confirm base branch) happen per branch, in
+this session, before a branch is ready to hand off — they need the working tree and your
+judgment.
+
+Once one or more branches are review-clean and ready to ship, decide how many you're
+delivering:
+
+- **One branch, staying in the loop:** Run Step 3 onward yourself, as written below.
+- **Two or more branches, or you want the whole delivery tail run unattended:** Dispatch the
+  `joe-bag-of-tricks:branch-shepherd` agent once with the full branch list (each entry: worktree
+  path, optional existing PR number). It runs Step 3 through Merging for every branch —
+  push/PR, the backgrounded CI wait and fix loop, CodeRabbit handling, conflict reconciliation
+  if main moves mid-train, squash-merge, and worktree cleanup — sequentially, and reports one
+  outcome table at the end instead of checking in after each step.
+
+This does not replace Steps 3-5 as the *reference procedure* — branch-shepherd runs the same
+steps, just autonomously and across a list. Read them below regardless of which path you take;
+they're what branch-shepherd is executing on your behalf.
+
+**Dispatch it in the background** and keep working while it runs.
+
 ## The Process
 
 ### Step 1: Verify Tests
@@ -100,6 +123,11 @@ until gh pr checks <number> --json bucket \
 
 When the notification arrives, read the results: `gh pr checks <number>`
 
+Ending a turn "waiting" without that live background task is a stall — nothing will ever wake
+you, and the delivery strands until someone notices. A promise to wait is not a wait: if
+launching the loop did not return a task ID you can name, no wait exists — launch it before
+ending the turn. Do not substitute sleeps, scheduled wakeups, or one-off checks for the loop.
+
 Three details the loop depends on:
 - `length > 0` covers the window right after a push where no check has registered yet.
   Without it, an empty check list reads as "everything settled."
@@ -164,6 +192,29 @@ git worktree remove <worktree-path>
 git worktree prune   # self-healing: clears any stale registrations
 ```
 
+**If removal is refused** (`contains modified or untracked files`): the
+worktree holds files that exist nowhere else — uncommitted plans, notes,
+or scratch work. Never `--force` on your own initiative. Show your human
+partner what is at stake and ask:
+
+```bash
+git -C "$WORKTREE_PATH" status --porcelain -uall
+```
+
+```
+Worktree removal refused — these files were never committed:
+
+<file list>
+
+1. Commit them to <branch> before cleanup
+2. Move them into <main repo root>
+3. Delete them (unrecoverable)
+
+Which?
+```
+
+Carry out the choice, then remove the worktree.
+
 Report: "PR ready at <URL>. All CI checks passing."
 
 ## Merging (when your human partner requests)
@@ -172,11 +223,19 @@ When your human partner says to merge or close a PR, dispatch the `joe-bag-of-tr
 
 - **number**: the PR number
 
-The agent squash merges with no body, checks out main, pulls, watches CI on the merge commit, and cleans up the local branch and worktree. It reports back with the merge SHA and CI status.
+The agent squash merges with no body, checks out main, pulls, verifies CI — requiring *every*
+Actions run on the merge commit to have succeeded when the repo triggers any, falling back to
+the PR gate when it triggers none — and cleans up the local branch and worktree. Its post-merge
+wait is the same backgrounded settle loop as Step 4, polling `gh run list --commit` rather than
+`gh pr checks`; `--watch` appears nowhere. It reports back with the merge SHA and CI status.
 
 **Dispatch it in the background** and keep working while it runs.
 
 **If pr-merger reports CI FAILED on main:** Investigate and fix on a new branch.
+
+**If it reports INCOMPLETE, or PASSED from the PR gate with no Actions run detected:** that is
+not post-merge verification. Treat main as unverified and check it yourself before building on
+it.
 
 ## Quick Reference
 
@@ -185,6 +244,7 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | 1. Verify | Run tests, stop if failing |
 | 1.5 Security | Run security review, fix Critical/Important |
 | 2. Base branch | Confirm target branch |
+| 2+ branches ready | Dispatch branch-shepherd with the branch list instead of Step 3-Merging manually |
 | 3. Open PR | Push, `gh pr create` with a conventional-commit title |
 | 4. CI result | Background the wait; if failed: debug, fix, push, wait again |
 | 4.5 CodeRabbit | Dispatch coderabbit-reviewer: auto-apply or reject. Escalate to opus if needed |
@@ -202,9 +262,11 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 | "It's a one-line change, I'll just push to main" | Never push to main. Every change goes through a feature branch and a PR. |
 | "A merge body documents the change nicely" | Squash merge with `--body ""`. PR detail belongs in the PR, not in git log. |
 | "This other worktree looks stale — I'll clean it too" | Clean up only worktrees under `.worktrees/`. Everything else belongs to the host. |
+| "Removal refused — `--force` is just finishing the cleanup" | The refusal means files exist only in that worktree. `--force` destroys them permanently. Show your human partner and ask. |
 | "CI is probably just flaky" | A red check stops the merge. Investigate the failure before touching the merge button. |
 | "It's only a couple of minutes — I'll just watch CI" | Background the wait. Every time. A blocked session cannot be handed the next piece of work. |
 | "There's nothing else to do, so blocking costs nothing" | You cannot know that — your human partner can hand you work the moment the wait starts. Background it and stay reachable. |
+| "I said I'm waiting for CI, so the wait is in place" | Only a live `run_in_background` task wakes you. No task ID = no wait. Launch the loop before ending the turn. |
 
 ## Integration
 
@@ -215,6 +277,8 @@ The agent squash merges with no body, checks out main, pulls, watches CI on the 
 **Dispatches:**
 - **coderabbit-reviewer** agent (sonnet, escalates to opus) - Auto-apply review suggestions (Step 4.5)
 - **pr-merger** agent (haiku) - Squash merge, CI watch, cleanup (Merging)
+- **branch-shepherd** agent (sonnet) - Runs Step 3 through Merging unattended across a list of
+  review-clean branches (Orchestrating Multiple Branches)
 
 **Pairs with:**
 - **security-review** - Runs security audit before push (Step 1.5)

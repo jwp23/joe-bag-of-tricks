@@ -43,8 +43,13 @@ This skill receives an **epic ID** from the brainstorming skill. The epic alread
 
 If starting without an epic (e.g., ad-hoc planning with an existing spec or clear requirements), create one first:
 ```bash
-bd create "<project name>" -t epic --description="<summary>" --json
+bd create "<project name>" -t epic --description="<summary>" \
+  --spec-id="docs/designs/<topic>.md" --json
 ```
+
+The plan argues from the spec, so the spec travels with it: `--spec-id` points the epic at the
+living design doc, and executors read both. If no design doc covers this area, say so on the
+epic — rulings made without one are provisional.
 
 Review the existing hierarchy before creating tasks:
 ```bash
@@ -69,6 +74,8 @@ Every task's requirements implicitly include these. Implementers and reviewers r
 ## File Structure
 
 Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
+
+**Survey by delegation, read by the slice.** Task designs need exact signatures and line anchors, but that does not mean reading whole files into the planning context — a full read of one large module can cost more resident tokens than the entire task hierarchy you're writing, and it is re-billed on every turn after. Dispatch an Explore agent to return the survey (module map, public signatures, relevant line numbers), then Read only the specific functions your task designs will prescribe edits to, with offset/limit. The survey tokens die with the subagent; only the load-bearing slices enter your context.
 
 - Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
 - You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
@@ -162,8 +169,12 @@ Every task design must contain the actual content an engineer needs. These are *
 - "Similar to Task N" (repeat the code — tasks are dispatched to fresh subagents that may run out of order)
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
+- "Invoke the X skill" or "run `/command`" — tasks are dispatched to implementer subagents that
+  have no Skill tool, so the step is impossible as written. Name the procedure's file instead
+  ("follow the procedure in `<path>`"), and where that file will not be readable from the
+  worktree, write out the steps the task actually needs
 
-When a task involves a technical choice (tool selection, patterns, library choices), invoke **record-decision**.
+When a task involves a technical choice (tool selection, patterns, library choices), invoke **record-decision** yourself while planning — never as a step in the task.
 
 ## Self-Review
 

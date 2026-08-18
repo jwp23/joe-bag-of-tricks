@@ -165,3 +165,83 @@ After agents return:
 2. **Check for conflicts** - Did agents edit same code?
 3. **Run full suite** - Verify all fixes work together
 4. **Spot check** - Agents can make systematic errors
+
+## Delivering Parallel Work (the bead-crunch pattern)
+
+The pattern above shares one working tree — fine for a same-tree fix wave, wrong once the
+independent items are substantial enough to need their own review and their own PR. When
+you're clearing a batch of independent backlog items (bd issues, tickets, whatever the
+project tracks), each one needs real delivery, not just integration back into your session.
+
+1. **One worktree/branch per independent item.** Group entangled items — ones that would
+   touch the same files or tests — into a single family sharing one branch; keep truly
+   independent items on separate branches. Use using-git-worktrees for each.
+2. **Work each branch to review-clean before moving to delivery.** Apply the same per-branch
+   review discipline as a single task: a task review (spec compliance + code quality) with a
+   fix loop, exactly as subagent-driven-development's Task Loop runs it — don't skip the loop
+   just because the item is small. Then run a security pass — combined across the whole batch
+   at the end, or per-branch as each one finishes, whichever fits the batch's size — per
+   security-review.
+3. **Accumulate, don't deliver one at a time.** As each branch goes review-clean, add it to a
+   running list (worktree path, and the PR number if one already exists). Do not dispatch
+   finishing-a-development-branch per branch as you go — that serializes CI waits across the
+   whole batch for no reason.
+4. **Dispatch ONE branch-shepherd with the full train** once the batch (or a convenient chunk
+   of it) is accumulated. It pushes, opens PRs, waits out CI, handles CodeRabbit, reconciles
+   conflicts if main moves mid-train, squash-merges, and cleans up worktrees — sequentially,
+   across every branch in the list — and reports one outcome table.
+
+### Choosing between this and subagent-driven-development
+
+The deciding axis is dependency structure, not task count:
+
+- **Tasks build on each other** (later work assumes earlier work's interfaces, files, or
+  state) → subagent-driven-development. One branch, sequential dispatch, in-order review.
+- **Items are independent** (no item's work depends on another's output) → this skill. Many
+  branches, parallel dispatch, delivered as a train.
+
+They compose: a planned epic's independent tasks can each be handed to a parallel-dispatch
+batch, and within each batch item, subagent-driven-development's task-brief/implement/review
+loop still governs how that one item gets built — parallelism picks the branch layout, SDD
+still governs the work inside each branch.
+
+### Escalating a hard call
+
+Parallel dispatch produces the most cross-agent conflict of any workflow here — more agents,
+less shared context, no sequential review to catch a disagreement early. When agents disagree,
+do not settle it yourself in prose. You cannot reliably see what you are missing, and running
+on a top-tier model does not change that.
+
+The escalation triggers and the orchestrator-side dispatch instructions are stated once, in
+/joe-bag-of-tricks:subagent-driven-development under **Escalation** — read them there. They
+apply unchanged to this path, except trigger 3, whose bound is counted differently: here it
+fires when **the same gate fails twice on one branch after a fix aimed at it**. The gates are
+whatever the project commits to — for this repo, `claude plugin validate`,
+`verify-skills-load.sh`, `check-context-budget.sh`, and CI.
+
+Name the governing decisions at batch setup rather than per task, and carry the list into
+every branch's dispatch. A batch touching one subsystem usually shares one list.
+
+Dispatch `joe-bag-of-tricks:adjudicator` and record its ruling as a `bd note`
+(`Ruling: <what> — <why> — <cost if wrong>`), the same as the SDD path. In a bead crunch the
+roll-up at the end is the only place your human partner sees these, so an unrecorded ruling is
+an invisible one.
+
+Branch-vs-branch conflicts are NOT an escalation trigger — `branch-shepherd` reconciles those
+during delivery.
+
+## Integration
+
+**Pairs with:**
+- **subagent-driven-development** - Alternative for dependent tasks; composes with this skill
+  for independent tasks inside a planned epic (see "Choosing between..." above)
+- **using-git-worktrees** - One worktree/branch per independent item or entangled family
+- **requesting-code-review** - Per-branch task review with fix loop before a branch counts as
+  review-clean
+- **security-review** - Security pass before delivery, combined or per-branch
+
+**Dispatches:**
+- **branch-shepherd** agent (sonnet) - Delivers the accumulated train of review-clean
+  branches unattended (Delivering Parallel Work)
+- **adjudicator** agent (fable) - One-shot ruling when an escalation trigger fires
+  (Escalating a hard call)

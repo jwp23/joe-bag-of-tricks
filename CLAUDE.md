@@ -49,25 +49,38 @@ modified file in docs/customizations.md as vendored / patched / replaced.
 - Classify by the git diff, NOT memory — a file may diverge for more than one reason
 
 ## Code Style
-Author/edit skills via /joe-bag-of-tricks:writing-skills — lean SKILL.md, required
-name/description frontmatter, progressive disclosure to supporting files. Don't freeform.
+Author/edit skills via /joe-bag-of-tricks:writing-skills and agent definitions via
+/joe-bag-of-tricks:writing-agents — lean SKILL.md, required name/description frontmatter,
+progressive disclosure to supporting files. Don't freeform. Both are mandatory before the first
+edit; see @.claude/rules/authoring-skills-and-agents.md for which edits also require the testing
+half.
 Match upstream's existing shell/Node style when editing inherited files — do NOT reformat
 wholesale; bulk reformatting guarantees merge conflicts on the next sync.
 Cross-reference skills/agents by namespace: /joe-bag-of-tricks:<name>.
 IMPORTANT: When your preference conflicts with upstream's existing style, match upstream.
 
 ## Validation
-No TDD and no behavioral evals — deferred by docs/adr/006-defer-behavioral-evals.md. Before any commit:
+No code test suite and no standing eval harness — the harness is deferred by
+docs/adr/006-defer-behavioral-evals.md. Behavior-changing skill/agent edits still owe a pressure
+test; see @.claude/rules/authoring-skills-and-agents.md. Before any commit:
 - `claude plugin validate plugins/joe-bag-of-tricks` — plugin manifest + skill frontmatter. Always.
   The path argument is REQUIRED. `claude plugin validate .` validates only the *marketplace*
   manifest and will NOT catch a broken skill.
 - `.claude/scripts/verify-skills-load.sh` — loads every skill and asserts it resolved, divergent
   skills first; also asserts the SessionStart hook injected using-skills. `--only <name>` while
   iterating. One billed model call per skill. Proves a skill LOADS, not that it TRIGGERS.
-  `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace.
+  `--plugin-dir <plugin root>` targets another plugin; the namespace comes from its plugin.json.
+  `--plugin-dir .` does NOT load the plugin — the repo root is the marketplace, and the script
+  rejects it. Divergence ordering and `--tier diverged` need docs/customizations.md, which covers
+  joe-bag-of-tricks only; elsewhere order is alphabetical and that tier is refused.
+- `.claude/scripts/check-context-budget.sh` — hard fail when the always-loaded surface (skill
+  descriptions + agent roster lines + the SessionStart injection) exceeds the committed token
+  budget. Cheap; run it every time. SKILL.md bodies are reported, not gated.
 - `plugins/joe-magic-bootstrap` has its own, identical validation gate:
-  `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root.
-- Editing/creating a skill: follow /joe-bag-of-tricks:writing-skills.
+  `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root, plus
+  `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-bootstrap`.
+- Editing/creating a skill or agent: follow @.claude/rules/authoring-skills-and-agents.md — it
+  names which skill to invoke and whether the edit also owes a pressure test.
 NEVER claim a change works until you've loaded it and observed it — no "should work."
 Inherited tests/pre-commit suites are kept-or-stripped per docs/customizations.md.
 
@@ -92,6 +105,7 @@ upstream-merge surface.
 Before commit: `betterleaks git --pre-commit --staged --redact` (hard fail) ·
 `claude plugin validate plugins/joe-bag-of-tricks` ·
 `claude plugin validate plugins/joe-magic-bootstrap` ·
+`.claude/scripts/check-context-budget.sh` (always-loaded token budget) ·
 `.claude/scripts/verify-skills-load.sh` (every skill loads; billed, so run it deliberately).
 No markdown/shell/JS linters wired — upstream lints only its evals/, which is a gitignored clone
 of a separate repo this fork does not carry (docs/adr/006-defer-behavioral-evals.md).
@@ -118,6 +132,8 @@ first. Load the full context before making changes.
 - docs/architecture.md — Read when unsure where a component belongs (root vs .claude/).
 - docs/licensing.md — Read before vendoring from any upstream. Compatibility rules and the
   attribution/NOTICE discipline for a public repo.
+- docs/skill-description-optimization.md — Read when a skill loads but triggers on the wrong
+  prompts. On-demand skill-creator eval loop; not a gate. Cost model and eval-set conventions.
 
 ## Project Structure
 Plugin layout and the root-vs-.claude/ split: see docs/architecture.md.

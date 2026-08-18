@@ -14,14 +14,28 @@
 #
 # Prompts live in triggering-prompts/<skill>.txt — the filename is the skill the
 # prompt is expected to trigger. They are authored from this fork's own skill
-# descriptions.
+# descriptions, to the REALISTIC-QUERY STANDARD: what a person actually types,
+# not a clean restatement of the description. Concretely — lowercase, unpunctual
+# prose; the situation and its history, not just the ask; enough domain detail
+# (real filenames, real constraints) that the request stands on its own; and NO
+# vocabulary lifted from the target skill's description. A prompt that echoes the
+# description measures the echo, not the skill.
 #
-# Cost: one model call per prompt.
+# Cost: one model call per prompt. Roughly $0.14-0.18 each, so a full sweep at
+# --repeat 5 is real money. --changed-since is the cheap post-sync default:
+# triggering depends on the `description:` frontmatter, and detecting a change
+# there costs nothing, so only the drifted skills need probing.
+#
+# --changed-since compares <ref>..HEAD, so it sees COMMITTED changes only: an
+# uncommitted description edit in the working tree reports "nothing to probe"
+# and exits 0. Commit first, or pass --only. Combined with --only it intersects
+# — --only narrows the drifted set, it never widens it.
 #
 # Usage:
 #   .claude/scripts/probe-skill-triggering.sh                  # every prompt
 #   .claude/scripts/probe-skill-triggering.sh --only brainstorming
 #   .claude/scripts/probe-skill-triggering.sh --repeat 3       # check stability
+#   .claude/scripts/probe-skill-triggering.sh --changed-since v1.2.0
 
 set -euo pipefail
 
@@ -35,17 +49,19 @@ MODEL="sonnet"
 TIMEOUT=180
 REPEAT=1
 ONLY=()
+CHANGED_SINCE=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --model)   MODEL="$2"; shift 2 ;;
         --timeout) TIMEOUT="$2"; shift 2 ;;
         --repeat)  REPEAT="$2"; shift 2 ;;
+        --changed-since) CHANGED_SINCE="$2"; shift 2 ;;
         --only)
             shift
             while [[ $# -gt 0 && "$1" != --* ]]; do ONLY+=("$1"); shift; done
             ;;
-        -h|--help) sed -n '2,24p' "$0" | sed 's/^# \?//'; exit 0 ;;
+        -h|--help) sed -n '2,38p' "$0" | sed 's/^# \?//'; exit 0 ;;
         *) echo "unknown argument: $1" >&2; exit 1 ;;
     esac
 done
@@ -53,6 +69,71 @@ done
 for tool in claude jq timeout; do
     command -v "$tool" >/dev/null || { echo "required tool not found: $tool" >&2; exit 1; }
 done
+
+# The `description:` value of a SKILL.md blob at a ref, empty when the path does
+# not exist there. Reads the whole frontmatter entry, not just the first line, so
+# an edit inside a `description: |` block scalar is not silently missed — and so
+# a rename reads as a change, because the skill's name is triggering surface too.
+description_at() {
+    git -C "$REPO_ROOT" show "$1:$2" 2>/dev/null | awk '
+        NR == 1 && $0 != "---" { exit }
+        NR > 1 {
+            if ($0 == "---") exit
+            if (/^description:/) { grab = 1; print; next }
+            if (grab && /^[A-Za-z_-]+:/) exit
+            if (grab) print
+        }'
+}
+
+# Skills whose triggering surface moved since a ref. Free to compute; it is what
+# turns a full post-sync sweep into a handful of probes.
+changed_skills() {
+    git -C "$REPO_ROOT" diff --name-only -M "$1"..HEAD -- '*/SKILL.md' | while read -r path; do
+        [[ -f "${REPO_ROOT}/${path}" ]] || continue   # deleted skills cannot be probed
+        [[ "$(description_at "$1" "$path")" != "$(description_at HEAD "$path")" ]] || continue
+        basename "$(dirname "$path")"
+    done | sort -u
+}
+
+if [[ -n "$CHANGED_SINCE" ]]; then
+    git -C "$REPO_ROOT" rev-parse --verify -q "${CHANGED_SINCE}^{commit}" >/dev/null \
+        || { echo "not a commit: ${CHANGED_SINCE}" >&2; exit 1; }
+    mapfile -t DRIFTED < <(changed_skills "$CHANGED_SINCE")
+    if [[ ${#DRIFTED[@]} -eq 0 ]]; then
+        echo "No skill description changed since ${CHANGED_SINCE} — nothing to probe."
+        exit 0
+    fi
+    echo "Descriptions changed since ${CHANGED_SINCE}: ${DRIFTED[*]}"
+    probeable=0
+    for skill in "${DRIFTED[@]}"; do
+        if [[ -f "${PROMPTS_DIR}/${skill}.txt" ]]; then
+            probeable=$((probeable + 1))
+        else
+            echo "  no prompt for drifted skill: ${skill} (add ${skill}.txt to probe it)"
+        fi
+    done
+    if [[ $probeable -eq 0 ]]; then
+        echo "None of the drifted skills has a prompt — nothing to probe."
+        exit 0
+    fi
+    # --only NARROWS the drifted set; it never adds to it. Unioning the two would
+    # probe skills the caller did not ask for, at ~$0.15 a call.
+    if [[ ${#ONLY[@]} -gt 0 ]]; then
+        NARROWED=()
+        for want in "${ONLY[@]}"; do
+            for skill in "${DRIFTED[@]}"; do
+                [[ "$want" == "$skill" ]] && NARROWED+=("$want")
+            done
+        done
+        if [[ ${#NARROWED[@]} -eq 0 ]]; then
+            echo "None of --only (${ONLY[*]}) drifted since ${CHANGED_SINCE} — nothing to probe."
+            exit 0
+        fi
+        ONLY=("${NARROWED[@]}")
+    else
+        ONLY=("${DRIFTED[@]}")
+    fi
+fi
 
 EXPECTED=()
 for f in "${PROMPTS_DIR}"/*.txt; do

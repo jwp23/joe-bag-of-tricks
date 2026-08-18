@@ -289,6 +289,13 @@ Use words Claude would search for:
 - Frequently-loaded skills: <200 words total
 - Other skills: <500 words (still be concise)
 
+**Measure instead of estimating.** Word counts are a proxy; tokens are the bill. In the
+joe-bag-of-tricks repo, `.claude/scripts/token-diff.sh <path>` prints the real token delta
+between HEAD and your working tree, so "did this edit actually shrink the skill" is answered,
+not assumed — and `.claude/scripts/check-context-budget.sh` gates the always-loaded surface
+(descriptions + agent roster lines + the SessionStart injection). Never estimate with tiktoken
+or chars/4; both are OpenAI heuristics and undercount Claude markdown.
+
 **Techniques:**
 
 **Move details to tool help:**

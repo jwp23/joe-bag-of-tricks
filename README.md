@@ -4,6 +4,9 @@ Personal [Claude Code](https://code.claude.com) plugins — a curated bag of eng
 
 This repository is a plugin marketplace shipping two plugins. Add the marketplace once on each machine, install the plugin(s) you want, and keep them in sync through git.
 
+**New to the workflow?** [`docs/workflow-guide.md`](docs/workflow-guide.md) is a hands-on-keyboard
+walkthrough — what you type, start to finish, from an idea through a merged PR.
+
 ## Want to build your own?
 
 If you keep skills or agents in `.claude/` and want them packaged, versioned, and installable everywhere you work, this repo doubles as a worked example:
@@ -41,13 +44,21 @@ Two plugins.
 | `readme-sync` | Keeping docs in sync after user-facing changes |
 | `writing-skills` | Creating, editing, or verifying skills |
 | `writing-agents` | Creating or editing subagents |
+| `scripted-browser-verification` | Verifying a web UI — one Playwright script, compact output, never interactive browser calls |
+| `ux-audit` | Auditing a finished UI batch for truncation, crowding, cryptic labels, and weak hierarchy |
+| `implementer-contract` | Not invoked directly — the shared operating contract preloaded into the implementer agents |
 
 **Agents** (`agents/`)
 
-| Agent | Model | Role |
-|-------|-------|------|
-| `coderabbit-reviewer` | sonnet | Evaluates and applies/rejects CodeRabbit PR comments |
-| `pr-merger` | haiku | Squash-merges, watches CI on main, cleans up |
+| Agent | Model | Effort | Role |
+|-------|-------|--------|------|
+| `coderabbit-reviewer` | sonnet | low | Evaluates and applies/rejects CodeRabbit PR comments |
+| `pr-merger` | haiku | low | Squash-merges, verifies post-merge CI when the repo has Actions runs, cleans up |
+| `branch-shepherd` | sonnet | medium | Delivers one or more review-clean branches end to end: push, PR, CI, CodeRabbit, conflict reconciliation, squash-merge, cleanup |
+| `implementer-mechanical` | haiku | low | Executes a single, fully-specified SDD task — transcription-grade work where the plan already contains the code to write |
+| `implementer` | sonnet | medium | Implements a single SDD task — the default tier for ordinary multi-file integration work |
+| `implementer-complex` | opus | high | Implements an SDD task that needs design judgment or broad context; also the fix-loop escalation target |
+| `adjudicator` | fable | high | Rules on one escalated question from an orchestrator — contradictory reports, a governing-decision conflict, an exhausted fix loop, a Critical finding — and edits nothing |
 
 `joe-magic-bootstrap` — interactively generates a project's CLAUDE.md + `.claude/` structure (one skill, `project`).
 
@@ -74,8 +85,8 @@ joe-bag-of-tricks/
     ├── joe-bag-of-tricks/
     │   ├── .claude-plugin/
     │   │   └── plugin.json       # plugin manifest (semver version)
-    │   ├── skills/               # 18 skills
-    │   └── agents/               # 4 agents
+    │   ├── skills/               # 21 skills
+    │   └── agents/               # 7 agents
     └── joe-magic-bootstrap/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)
@@ -130,6 +141,8 @@ Use `/reload-plugins` to pick up local edits without restarting.
 
 Licensed under the [MIT License](LICENSE).
 
-Thirteen of the eighteen skills are adapted from the [Superpowers](https://github.com/obra/superpowers) project by Jesse Vincent (MIT-licensed): `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
+Thirteen of the twenty-one skills are adapted from the [Superpowers](https://github.com/obra/superpowers) project by Jesse Vincent (MIT-licensed): `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
 
-The remaining skills (`readme-sync`, `record-decision`, `security-review`, `using-skills`, `writing-agents`) and all four agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
+The remaining skills (`implementer-contract`, `readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`, `using-skills`, `ux-audit`, `writing-agents`) and all seven agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
+
+See [NOTICE](NOTICE) for the full upstream attribution and [docs/licensing.md](docs/licensing.md) for the licensing policy.

@@ -94,6 +94,21 @@ does not prove a skill **triggers** from a natural prompt. Triggering is what th
 `triggering-*` scenarios buy, and it is the regression an upstream sync is most likely to cause.
 The gate is not an eval and no document should describe it as one.
 
+*2026-08-15 (scope clarification):* this ADR defers a **plugin-wide eval harness** — standing
+infrastructure that measures whether the plugin as a whole improved or regressed across its skill
+set. That is what Quorum is, and deferring it stands.
+
+It was never a decision to ship behavioral changes untested. Nothing here rejects an ad-hoc
+pressure test scoped to the change in hand: a throwaway fixture and a handful of subagent runs,
+which needs no harness repo, no bun/tmux, and no CI to host it. The distinction went unwritten
+long enough to be read the other way: a review-triage change was implemented untested on the
+strength of that reading (joe-bag-of-tricks-4po), and only a pressure test added late in that work
+found a real defect in it before it shipped.
+
+- **Deferred:** standing eval infrastructure, scenario suites, cross-skill regression measurement.
+- **Not deferred, and required where behavior changes:** a fixture plus subagent runs for the
+  change being made. See `.claude/rules/authoring-skills-and-agents.md`.
+
 ## Trade-offs
 
 **Chosen: defer evals, script the load gate**
@@ -139,6 +154,21 @@ hit 2/2, but `test-driven-development` and `writing-plans` hit **1/2** each — 
 different outcomes. A gate that flips like that would fail this project's pristine-output rule
 every other run and train everyone to ignore it. Read it after a sync; do not gate on it.
 
+*2026-08-14:* the four prompts were rewritten to the realistic-query standard and re-measured at
+`--repeat 5`: `writing-plans` **3/5**, `test-driven-development` **1/5**. The `1/2` figures above
+describe prompts that no longer exist in the repo — the flakiness conclusion is unchanged and
+still stands, but do not read `1/2` as current. TDD did not merely stay flaky, it got worse, and
+the meaning of a row that misses 80% of the time has to be written down or the probe becomes the
+ignorable signal this ADR warns about. The candidate reading, consistent with all four rows but
+not itself tested: hit rate tracks how much *situation* a description names. `systematic-debugging`
+enumerates symptoms at length and `brainstorming` names the kinds of work it covers; both held at
+2/2. `test-driven-development`'s entire description is twelve words of process — "Use when
+implementing any feature or bugfix, before writing implementation code" — with no domain nouns for
+a concrete request to match against, and it is the worst row. If that reading is right the fix is
+the description, not the prompt, and the instrument for it is tier 2
+(`example-skills:skill-creator`'s description-optimization loop), not another probe run. Until
+someone does that, treat the TDD row as a known-open finding rather than noise.
+
 Two things make the probe meaningful at all, both learned the hard way:
 
 - It must run in a **neutral fixture repo**, which the script builds in a temp dir. Run in this
@@ -160,3 +190,8 @@ Reopen this decision when any of these happen:
 - `prime-radiant-inc/superpowers-evals` gains a license compatible with `docs/licensing.md`,
   which would remove the write-everything-from-scratch cost.
 - This repo gains CI that could host evals, changing the cost calculus.
+
+Behavioral **token cost** — "does loading this skill make the session cheaper?" — is the same
+family and was deferred separately on the same grounds, with the verified `result`-event
+telemetry and its own flip conditions recorded in
+`docs/decisions/defer-behavioral-token-cost-measurement.md`.

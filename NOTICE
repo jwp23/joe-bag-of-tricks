@@ -1,0 +1,16 @@
+Joe's Bag of Tricks
+Copyright (c) 2026 Joseph Presley
+
+This product includes skills adapted from the Superpowers project
+(https://github.com/obra/superpowers), Copyright (c) 2025 Jesse Vincent,
+used under the MIT License. See LICENSE for the full license text and the
+retained upstream copyright notice.
+
+This product includes a derived fragment in
+.claude/scripts/skill-eval-shim/sitecustomize.py, adapted from
+anthropics/skills (skills/skill-creator/scripts/run_eval.py), used under the
+Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+See that file's docstring for the specific attribution.
+
+See docs/customizations.md for the full per-file record of vendored,
+patched, and derived material and their upstream sources.
