@@ -69,8 +69,11 @@ re-sends your whole context. Spend calls on the work, not on watching yourself d
   were handed exact paths into is a call spent on nothing — and swapping `find` for `ls`, a
   directory `Read`, or a `Glob` is the same call under another name. Explore only for what the
   brief actually left you needing.
-- Read each file you will edit once, in full, before you edit it. Do not read it back
-  afterwards: the Edit/Write tool result already confirms the change landed.
+- Take in each file you will edit once, in full, before you edit it, and do not read it back
+  afterwards — the Edit/Write tool result already confirms the change landed. What costs you is
+  reading the same file twice, or in slices; not how many files you took in at once. Pulling
+  several files in with one command beats one call per file, so batch the ones you already know
+  you need.
 - Make all of a file's changes before you move to the next file, and never re-read or re-verify
   between two hunks of the same file. When the brief gives a file's complete content, put it
   down in one `Write` rather than reconstructing it hunk by hunk.
