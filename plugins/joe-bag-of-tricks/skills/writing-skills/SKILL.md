@@ -289,12 +289,12 @@ Use words Claude would search for:
 - Frequently-loaded skills: <200 words total
 - Other skills: <500 words (still be concise)
 
-**Measure instead of estimating.** Word counts are a proxy; tokens are the bill. In the
-joe-bag-of-tricks repo, `.claude/scripts/token-diff.sh <path>` prints the real token delta
-between HEAD and your working tree, so "did this edit actually shrink the skill" is answered,
-not assumed — and `.claude/scripts/check-context-budget.sh` gates the always-loaded surface
-(descriptions + agent roster lines + the SessionStart injection). Never estimate with tiktoken
-or chars/4; both are OpenAI heuristics and undercount Claude markdown.
+**Measure instead of estimating.** Word counts are a proxy; tokens are the bill. Count both
+sides with Anthropic's `count_tokens` endpoint — HEAD versus your working tree — so "did this
+edit actually shrink the skill" is answered, not assumed. Do the same for the always-loaded
+surface (skill descriptions + agent roster lines + anything a SessionStart hook injects) and
+hold it against a committed budget, so a skill cannot quietly grow every session. Never
+estimate with tiktoken or chars/4; both are OpenAI heuristics and undercount Claude markdown.
 
 **Techniques:**
 

@@ -284,5 +284,7 @@ it.
 - **security-review** - Runs security audit before push (Step 1.5)
 - **using-git-worktrees** - Cleans up worktree created by that skill
 
-**Design rationale:** See `docs/adr/001-haiku-subagents-for-git-operations.md` and
-`docs/adr/005-retire-pr-creator-single-ci-wait.md` (why PR creation is inline, not an agent).
+**Design rationale:** Merging and review are dispatched because they are mechanical enough for a
+cheap model and long enough that backgrounding them buys real time. PR creation is inline because
+it is not: once every CI wait moved to the one backgrounded settle loop, `git push` + `gh pr
+create` was too little work per invocation to pay for a dispatch.

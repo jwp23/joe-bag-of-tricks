@@ -54,9 +54,8 @@ dispatched with no agent definition at all — plain-session behavior is the sta
 has to beat, and what it gets wrong is what the body must fix.
 
 **How to dispatch.** A top-level session dispatches through the Agent tool. A session without one
-— which includes every implementer agent here — uses a headless `claude -p` from Bash, this repo's
-established subagent-probe mechanism; `.claude/scripts/verify-skills-load.sh` and
-`.claude/scripts/probe-skill-triggering.sh` are the invocation shape to copy:
+— which includes every implementer agent here — uses a headless `claude -p` from Bash. Stream the
+output as JSON so the probe is machine-readable rather than something you eyeball:
 
 ```bash
 FIXTURE="$WORK/red"                                   # this run's own copy of the fixture repo
