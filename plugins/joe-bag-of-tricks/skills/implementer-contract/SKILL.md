@@ -60,8 +60,38 @@ The dispatch prompt tells you which directory to work from.
 **While you work:** If you encounter something unexpected or unclear, **ask questions**. It's
 always OK to pause and clarify. Don't guess or make assumptions.
 
-While iterating, run the focused test for what you're changing; run the full suite once
-before committing, not after every edit.
+## Working Efficiently
+
+What you cost is the number of turns you take, not the size of your diff — every tool call
+re-sends your whole context. Spend calls on the work, not on watching yourself do it.
+
+- Where the brief names the files, go straight to them. Orienting yourself in a project you
+  were handed exact paths into is a call spent on nothing — and swapping `find` for `ls`, a
+  directory `Read`, or a `Glob` is the same call under another name. Explore only for what the
+  brief actually left you needing.
+- Take in each file you will edit once, in full, before you edit it, and do not read it back
+  afterwards — the Edit/Write tool result already confirms the change landed. What costs you is
+  reading the same file twice, or in slices; not how many files you took in at once. Pulling
+  several files in with one command beats one call per file, so batch the ones you already know
+  you need.
+- Make all of a file's changes before you move to the next file, and never re-read or re-verify
+  between two hunks of the same file. When the brief gives a file's complete content, put it
+  down in one `Write` rather than reconstructing it hunk by hunk.
+- Test gate: run the focused test for what you're changing to see RED, and again to see GREEN.
+  Then run the project's full gate — suite, lint, fmt, whatever the brief names — exactly once,
+  immediately before you commit. Do not run it again unless something changed after it. When
+  the focused test and the full gate are the same command and nothing has changed since GREEN,
+  that GREEN run **is** the gate; running it a third time proves nothing. Never run the gate
+  after committing — committing changes no code, so a post-commit run can only tell you what
+  the pre-commit run already did.
+- Stress runs cost minutes apiece. Run the race detector over the package you changed. Run
+  high-count or repeated loops (`-count=N`, `-cpu=…`, fuzzing) only when the brief or the
+  dispatch asks for them, and scope them to the tests that cover your change.
+- No `git status` / `git diff` / `git log` between steps. Your whole git budget is one
+  `git status` before `git add`, one `git diff <base>` for self-review, and the commit's own
+  output for the SHA. Nothing else.
+- No narration between tool calls. It costs output tokens, is re-read as input on every later
+  turn, and never reaches the controller. The report file is the record.
 
 ## You Do Not Dispatch Subagents
 
@@ -104,7 +134,8 @@ pieces.
 
 ## Before Reporting Back: Self-Review
 
-Review your work with fresh eyes. Ask yourself:
+Read your own diff — `git diff <the commit you started from>` — and review that. Not the tree
+again, and not a repeat of the greps you already ran while implementing. Ask yourself:
 
 **Completeness:**
 - Did I fully implement everything in the spec?
@@ -153,12 +184,16 @@ Write your full report to the report file the dispatch prompt gave you:
   scope, with enough context for the controller to track it (title, description, suggested
   priority)
 
-Then report back with ONLY (under 15 lines — the detail lives in the report file):
+Then report back with ONLY these five things, under 15 lines total:
 - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
 - Commits created (short SHA + subject)
 - One-line test summary (e.g. "14/14 passing, output pristine")
-- Your concerns, if any
+- Your concerns, if any, as one-liners
 - The report file path
+
+No summary of the work, no bullet list of what you changed, no restatement of the task, no
+closing paragraph. That detail is already in the report file, and everything you return instead
+sits in the controller's context and is re-read on every turn for the rest of the run.
 
 If BLOCKED or NEEDS_CONTEXT, put the specifics in the final message itself — the controller
 acts on it directly.

@@ -205,6 +205,12 @@ Scan for, writing down what you checked as you check it:
   that dispatch's task-specific instructions yourself. Either way the rewrite
   reaches the implementer only through item (4) of the dispatch below —
   `task-brief` copies the task verbatim, so a `bd note` alone never gets there
+- runs of consecutive mechanical tasks touching the same package that could be
+  ONE dispatch and ONE review (see "Batch small same-shape work" below). Batch
+  them unless a task's design needs its own review surface. Four separately
+  dispatched refactors of the same shape cost four cold starts, four full test
+  gates, and four reviewer seats for one reviewable unit of work — and nothing
+  later in the loop will notice the waste, which is why it is scanned for here
 
 The scan's output is a table, not a verdict. One row for every pair of tasks
 that share a file or an interface: the two tasks, what one produces against
@@ -301,7 +307,42 @@ constant change, or field addition repeated across files — do not dispatch
 one subagent per task. Compose ONE dispatch brief listing every file and
 its change, send the whole batch to a single subagent, and review its diff
 as one unit. Reserve one-dispatch-per-task for work that needs its own
-judgment, its own tests, or its own review surface.
+judgment, its own tests, or its own review surface. The Pre-Flight scan is
+where you look for these; batching after the first of them is already
+dispatched saves nothing.
+
+**Overlap a clean-expected review with the next implementation.** The loop is
+otherwise strictly serial — implement, review, close, claim next — and on a run
+of mechanical tasks about a quarter of the wall clock is you waiting on reviews
+that come back clean. Once task N's implementer has reported DONE and you have
+dispatched N's reviewer, you may claim and dispatch task N+1 without waiting for
+that review, when BOTH hold:
+
+- N+1 is a mechanical dispatch — its brief carries the code it needs — and
+- N's review is expected clean: N was itself mechanical AND its implementer
+  returned plain DONE.
+
+**Never overlap** when N went to `implementer-complex`, when N returned
+DONE_WITH_CONCERNS / BLOCKED / NEEDS_CONTEXT, or when N is already in a fix
+round. Those are precisely the reviews that open findings, and N+1 would be
+building on a base you are about to change.
+
+Still exactly one implementer writing at a time. The overlap is
+review-against-implement, never implement-against-implement — two writers in one
+worktree is the conflict this skill has always forbidden, and nothing here
+relaxes it.
+
+Record the overlap on N+1 before you dispatch it:
+`bd note <N+1-id> "Overlap: dispatched while <N-id>'s review was open — base included unreviewed work"`.
+An audit trail that hides a moving base is worse than no overlap.
+
+**If N's review then opens findings:** do not rebase, and do not touch the
+worktree while N+1's implementer holds it. Wait for N+1 to report, then run N's
+fix round as ordinary commits on top of N+1's. Scope its re-review with
+FIX_BASE = the HEAD you record immediately before dispatching that fix — NOT the
+head the first review saw, which now has N+1's commits sitting after it and
+would put N+1's whole diff in front of a re-reviewer scoped to N's findings.
+Close N only when N's own loop is clean; N+1 still waits on N+1's review.
 
 Everything you paste into a dispatch prompt — and everything a subagent
 prints back — stays resident in your context for the rest of the session
@@ -550,7 +591,9 @@ ruling at the cap — close the task bead with the commit range as the reason:
 Never close a task before the reviewer's report shows spec ✅ (or every ⚠️
 resolved) and task quality Approved. Never move to the next task while the
 review has open Critical/Important issues that are neither fixed nor
-parked-with-ruling at the cap.
+parked-with-ruling at the cap — an overlapped dispatch (see The Task Loop) is
+allowed only while N's review has returned nothing yet and none is expected;
+the moment a finding lands, N+1 is the last task you dispatch until N is clean.
 
 ### 6. Roll up the hierarchy
 
@@ -633,7 +676,11 @@ your behalf.
 | "The reviewer will just find something new anyway" | Scoped re-reviews verify fixes; they cannot wander. New findings on untouched code go to the task bead, not the loop. |
 | "This finding is obviously wrong, I'll drop it" | You adjudicate only at the cap, and every ruling is a `bd note`. Silent discards are forbidden. |
 | "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. Every round ends with a scoped re-review. |
-| "Reviews slow the loop down" | The loop without reviews is just unverified churn. Reviews are the loop's brakes and steering. |
+| "Reviews slow the loop down" | The loop without reviews is just unverified churn. Reviews are the loop's brakes and steering. Overlap the wait, never the gate. |
+| "This review will be clean too, I'll overlap it" | Overlap has two conditions, both checkable: N+1 mechanical, and N mechanical with a plain DONE. Complex, DONE_WITH_CONCERNS, or mid-fix-round means wait — expecting clean is not one of the conditions. |
+| "N's review found something; I'll rebase the fix under N+1" | Never rewrite history under a live implementer. Fix commits go on top, and the scoped re-review's FIX_BASE is the HEAD just before the fix dispatch. |
+| "Overlapping is bookkeeping I can keep in my head" | It is a moving base. `bd note` it on N+1 before dispatch or don't overlap — after compaction the note is the only thing that says N+1 built on unreviewed work. |
+| "These four tasks are each their own task, so each gets its own dispatch" | Same shape, same package, no independent review surface = one dispatch. Four cold starts and four test gates buy one reviewable unit. |
 | "The epic's children are the tasks" | They are whatever the tree says. `bd children <epic-id> --pretty` shows every level and totals it; `--json` returns one level. A feature layer mistaken for the task layer ships its tasks undelivered — and you rule against requirements you never read. |
 | "All the beads I saw are closed, close the parent" | You saw one level. `bd children <id>` before every parent close — `bd close` and `bd epic status` both ignore grandchildren. |
 | "I'll track progress in my head, bd is bookkeeping" | bd is what survives compaction. Controllers without it have re-dispatched entire completed task sequences. |
