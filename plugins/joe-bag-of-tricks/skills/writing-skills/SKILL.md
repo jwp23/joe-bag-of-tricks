@@ -377,9 +377,8 @@ whatever better strategy the model already had.
 **Ask it of every how-to-work line: is this a step the model will perform, or a cost it can route
 around? A step is a defect.** Measured, not reasoned — procedural phrasing was the worst of four
 arms, worse than shipping no guidance at all: one bullet's phrasing moved a fixture task from 16
-tool calls to 24, because the procedure replaced a batched read with one `Read` per file. (In the
-joe-bag-of-tricks repo, the measurement lives in
-`docs/decisions/goal-shaped-not-procedural-agent-instruction.md`.)
+tool calls to 24, because the procedure replaced a batched read with one `Read` per file. The
+procedure did not add discipline; it removed a better plan.
 
 Protocol constraints are exempt: scope boundaries, prohibitions, status vocabulary, the report
 contract. Those constrain an output rather than a method, and they measure as the most robust
