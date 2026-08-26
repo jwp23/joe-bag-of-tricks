@@ -180,7 +180,10 @@ For each item, present the reasoning to the user and ask if they agree:
 - Protocol constraints are exempt: scope boundaries, prohibitions, status vocabulary, the report
   contract. Those constrain an output rather than a method, and measure as the most robust part
   of a contract. Don't goal-shape a prohibition.
-- Measured, not reasoned: `docs/decisions/goal-shaped-not-procedural-agent-instruction.md`.
+- Measured, not reasoned: the ❌ phrasing above moved a fixture task from 16 tool calls to 24 —
+  worse than shipping no guidance at all — because it replaced a batched read with one `Read`
+  per file. (In the joe-bag-of-tricks repo, the full measurement is in
+  `docs/decisions/goal-shaped-not-procedural-agent-instruction.md`.)
 
 **Prompt body (token efficiency):**
 - Reference existing docs instead of inlining large reference tables
