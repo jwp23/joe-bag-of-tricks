@@ -364,6 +364,25 @@ Use skill name only, with explicit requirement markers:
 
 **Why no @ links:** `@` syntax force-loads files immediately, consuming 200k+ context before you need them.
 
+## How-To-Work Lines: State the Cost, Not the Procedure
+
+A line that tells an agent HOW to work names the **cost being avoided** and leaves the method
+open. Phrased as a procedure, the same rule is executed as a literal step, and it displaces
+whatever better strategy the model already had.
+
+- ❌ Procedure: "Read each file you will edit once, in full, before you edit it."
+- ✅ Cost: "What costs you is reading the same file twice, or in slices — not how many files you
+  took in at once. Pulling several files in with one command beats one call per file."
+
+**Ask it of every how-to-work line: is this a step the model will perform, or a cost it can route
+around? A step is a defect.** Measured, not reasoned — procedural phrasing was the worst of four
+arms, worse than shipping no guidance at all. Background:
+`docs/decisions/goal-shaped-not-procedural-agent-instruction.md`.
+
+Protocol constraints are exempt: scope boundaries, prohibitions, status vocabulary, the report
+contract. Those constrain an output rather than a method, and they measure as the most robust
+part of a contract. Don't goal-shape a prohibition.
+
 ## Flowchart Usage
 
 ```dot
@@ -722,6 +741,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 - [ ] Re-test until bulletproof
 
 **Quality Checks:**
+- [ ] Every how-to-work line states a cost, not a step (protocol constraints exempt)
 - [ ] Small flowchart only if decision non-obvious
 - [ ] Quick reference table
 - [ ] Common mistakes section
