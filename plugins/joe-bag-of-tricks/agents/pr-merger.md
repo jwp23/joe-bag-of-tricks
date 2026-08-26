@@ -60,8 +60,9 @@ gh run list --commit "$SHA" --limit 100 --json workflowName,status,conclusion,ur
 ```
 
 Do NOT use `gh run watch`. This fork has one CI-wait idiom — the backgrounded polling settle
-loop, the same shape as Step 4 of `/joe-bag-of-tricks:finishing-a-development-branch`. See
-`docs/adr/005-retire-pr-creator-single-ci-wait.md`.
+loop, the same shape as Step 4 of `/joe-bag-of-tricks:finishing-a-development-branch`. `--watch`
+blocks the session and has no guard for the window right after a push where no check has
+registered yet, which is exactly when it fires.
 
 Read the verdict off that listing. Every run must have succeeded:
 

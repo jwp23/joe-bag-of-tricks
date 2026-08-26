@@ -216,8 +216,8 @@ The escalation triggers and the orchestrator-side dispatch instructions are stat
 /joe-bag-of-tricks:subagent-driven-development under **Escalation** — read them there. They
 apply unchanged to this path, except trigger 3, whose bound is counted differently: here it
 fires when **the same gate fails twice on one branch after a fix aimed at it**. The gates are
-whatever the project commits to — for this repo, `claude plugin validate`,
-`verify-skills-load.sh`, `check-context-budget.sh`, and CI.
+whatever the project commits to as its pre-commit and pre-PR bar — its test suite, its linters,
+its schema or manifest validators, and CI.
 
 Name the governing decisions at batch setup rather than per task, and carry the list into
 every branch's dispatch. A batch touching one subsystem usually shares one list.

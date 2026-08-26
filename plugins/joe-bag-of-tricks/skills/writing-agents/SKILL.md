@@ -58,7 +58,8 @@ straight to:
    file, never at a summary or a shortened copy pasted into the prompt. A body you retyped for
    the test is not the body you ship, so watching it fail proves nothing about the one that is.
 3. **Re-check the always-loaded surface.** Editing `description` or `tools` changes the Agent
-   roster line that loads into every session; `.claude/scripts/check-context-budget.sh` gates it.
+   roster line that loads into every session, so re-measure it against whatever budget your
+   project holds that surface to.
 
 **Creating a new agent** — continue to Step 1 below.
 
@@ -166,8 +167,9 @@ For each item, present the reasoning to the user and ask if they agree:
 - Include trigger phrases users would say
 - Keep under 500 characters
 - The name, description, and tool list are injected into **every** session as the Agent tool's
-  roster, so they are always-loaded surface. In the joe-bag-of-tricks repo they are gated:
-  `.claude/scripts/check-context-budget.sh` counts them, and a new agent has to fit the budget.
+  roster, so they are always-loaded surface — a new agent spends that budget exactly as a new
+  skill does. Count them with the same tokenizer you count skill descriptions with, and make
+  the agent fit.
 
 **Prompt body (how-to-work lines):**
 - Every line telling the agent HOW to work names the cost being avoided and leaves the method

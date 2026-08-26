@@ -132,7 +132,7 @@ if [ "$(gh run list --commit "$SHA" --limit 100 --json databaseId --jq 'length')
 fi
 ```
 
-Do NOT use `gh run watch`. This fork has one CI-wait idiom — the backgrounded polling settle loop, the same shape as Step 3 above. See `docs/adr/005-retire-pr-creator-single-ci-wait.md`.
+Do NOT use `gh run watch`. This fork has one CI-wait idiom — the backgrounded polling settle loop, the same shape as Step 3 above. `--watch` blocks the session and has no guard for the window right after a push where no check has registered yet, which is exactly when it fires.
 
 Read the verdict off the settled list. Every run must have succeeded:
 
