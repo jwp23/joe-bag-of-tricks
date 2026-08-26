@@ -182,8 +182,7 @@ For each item, present the reasoning to the user and ask if they agree:
   of a contract. Don't goal-shape a prohibition.
 - Measured, not reasoned: the ❌ phrasing above moved a fixture task from 16 tool calls to 24 —
   worse than shipping no guidance at all — because it replaced a batched read with one `Read`
-  per file. (In the joe-bag-of-tricks repo, the full measurement is in
-  `docs/decisions/goal-shaped-not-procedural-agent-instruction.md`.)
+  per file. The procedure did not add discipline; it removed a better plan.
 
 **Prompt body (token efficiency):**
 - Reference existing docs instead of inlining large reference tables
