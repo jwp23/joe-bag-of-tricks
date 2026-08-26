@@ -174,6 +174,12 @@ Every task design must contain the actual content an engineer needs. These are *
   ("follow the procedure in `<path>`"), and where that file will not be readable from the
   worktree, write out the steps the task actually needs
 
+Writing the finished code into a task's design is not gold-plating — it is the cheaper side of
+the trade. Measured across one SDD epic, tasks whose brief carried the code ran at roughly a
+third of the cost of tasks that made the implementer discover it, and they dispatch to the
+cheapest implementer tier instead of a mid one. You pay those tokens once, here, at planning
+prices; a discovering implementer pays them again on every turn it takes.
+
 When a task involves a technical choice (tool selection, patterns, library choices), invoke **record-decision** yourself while planning — never as a step in the task.
 
 ## Self-Review
