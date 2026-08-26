@@ -11,6 +11,12 @@ get skipped together.
 **The authoring half** — frontmatter, descriptions written as capabilities and triggers rather
 than workflow summaries, progressive disclosure, token discipline. Required for EVERY edit.
 
+Within the authoring half, one review question applies to every line that tells an agent HOW to
+work: is this a step the model will perform, or a cost it can route around? A step is a defect —
+procedural phrasing measured worse than shipping no guidance at all. Protocol constraints (scope,
+prohibitions, status vocabulary, report format) are exempt. See
+`docs/decisions/goal-shaped-not-procedural-agent-instruction.md`.
+
 **The testing half** — the Iron Law: establish a failing baseline BEFORE writing the fix, verify
 the fix closes it, then close whatever new rationalization the fix opens. Required only where
 behavior changes.

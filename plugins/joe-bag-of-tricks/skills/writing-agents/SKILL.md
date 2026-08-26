@@ -169,6 +169,19 @@ For each item, present the reasoning to the user and ask if they agree:
   roster, so they are always-loaded surface. In the joe-bag-of-tricks repo they are gated:
   `.claude/scripts/check-context-budget.sh` counts them, and a new agent has to fit the budget.
 
+**Prompt body (how-to-work lines):**
+- Every line telling the agent HOW to work names the cost being avoided and leaves the method
+  open. Ask of each: is this a step the model will perform, or a cost it can route around? **A
+  step is a defect** — it gets executed literally and displaces a better strategy the model
+  already had.
+  - ❌ Procedure: "Read each file you will edit once, in full, before you edit it."
+  - ✅ Cost: "What costs you is reading the same file twice, or in slices — not how many files
+    you took in at once. Pulling several files in with one command beats one call per file."
+- Protocol constraints are exempt: scope boundaries, prohibitions, status vocabulary, the report
+  contract. Those constrain an output rather than a method, and measure as the most robust part
+  of a contract. Don't goal-shape a prohibition.
+- Measured, not reasoned: `docs/decisions/goal-shaped-not-procedural-agent-instruction.md`.
+
 **Prompt body (token efficiency):**
 - Reference existing docs instead of inlining large reference tables
 - Use relative paths, not absolute
@@ -195,6 +208,7 @@ Then verify:
 - `name` matches filename (without `.md`)
 - `tools` field uses correct field name (NOT `allowed-tools`)
 - No hardcoded absolute paths in the prompt body
+- Every how-to-work line states a cost, not a step (protocol constraints exempt)
 - Description follows CSO guidelines
 - Prompt is under target word count
 
@@ -222,4 +236,5 @@ Report what was created, where it lives, and how it fits into the workflow.
 | Giving edit tools to verification agents | Verifiers verify. They don't fix. |
 | Skipping existing landscape check | Always survey before building |
 | Over-scoped description | Description = when to use, not what the agent does internally |
+| How-to-work line phrased as a procedure | State the cost being avoided. A model routes around a cost; it executes a step literally, and the step displaces a better plan |
 | No `skills:` when agent needs domain knowledge | Subagents don't inherit parent skills |
