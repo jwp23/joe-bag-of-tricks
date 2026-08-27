@@ -67,7 +67,23 @@ If still failing after 3 attempts, mark this branch **BLOCKED** with the root ca
 
 ### 5. CodeRabbit review
 
-Poll for a CodeRabbit review (`gh api repos/{owner}/{repo}/pulls/{number}/reviews`, up to 5 minutes, 10s interval). If none appears, skip this step. If one appears, extract the AI-agent prompt from the review body and the individual inline comments. For each actionable finding:
+**Decide once per train whether this repo has CodeRabbit at all.** Whether the app is installed is
+a property of the repository, not of the branch, so establish it before the first PR's poll and
+reuse that answer for every remaining branch:
+
+```bash
+gh api "repos/{owner}/{repo}/pulls/comments?per_page=100" \
+  --jq '[.[] | select(.user.login | startswith("coderabbitai"))] | length'
+```
+
+- **Non-zero** — CodeRabbit reviews this repo. Poll each PR for its review (up to 5 minutes, 10s interval).
+- **Zero** — no CodeRabbit comment has ever landed here. Poll only the train's **first** PR, and only for 60s, in case the app was enabled so recently it has no history. If nothing appears, record CodeRabbit as absent and skip this step for every remaining branch **without polling at all**.
+
+Never spend the full five minutes per PR on a repo that has no CodeRabbit. Across an 8-branch
+train that is 40 minutes of waiting for an answer the first API call already gave you. A skip
+recorded this way is a normal outcome, not a failure, and never blocks a branch.
+
+If a review does appear, extract the AI-agent prompt from the review body and the individual inline comments. For each actionable finding:
 
 Triage on two independent axes: is the finding **correct**, and separately, is it **in scope** for
 this branch (does it concern code this PR changed, or pre-existing behavior it merely sits near —
@@ -186,6 +202,7 @@ post-merge run detected)`.
 - Never skip or bypass the pre-commit hook.
 - Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides.
+- Whether CodeRabbit reviews this repo is settled once per train, before the first poll, and reused. Never spend a full 5-minute poll per PR on a repo whose first API call already showed CodeRabbit has never commented.
 - Only remove worktrees rooted at `.worktrees/`.
 - Every CI wait is a `run_in_background` settle loop. Never end a turn "waiting" without a live background task whose ID you can name — an unbacked promise to wait strands the train.
 - Never report a post-merge green you did not observe. A missing, unsettled, or unenumerated run is UNKNOWN, not passing.
