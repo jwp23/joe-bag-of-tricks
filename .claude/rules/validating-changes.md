@@ -79,6 +79,26 @@ changed file between HEAD and the working tree (no arguments = everything change
 and subtracts. Advisory, not a gate: it answers "did that edit actually shrink the skill".
 It shares its counting core, `.claude/scripts/count-tokens.py`, with the budget gate.
 
+## When Debugging an Agent Run From Another Machine (not a gate)
+`.claude/scripts/extract-agent-transcripts.sh` — pulls the evidence slice for `branch-shepherd`,
+`pr-merger`, or any `--agent` pattern out of `~/.claude/projects` and writes one JSONL per run
+plus an `INDEX.md`. Transcripts are **per-machine**: a repo developed on another computer leaves
+no trace here, and a run's absence from a local scan is not evidence it did not happen — that
+mistake produced a confidently wrong root-cause narrative in the v1.9.4 investigation.
+
+Output is the original JSON lines, filtered, so findings stay quotable and checkable rather than
+arriving as somebody's summary. It keeps the whole conversation spine and drops only host
+bookkeeping, bounding size by truncating strings over `--max-len` instead of guessing which
+entries matter — an earlier keep-list silently dropped the one foreground `gh pr checks --watch`
+call that proved an agent had complied. `--list` finds runs without writing; `--full` copies whole
+subagent transcripts.
+
+Measured on 15 local runs: ~1.3 MB total, against source transcripts many times that.
+
+**The output is unredacted by construction** — transcripts carry command output, environment
+dumps, and file contents. Run `betterleaks dir <out> --redact` before it leaves the machine. The
+default output directory is gitignored so it cannot be committed by accident.
+
 ## After an Upstream Sync (advisory, not a gate)
 `.claude/scripts/probe-skill-triggering.sh` — sends natural prompts in a throwaway fixture repo
 and reports which skill fired. **Always exits 0 by design.** Measured at `--repeat 5` on identical
