@@ -8,6 +8,10 @@
 # Test / MCP artifacts
 .playwright-mcp/
 
+# Session-transcript slices from extract-agent-transcripts.sh. Unredacted by
+# construction — never commit them.
+agent-transcript-evidence/
+
 # Python bytecode (the skill-eval shim is imported by skill-creator's scripts)
 __pycache__/
 
