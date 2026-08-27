@@ -118,14 +118,20 @@ git branch -d {branch} 2>/dev/null || true
 
 ### 5. Check for and remove worktree
 
+Ask git which worktree holds the branch, and remove it only if it is not the main worktree. Where the worktree lives is irrelevant — projects use `<repo>/.worktrees/`, a sibling directory, and `<repo>/.claude/worktrees/` alike, and git's own listing is the only test that covers all three without also accepting a directory that merely looks like one.
+
 ```bash
-WORKTREES=$(git worktree list --porcelain | grep -B1 "branch refs/heads/{branch}" | head -1 | sed 's/worktree //')
-if [ -n "$WORKTREES" ]; then
-  git worktree remove "$WORKTREES"
+MAIN=$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -1)
+WT=$(git worktree list --porcelain | grep -B1 "branch refs/heads/{branch}" | sed -n 's/^worktree //p' | head -1)
+if [ -n "$WT" ] && [ "$WT" != "$MAIN" ]; then
+  git worktree remove "$WT"
+  git worktree prune
 fi
 ```
 
-If no worktree exists for this branch, skip silently.
+The `!= "$MAIN"` guard is load-bearing: without it, a branch checked out in the main working tree resolves to the repository itself, and the cleanup step would try to delete it.
+
+If no worktree exists for this branch, skip silently. If removal is refused (`contains modified or untracked files`), leave it and say so in the report — never `--force`.
 
 ### 6. Report
 
