@@ -30,12 +30,14 @@ If no PR number was given, check whether one already exists (`gh pr list --head 
 
 If the push is rejected, the remote moved — investigate, never force-push.
 
-### 3. Wait for CI — a live background task, never a promise
+### 3. Wait for CI — block in the foreground, never end the turn
 
-Launch the settle loop with `Bash` using `run_in_background`. This is mandatory, not an
-optimization: a foreground run is killed at the Bash tool's timeout mid-wait, and ending a turn
-"waiting" with no live background task means nothing ever wakes you — the delivery strands until
-someone notices. Saying you are waiting does not create a wait; only a launched task does.
+Run the settle loop as an ordinary **foreground** `Bash` command and let it block until every
+check reaches a terminal state. Do not background it, and do not end your turn while CI is
+outstanding: a turn that ends waiting is over, and the delivery strands there. Measured across
+11 real deliveries, waiting by ending the turn stalled 8 times out of 9 — several runs never
+produced a final report at all — while every run that polled in the foreground finished its
+whole train.
 
 ```bash
 until gh pr checks <number> --json bucket \
@@ -46,11 +48,16 @@ until gh pr checks <number> --json bucket \
 - `length > 0` covers the window right after a push where no check has registered yet. Without it, an empty check list reads as "everything settled."
 - The pipe into `grep` is deliberate. `gh pr checks` exits non-zero while checks are pending (code 8) and again when one fails; taking the exit code from `grep` instead keeps the loop alive.
 - Poll at 30s. Faster only burns API quota.
+- Set the Bash call's `timeout` to its maximum. If the loop is still running when the tool times
+  out, run the identical command again — repeated foreground calls are the correct way to wait
+  longer, and cost nothing but a turn.
+- The settled result must come from the loop having exited. A one-off `gh pr checks` probe, a
+  scheduled wakeup, or a bare sleep is not a wait; never report a status you read before the
+  loop settled.
 
-The loop exits on its own once every check settles, and its completion notification resumes you.
-Do not substitute sleeps, scheduled wakeups, or one-off `gh pr checks` probes for it. Before
-ending any turn while CI is outstanding, confirm the loop is live — launching it returned a task
-ID. No task ID means no wait exists: launch it now.
+A bare `sleep <n>` is refused by the harness; the `until … do sleep 30; done` loop above is not.
+That refusal is not evidence that foreground waiting is impossible and is not a reason to
+background the wait — it is pointing you at exactly this loop.
 
 Read the settled result with `gh pr checks <number>`.
 
@@ -124,7 +131,7 @@ git checkout main && git pull
 
 Now verify CI on main. Never assume either way: ask GitHub which workflow runs the merge commit triggered. A push to main starts *every* workflow whose triggers match, usually several, so enumerate all of them — one green run says nothing about the others.
 
-Launch this with `Bash` using `run_in_background` and do the worktree cleanup below while it polls. A post-merge suite can run for many minutes, and the Bash tool kills a foreground command at 600s.
+Run this in the **foreground**, exactly as in Step 3, with the Bash call's `timeout` at its maximum. A post-merge suite can run for many minutes; if the call times out with runs still outstanding, run the identical command **once more**, then stop — two full calls preserve roughly the 20-minute ceiling this loop is given, and a starved runner must not hang the train. If the runs still have not settled, report post-merge UNKNOWN per the outcomes below rather than waiting again. Never background it. Do the worktree cleanup below once the wait has ended — cleanup is not a reason to end the turn early.
 
 ```bash
 SHA=$(git rev-parse HEAD)
@@ -148,7 +155,7 @@ if [ "$(gh run list --commit "$SHA" --limit 100 --json databaseId --jq 'length')
 fi
 ```
 
-Do NOT use `gh run watch`. This fork has one CI-wait idiom — the backgrounded polling settle loop, the same shape as Step 3 above. `--watch` blocks the session and has no guard for the window right after a push where no check has registered yet, which is exactly when it fires.
+Do NOT use `gh run watch`. This fork has one CI-wait idiom — the foreground polling settle loop, the same shape as Step 3 above. `--watch` has no guard for the window right after a push where no check has registered yet, which is exactly when it fires.
 
 Read the verdict off the settled list. Every run must have succeeded:
 
@@ -204,6 +211,7 @@ post-merge run detected)`.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides.
 - Whether CodeRabbit reviews this repo is settled once per train, before the first poll, and reused. Never spend a full 5-minute poll per PR on a repo whose first API call already showed CodeRabbit has never commented.
 - Only remove worktrees rooted at `.worktrees/`.
-- Every CI wait is a `run_in_background` settle loop. Never end a turn "waiting" without a live background task whose ID you can name — an unbacked promise to wait strands the train.
+- Every CI wait is a foreground settle loop that blocks until the checks settle. Never end a turn while CI is outstanding — backgrounded or not, a turn that ends waiting ends the delivery. If the Bash call times out mid-wait, run it again.
+- `run_in_background` is only for work whose result you will read back yourself with a later foreground command. Never use it as a wait you depend on being woken from, and never let "a background task is running" be the reason a turn ends.
 - Never report a post-merge green you did not observe. A missing, unsettled, or unenumerated run is UNKNOWN, not passing.
 - Do not modify files outside the branch's own worktree.
