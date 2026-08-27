@@ -32,8 +32,17 @@ Never assume. Ask GitHub which workflow runs the merge commit triggered. A push 
 *every* workflow whose triggers match, usually several, so enumerate all of them — one green run
 says nothing about the others.
 
-Launch this with `Bash` using `run_in_background` and do Steps 4-5 while it polls. A post-merge
-suite can run for many minutes, and the Bash tool kills a foreground command at 600s.
+Run this in the **foreground**, with the Bash call's `timeout` at its maximum, and let it block
+until the runs settle. Do not background it, and do not end your turn while CI is outstanding —
+a turn that ends waiting is over, and the merge report never arrives. A post-merge suite can run
+for many minutes; if the call times out with runs still outstanding, run the identical command
+**once more**, then stop — two full calls preserve roughly the 20-minute ceiling this loop is
+given. If the runs still have not settled, report the post-merge result unknown rather than
+waiting again. Do Steps 4-5 once the wait has ended.
+
+A bare `sleep <n>` is refused by the harness; the `for … sleep 30` loop below is not. That
+refusal is not evidence that foreground waiting is impossible and is not a reason to background
+the wait.
 
 ```bash
 SHA=$(git rev-parse HEAD)
@@ -59,10 +68,9 @@ fi
 gh run list --commit "$SHA" --limit 100 --json workflowName,status,conclusion,url
 ```
 
-Do NOT use `gh run watch`. This fork has one CI-wait idiom — the backgrounded polling settle
-loop, the same shape as Step 4 of `/joe-bag-of-tricks:finishing-a-development-branch`. `--watch`
-blocks the session and has no guard for the window right after a push where no check has
-registered yet, which is exactly when it fires.
+Do NOT use `gh run watch`. This fork has one CI-wait idiom — the foreground polling settle
+loop, the same shape as Step 3 of `agents/branch-shepherd.md`. `--watch` has no guard for the
+window right after a push where no check has registered yet, which is exactly when it fires.
 
 Read the verdict off that listing. Every run must have succeeded:
 
@@ -136,9 +144,11 @@ Report exactly:
 
 ## Rules
 
-- The Step 3 wait must be a live `run_in_background` task. Never end a turn "waiting" without a
-  background task whose ID you can name, and never report a CI status you did not read off the
-  settled listing — an unbacked promise to wait strands the report.
+- The Step 3 wait blocks in the foreground. Never end a turn while CI is outstanding —
+  backgrounded or not, a turn that ends waiting ends the run. If the Bash call times out
+  mid-wait, run it again. Never report a CI status you did not read off the settled listing.
+- `run_in_background` is only for work whose result you will read back yourself with a later
+  foreground command. Never use it as a wait you depend on being woken from.
 - Do NOT attempt to fix CI failures. Report them and stop.
 - Never report a post-merge green you did not observe. A missing, unsettled, or unenumerated run
   is not a pass — say which source the verdict came from and what it does not cover.

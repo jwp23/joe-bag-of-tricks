@@ -26,7 +26,7 @@ delivering:
 - **Two or more branches, or you want the whole delivery tail run unattended:** Dispatch the
   `joe-bag-of-tricks:branch-shepherd` agent once with the full branch list (each entry: worktree
   path, optional existing PR number). It runs Step 3 through Merging for every branch —
-  push/PR, the backgrounded CI wait and fix loop, CodeRabbit handling, conflict reconciliation
+  push/PR, the CI wait and fix loop, CodeRabbit handling, conflict reconciliation
   if main moves mid-train, squash-merge, and worktree cleanup — sequentially, and reports one
   outcome table at the end instead of checking in after each step.
 
@@ -128,6 +128,11 @@ you, and the delivery strands until someone notices. A promise to wait is not a 
 launching the loop did not return a task ID you can name, no wait exists — launch it before
 ending the turn. Do not substitute sleeps, scheduled wakeups, or one-off checks for the loop.
 
+This backgrounded shape is for **this session**, which a completion notification reliably wakes.
+A dispatched subagent is not the same: `agents/branch-shepherd.md` and `agents/pr-merger.md`
+block on the identical loop in the *foreground*, because a subagent that ends its turn awaiting
+a notification stalled in 8 of 9 measured deliveries. Do not carry this idiom into an agent body.
+
 Three details the loop depends on:
 - `length > 0` covers the window right after a push where no check has registered yet.
   Without it, an empty check list reads as "everything settled."
@@ -226,7 +231,7 @@ When your human partner says to merge or close a PR, dispatch the `joe-bag-of-tr
 The agent squash merges with no body, checks out main, pulls, verifies CI — requiring *every*
 Actions run on the merge commit to have succeeded when the repo triggers any, falling back to
 the PR gate when it triggers none — and cleans up the local branch and worktree. Its post-merge
-wait is the same backgrounded settle loop as Step 4, polling `gh run list --commit` rather than
+wait is the same settle loop as Step 4, polling `gh run list --commit` rather than
 `gh pr checks`; `--watch` appears nowhere. It reports back with the merge SHA and CI status.
 
 **Dispatch it in the background** and keep working while it runs.
