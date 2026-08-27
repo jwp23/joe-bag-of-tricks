@@ -184,17 +184,22 @@ Check if the current branch has a worktree:
 git worktree list | grep "$(git branch --show-current)"
 ```
 
-Only clean up worktrees this plugin created — those under `.worktrees/`. If the worktree path is
-outside `.worktrees/`, the host environment (harness) owns it; do **not** remove it.
+Clean it up only when git lists that exact path as a **non-main** worktree of this repository.
+Where it lives is not the test — worktrees legitimately sit in `<repo>/.worktrees/`, in a sibling
+directory beside the repo, and in `<repo>/.claude/worktrees/`, and a path prefix would skip two of
+those while still accepting a directory merely *named* `.worktrees/` that git has never heard of.
 
-If it is under `.worktrees/`:
 ```bash
 # cd to the main repo root FIRST — `git worktree remove` fails silently when the
 # current directory is inside the worktree being removed.
 MAIN_ROOT=$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -1)
 cd "$MAIN_ROOT"
-git worktree remove <worktree-path>
-git worktree prune   # self-healing: clears any stale registrations
+# Everything after the first entry is a linked worktree; the first entry is the main one.
+if git worktree list --porcelain | sed -n 's/^worktree //p' | tail -n +2 \
+     | grep -qxF "<worktree-path>"; then
+  git worktree remove <worktree-path>
+  git worktree prune   # self-healing: clears any stale registrations
+fi
 ```
 
 **If removal is refused** (`contains modified or untracked files`): the
@@ -266,7 +271,8 @@ it.
 | "The push was rejected — force-push will fix it" | A rejected push means the remote moved. Investigate; force-push only on your human partner's explicit request. |
 | "It's a one-line change, I'll just push to main" | Never push to main. Every change goes through a feature branch and a PR. |
 | "A merge body documents the change nicely" | Squash merge with `--body ""`. PR detail belongs in the PR, not in git log. |
-| "This other worktree looks stale — I'll clean it too" | Clean up only worktrees under `.worktrees/`. Everything else belongs to the host. |
+| "This other worktree looks stale — I'll clean it too" | Clean up only the worktree for the branch you just delivered. Leave every other one alone, however stale it looks. |
+| "It's not under `.worktrees/`, so it isn't mine to remove" | Location is not the test — sibling and `.claude/worktrees/` layouts are just as real. Ask `git worktree list`: a non-main worktree of this repo is removable, a path git does not list never is. |
 | "Removal refused — `--force` is just finishing the cleanup" | The refusal means files exist only in that worktree. `--force` destroys them permanently. Show your human partner and ask. |
 | "CI is probably just flaky" | A red check stops the merge. Investigate the failure before touching the merge button. |
 | "It's only a couple of minutes — I'll just watch CI" | Background the wait. Every time. A blocked session cannot be handed the next piece of work. |

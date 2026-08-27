@@ -173,11 +173,20 @@ gh run list --commit "$SHA" --limit 100 --json workflowName,status,conclusion,ur
 
 This procedure is shared verbatim with `agents/pr-merger.md` Step 3 — edit them together; drift between copies is a defect.
 
-Remove the worktree **only if it lives under `.worktrees/`** — anything else belongs to the host environment:
+Remove the branch's worktree only when **git itself confirms it is one**. A path prefix is the wrong test: real projects put worktrees in `<repo>/.worktrees/`, in a sibling directory beside the repo, and in `<repo>/.claude/worktrees/`, so matching on `.worktrees/` silently skips cleanup for two of the three — while still accepting any directory merely *named* `.worktrees/` that git has never heard of. Ask git:
 
 ```bash
-git worktree remove <worktree-path>   # only when path is under .worktrees/
+WT=<worktree-path>
+# The main worktree is always the first entry; only the entries after it are removable.
+if git worktree list --porcelain | sed -n 's/^worktree //p' | tail -n +2 | grep -qxF "$WT"; then
+  git worktree remove "$WT"
+  git worktree prune   # self-healing: clears any stale registration
+fi
 ```
+
+Both conditions are load-bearing: git must list the path as a worktree **of this repository**, and it must not be the main worktree. A path git does not list is a plain directory — not yours to delete, wherever it sits. Where the worktree lives does not enter into it.
+
+If removal is refused (`contains modified or untracked files`), the worktree holds work that exists nowhere else. Never `--force` on your own initiative: leave it in place and carry it into the report so the caller can decide.
 
 ### 8. Advance the train
 
@@ -210,7 +219,7 @@ post-merge run detected)`.
 - Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides.
 - Whether CodeRabbit reviews this repo is settled once per train, before the first poll, and reused. Never spend a full 5-minute poll per PR on a repo whose first API call already showed CodeRabbit has never commented.
-- Only remove worktrees rooted at `.worktrees/`.
+- Remove a worktree only when `git worktree list` shows that exact path as a non-main worktree of this repository. Never a path git does not list, never the main worktree, and never on the strength of where the directory sits.
 - Every CI wait is a foreground settle loop that blocks until the checks settle. Never end a turn while CI is outstanding — backgrounded or not, a turn that ends waiting ends the delivery. If the Bash call times out mid-wait, run it again.
 - `run_in_background` is only for work whose result you will read back yourself with a later foreground command. Never use it as a wait you depend on being woken from, and never let "a background task is running" be the reason a turn ends.
 - Never report a post-merge green you did not observe. A missing, unsettled, or unenumerated run is UNKNOWN, not passing.
