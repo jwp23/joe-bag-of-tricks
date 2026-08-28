@@ -5,17 +5,18 @@ root vs plugin root, and shipped (plugin) vs authoring-only (`.claude/` + repo-r
 authoring split is the highest-risk gotcha.
 
 ## Marketplace, then plugins
-This repo is a Claude Code **marketplace** that ships TWO nested plugins, `joe-bag-of-tricks` and
-`joe-magic-bootstrap`:
+This repo is a Claude Code **marketplace** that ships THREE nested plugins, `joe-bag-of-tricks`,
+`joe-magic-bootstrap`, and `joe-magic-design`:
 - `.claude-plugin/marketplace.json` (repo root) — the **marketplace** manifest. Each plugin entry's
-  `source` (`./plugins/joe-bag-of-tricks`, `./plugins/joe-magic-bootstrap`) points at that plugin's root.
-- `plugins/joe-bag-of-tricks/` and `plugins/joe-magic-bootstrap/` — **plugin roots**. "At the plugin
+  `source` (`./plugins/joe-bag-of-tricks`, `./plugins/joe-magic-bootstrap`, `./plugins/joe-magic-design`) points at that plugin's root.
+- `plugins/joe-bag-of-tricks/`, `plugins/joe-magic-bootstrap/`, and `plugins/joe-magic-design/` — **plugin roots**. "At the plugin
   root" below means *one of these*, not the repo root; each plugin has its own.
 
-There are therefore THREE `.claude-plugin/` dirs — don't conflate them:
+There are therefore FOUR `.claude-plugin/` dirs — don't conflate them:
 - `.claude-plugin/marketplace.json` at the repo root.
 - `plugins/joe-bag-of-tricks/.claude-plugin/plugin.json` at the `joe-bag-of-tricks` plugin root.
 - `plugins/joe-magic-bootstrap/.claude-plugin/plugin.json` at the `joe-magic-bootstrap` plugin root.
+- `plugins/joe-magic-design/.claude-plugin/plugin.json` at the `joe-magic-design` plugin root.
 
 This nesting matters for upstream-sync (which only applies to `joe-bag-of-tricks`, the only plugin
 with an upstream): an upstream path `<p>` maps to `plugins/joe-bag-of-tricks/<p>`.
@@ -32,9 +33,14 @@ Under `plugins/joe-magic-bootstrap/`:
 - `skills/project/SKILL.md` — the one skill this plugin ships, namespaced `/joe-magic-bootstrap:project`.
 - `.claude-plugin/plugin.json` — its own plugin manifest, same rule as above.
 
-The same component-dir and manifest-placement rules apply to both plugin roots; the rest of this
+Under `plugins/joe-magic-design/`:
+- `skills/pull-design/SKILL.md` — the one skill this plugin ships, namespaced `/joe-magic-design:pull-design`;
+  `skills/pull-design/spec.md` is the vendored DESIGN.md format spec it reads.
+- `.claude-plugin/plugin.json` — its own plugin manifest, same rule as above.
+
+The same component-dir and manifest-placement rules apply to all three plugin roots; the rest of this
 doc uses `joe-bag-of-tricks` as the running example unless a rule is specific to
-`joe-magic-bootstrap`.
+`joe-magic-bootstrap` or `joe-magic-design`.
 
 ## NOT shipped (authoring-only, at the repo root)
 - `.claude/skills/upstream-sync/` — maintains the fork; never distributed.
@@ -53,9 +59,9 @@ doc uses `joe-bag-of-tricks` as the running example unless a rule is specific to
   using the toolkit, day to day.
 
 ## ADR placement
-All ADRs live in repo-root `docs/adr/`, one global number sequence covering both plugins. They are
-maintainer rationale and do not ship with either plugin (`plugins/joe-bag-of-tricks/` or
-`plugins/joe-magic-bootstrap/`) — this holds whether the decision concerns a shipped component
+All ADRs live in repo-root `docs/adr/`, one global number sequence covering all three plugins. They are
+maintainer rationale and do not ship with any plugin (`plugins/joe-bag-of-tricks/`,
+`plugins/joe-magic-bootstrap/`, or `plugins/joe-magic-design/`) — this holds whether the decision concerns a shipped component
 (ADR-001) or the authoring workflow (ADR-002).
 
 ## Hard rules

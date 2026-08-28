@@ -62,6 +62,8 @@ Two plugins.
 
 `joe-magic-bootstrap` — interactively generates a project's CLAUDE.md + `.claude/` structure (one skill, `project`).
 
+`joe-magic-design` — pulls a codebase's existing visual identity (theme files, CSS variables, Tailwind config, icons, screenshots) into a spec-conformant `DESIGN.md` and points the project's CLAUDE.md at it (one skill, `pull-design`).
+
 ## Workflow assumptions
 
 These skills encode `joe-bag-of-tricks`' opinionated workflow. They assume:
@@ -87,10 +89,14 @@ joe-bag-of-tricks/
     │   │   └── plugin.json       # plugin manifest (semver version)
     │   ├── skills/               # 21 skills
     │   └── agents/               # 7 agents
-    └── joe-magic-bootstrap/
+    ├── joe-magic-bootstrap/
+    │   ├── .claude-plugin/
+    │   │   └── plugin.json       # plugin manifest (semver version)
+    │   └── skills/               # 1 skill (project)
+    └── joe-magic-design/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)
-        └── skills/               # 1 skill (project)
+        └── skills/               # 1 skill (pull-design)
 ```
 
 ## Install on a machine
@@ -99,6 +105,7 @@ joe-bag-of-tricks/
 /plugin marketplace add jwp23/joe-bag-of-tricks
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
 /plugin install joe-magic-bootstrap@joe-bag-of-tricks
+/plugin install joe-magic-design@joe-bag-of-tricks
 ```
 
 Plugins install at **user scope** by default, so the skills and agents are available in every project on that machine. Skills auto-trigger by description; you can also invoke them explicitly as `/joe-bag-of-tricks:<skill-name>`.
@@ -132,6 +139,7 @@ Test changes against your live setup before pushing:
 /plugin marketplace add /path/to/joe-bag-of-tricks
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
 /plugin install joe-magic-bootstrap@joe-bag-of-tricks
+/plugin install joe-magic-design@joe-bag-of-tricks
 /plugin validate /path/to/joe-bag-of-tricks
 ```
 
@@ -144,5 +152,7 @@ Licensed under the [MIT License](LICENSE).
 Thirteen of the twenty-one skills are adapted from the [Superpowers](https://github.com/obra/superpowers) project by Jesse Vincent (MIT-licensed): `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
 
 The remaining skills (`implementer-contract`, `readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`, `using-skills`, `ux-audit`, `writing-agents`) and all seven agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
+
+`joe-magic-design` ships a verbatim copy of the DESIGN.md format specification (`skills/pull-design/spec.md`) from Google's [design.md](https://github.com/google-labs-code/design.md) project, used under the Apache License 2.0; the file carries its attribution.
 
 See [NOTICE](NOTICE) for the full upstream attribution and [docs/licensing.md](docs/licensing.md) for the licensing policy.

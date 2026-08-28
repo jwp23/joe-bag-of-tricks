@@ -44,6 +44,8 @@ security wins.**
 |------|-------|--------|---------|-----------|
 | .claude-plugin/plugin.json (plugin root) | replaced | obra/superpowers | MIT | fork identity/branding (name, version, author); upstream's carries multi-harness bootstrap |
 | plugins/joe-magic-bootstrap/** | fork-original | — | — | second, separate plugin (added 2026-08-08, one `project` skill + references). No upstream counterpart; nothing here participates in an upstream sync. Has its own `claude plugin validate` gate and its own scoped release tag |
+| plugins/joe-magic-design/** | fork-original | — | — | third, separate plugin (added 2026-08-28, one `pull-design` skill). No upstream counterpart; nothing here participates in an upstream sync. Has its own `claude plugin validate` gate and its own scoped release tag. See `docs/decisions/pull-design-skill.md` |
+| plugins/joe-magic-design/skills/pull-design/spec.md | vendored | google-labs-code/design.md `docs/spec.md` @ `9bf8eae` (2026-07-27, CLI 0.4.0, spec `alpha`) | Apache-2.0 | verbatim copy of the DESIGN.md format spec with an attribution comment prepended; not part of the superpowers sync and not read by `check-vendored-drift.sh` (which measures obra/superpowers only) — re-copy by hand when bumping the spec |
 | hooks/session-start + hooks/hooks.json | replaced | obra/superpowers | MIT | Claude-only fork of upstream's multi-harness SessionStart hook; injects `using-skills`; Cursor/Copilot/pi branching + `run-hook.cmd` polyglot wrapper stripped. v6.2.0: skipped the `"shell": "bash"` hook key — it exists to run upstream's `run-hook.cmd` polyglot wrapper, which this fork stripped; the fork invokes `hooks/session-start` (shebanged) directly |
 
 ## Skills — replaced (fork owns; read upstream for ideas, never auto-apply)

@@ -7,6 +7,7 @@ Tag plugin releases with a per-plugin scoped tag, `<plugin-name>-vX.Y.Z`, instea
 
 - `joe-bag-of-tricks-v1.0.1`
 - `joe-magic-bootstrap-v1.0.0`
+- `joe-magic-design-v1.0.0`
 
 Each plugin is tagged independently, at its own `plugin.json` version, on its own release
 cadence. A change to one plugin's version does not require or imply a tag for the other.
@@ -21,9 +22,9 @@ whenever its `plugin.json` version bumps.
 
 ## Rationale
 
-The marketplace now ships two independently-versioned plugins
-(`plugins/joe-bag-of-tricks`, `plugins/joe-magic-bootstrap`), each with its own `plugin.json`
-`version` field. A bare `vX.Y.Z` tag is ambiguous once two plugins can be at different version
+The marketplace now ships three independently-versioned plugins
+(`plugins/joe-bag-of-tricks`, `plugins/joe-magic-bootstrap`, `plugins/joe-magic-design`), each with its own `plugin.json`
+`version` field. A bare `vX.Y.Z` tag is ambiguous once multiple plugins can be at different version
 numbers at the same point in repo history — a reader can't tell which plugin's release the tag
 marks. Scoping the tag by plugin name removes the ambiguity and matches the convention used by
 other multi-package repos (Go multi-module repos' `<module-path>/vX.Y.Z`, npm monorepo tools
