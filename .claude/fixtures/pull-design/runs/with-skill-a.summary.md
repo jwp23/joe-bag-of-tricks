@@ -34,6 +34,22 @@ session grants by prompt.
   or component work; after editing it, run `npx @google/design.md lint DESIGN.md`". Not an
   `@` import.
 
+## Run 3 — after the final review removed the example references — PASS
+
+The final review noted that run 2's Overview ("business pages of a broadsheet newspaper") matched
+the first of three example references then listed in SKILL.md, so the anchored-Overview evidence
+could have been pattern-matching. The examples were removed and A re-run.
+
+- **Overview:** "Ledger looks like a page from a well-set financial annual report: a serif
+  headline on warm off-white stock, small-caps-style monospace metadata above it, white content
+  panels ruled with a thin grey line, and one brick-red action." A different, unseeded, concrete
+  reference; audience and tone still named.
+- **Lint:** exit 0, errors 0, warnings 1, infos 1. The warning is `contrast-ratio` on
+  `button-secondary`: the linter reads `transparent` as `#00000000` and computes 1.23:1. The
+  output justifies it in the Components prose ("renders on the limestone page, where ink text is
+  far above WCAG AA") rather than faking a fill — the contract's "fix or justify" path.
+- Sections, traceability (same six hex values), images read, CLAUDE.md pointer line: as run 2.
+
 ## Against baseline A
 
 Baseline: no front matter (lint "No YAML content found"), eight non-spec headings, adjectival
