@@ -131,7 +131,7 @@ fi
 
 The `!= "$MAIN"` guard is load-bearing: without it, a branch checked out in the main working tree resolves to the repository itself, and the cleanup step would try to delete it.
 
-If no worktree exists for this branch, skip silently. If removal is refused (`contains modified or untracked files`), leave it and say so in the report — never `--force`.
+If no worktree exists for this branch, skip silently. If removal is refused (`contains modified or untracked files`, or `cannot remove a locked working tree` — a `claude session` lock means the session that entered it is still inside), leave it and say so in the report, naming the reason — never `--force`, never unlock.
 
 ### 6. Report
 
