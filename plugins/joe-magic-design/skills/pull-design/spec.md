@@ -1,9 +1,10 @@
 <!--
   Vendored verbatim from https://github.com/google-labs-code/design.md
   (docs/spec.md @ 9bf8eae67128b6cc55ad9bf86665767deb4c11cd, 2026-07-27).
-  Copyright Google LLC. Licensed under the Apache License, Version 2.0;
-  see http://www.apache.org/licenses/LICENSE-2.0. Do not edit — re-copy from
-  upstream when bumping the spec version.
+  Copyright Google LLC (per upstream source headers). Licensed under the Apache License,
+  Version 2.0; the license text ships with this plugin as LICENSE-APACHE-2.0
+  at the plugin root (also http://www.apache.org/licenses/LICENSE-2.0).
+  Do not edit — re-copy from upstream when bumping the spec version.
 -->
 <!-- Generated from spec.mdx + spec-config.ts | version: alpha -->
 <!-- Do not edit directly. Run `bun run spec:gen` to regenerate. -->
