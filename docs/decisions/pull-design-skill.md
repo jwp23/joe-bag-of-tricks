@@ -49,3 +49,11 @@ Four boundaries are deliberate:
 - Cost if wrong: a third plugin to version, tag, and validate (one more `claude plugin validate`
   line and one more `verify-skills-load.sh --plugin-dir` line in the gate). Accepted; the cost is
   identical to what `joe-magic-bootstrap` already carries.
+- Measured 2026-08-28 (`.claude/fixtures/pull-design/runs/*.summary.md`). Fixture A, baseline:
+  lint 0 errors / 1 warning ("No YAML content found") — no front matter, eight non-spec
+  headings, adjectival Overview, 0 untraceable tokens, CLAUDE.md pointer line. With skill:
+  lint 0 / 0, eight spec sections in order under token front matter, Overview anchored to a
+  concrete reference, 0 untraceable tokens, pointer line. Fixture B, baseline: wrote a
+  DESIGN.md about stdout formatting and edited CLAUDE.md; with skill: refused, wrote nothing,
+  named the source classes searched. One harness iteration (the `-p` session needed
+  `--add-dir` for the plugin's `spec.md` and `npx` allowed); zero skill-text iterations.
