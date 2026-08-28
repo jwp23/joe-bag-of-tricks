@@ -28,6 +28,14 @@
 # Use 'bd export --events' to trigger manually regardless of this setting.
 # events-export: false
 
+# Dolt remote sync. bd pushes to the Dolt remote (origin refs/dolt/data) in the background
+# after any bd command that changed the database, throttled to one push per
+# auto-push-interval (default 5m). Off by default in bd; on here so bead closes made on one
+# machine reach the other without a manual `bd dolt push`. Per-machine push state lives in
+# the gitignored .beads/push-state.json. Skipped under --sandbox and dolt.local-only.
+dolt:
+  auto-push: true
+
 # Multi-repo configuration (experimental - bd-307)
 # Allows hydrating from multiple repositories and routing writes to the correct database
 # repos:
