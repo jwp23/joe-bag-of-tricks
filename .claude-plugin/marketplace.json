@@ -14,6 +14,11 @@
       "name": "joe-magic-bootstrap",
       "source": "./plugins/joe-magic-bootstrap",
       "description": "Interactively generates a production-ready CLAUDE.md and .claude/ structure for a project."
+    },
+    {
+      "name": "joe-magic-design",
+      "source": "./plugins/joe-magic-design",
+      "description": "Pulls a codebase's existing visual identity into a machine- and human-readable DESIGN.md."
     }
   ]
 }
