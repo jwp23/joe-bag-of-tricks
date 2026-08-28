@@ -2,7 +2,7 @@
 
 Personal [Claude Code](https://code.claude.com) plugins — a curated bag of engineering-workflow **skills** and **agents** that travel with Joe across every machine and project.
 
-This repository is a plugin marketplace shipping two plugins. Add the marketplace once on each machine, install the plugin(s) you want, and keep them in sync through git.
+This repository is a plugin marketplace shipping three plugins: `joe-bag-of-tricks`, `joe-magic-bootstrap`, and `joe-magic-design`. Add the marketplace once on each machine, install the plugin(s) you want, and keep them in sync through git.
 
 **New to the workflow?** [`docs/workflow-guide.md`](docs/workflow-guide.md) is a hands-on-keyboard
 walkthrough — what you type, start to finish, from an idea through a merged PR.
@@ -18,7 +18,7 @@ The markdown files are the source of truth; the HTML editions are generated from
 
 ## What's inside
 
-Two plugins.
+Three plugins.
 
 `joe-bag-of-tricks` — the engineering workflow toolkit, bundling:
 

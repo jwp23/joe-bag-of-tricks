@@ -62,7 +62,7 @@ Prefer a single bump per branch, set at the end, to avoid creating the gap at al
 
 ## The "Latest" Badge
 
-GitHub tracks one Latest release per repository, which cannot be accurate for two
-independently-versioned plugins. Point it at the most recent release across both
+GitHub tracks one Latest release per repository, which cannot be accurate for three
+independently-versioned plugins. Point it at the most recent release across all three
 (`gh release create --latest`), and pass `--latest=false` when backfilling an older tag so it
 does not steal the badge.
