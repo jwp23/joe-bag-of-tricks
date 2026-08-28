@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ledger</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header style="padding: var(--space-4) var(--space-6);">
+    <img src="logo.svg" alt="Ledger" width="240" height="48">
+  </header>
+  <main style="padding: 0 var(--space-6) var(--space-6); max-width: 960px;">
+    <p class="meta">August 2026 · 14 entries</p>
+    <h1>Monthly expenses</h1>
+    <div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-4);">
+      <button class="chip" data-filter="all">All</button>
+      <button class="chip" data-filter="travel">Travel</button>
+      <button class="chip" data-filter="meals">Meals</button>
+    </div>
+    <section class="card" style="margin-bottom: var(--space-3);">
+      <h2>Travel</h2>
+      <p>Two flights and a rail pass. Rail was cheaper per mile and is the default next quarter.</p>
+    </section>
+    <section class="card" style="margin-bottom: var(--space-4);">
+      <h2>Meals</h2>
+      <p>Under budget by 12%. Nothing to change.</p>
+    </section>
+    <button class="btn-primary">Add entry</button>
+    <button class="btn-secondary">Export CSV</button>
+  </main>
+  <script src="src/app.js"></script>
+</body>
+</html>

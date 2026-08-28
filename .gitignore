@@ -19,3 +19,7 @@ __pycache__/
 .dolt/
 *.db
 .beads-credential-key
+
+.claude/fixtures/pull-design/**/screenshot.png
+.claude/fixtures/pull-design/runs/*
+!.claude/fixtures/pull-design/runs/*.summary.md
