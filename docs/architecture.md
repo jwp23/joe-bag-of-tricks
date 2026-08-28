@@ -8,9 +8,11 @@ authoring split is the highest-risk gotcha.
 This repo is a Claude Code **marketplace** that ships THREE nested plugins, `joe-bag-of-tricks`,
 `joe-magic-bootstrap`, and `joe-magic-design`:
 - `.claude-plugin/marketplace.json` (repo root) — the **marketplace** manifest. Each plugin entry's
-  `source` (`./plugins/joe-bag-of-tricks`, `./plugins/joe-magic-bootstrap`, `./plugins/joe-magic-design`) points at that plugin's root.
-- `plugins/joe-bag-of-tricks/`, `plugins/joe-magic-bootstrap/`, and `plugins/joe-magic-design/` — **plugin roots**. "At the plugin
-  root" below means *one of these*, not the repo root; each plugin has its own.
+  `source` points at that plugin's root:
+  `./plugins/joe-bag-of-tricks`, `./plugins/joe-magic-bootstrap`, `./plugins/joe-magic-design`.
+- `plugins/joe-bag-of-tricks/`, `plugins/joe-magic-bootstrap/`, and `plugins/joe-magic-design/`
+  — **plugin roots**. "At the plugin root" below means *one of these*, not the repo root; each
+  plugin has its own.
 
 There are therefore FOUR `.claude-plugin/` dirs — don't conflate them:
 - `.claude-plugin/marketplace.json` at the repo root.
@@ -34,8 +36,9 @@ Under `plugins/joe-magic-bootstrap/`:
 - `.claude-plugin/plugin.json` — its own plugin manifest, same rule as above.
 
 Under `plugins/joe-magic-design/`:
-- `skills/pull-design/SKILL.md` — the one skill this plugin ships, namespaced `/joe-magic-design:pull-design`;
-  `skills/pull-design/spec.md` is the vendored DESIGN.md format spec it reads.
+- `skills/pull-design/SKILL.md` — the one skill this plugin ships, namespaced
+  `/joe-magic-design:pull-design`; `skills/pull-design/spec.md` is the vendored DESIGN.md
+  format spec it reads.
 - `.claude-plugin/plugin.json` — its own plugin manifest, same rule as above.
 
 The same component-dir and manifest-placement rules apply to all three plugin roots; the rest of this
@@ -53,16 +56,18 @@ doc uses `joe-bag-of-tricks` as the running example unless a rule is specific to
   skill-creator's description-optimization loop. Input to a tool that lives outside this repo, so
   it is authoring data rather than skill content and must not sit beside the `SKILL.md` it grades.
   See `docs/skill-description-optimization.md`.
+- `.claude/fixtures/<skill>/` — authoring-only fixture projects and recorded run summaries used
+  to test a skill against a baseline; not shipped, not eval data.
 - `docs/` (repo root) — fork-maintenance docs: customizations, upstream-sync, licensing, architecture,
   the hands-on-keyboard workflow guide, and all ADRs (`docs/adr/`). Not shipped — not installed by
   `/plugin install`, but not maintainer-only either: `workflow-guide.md` is written for whoever is
   using the toolkit, day to day.
 
 ## ADR placement
-All ADRs live in repo-root `docs/adr/`, one global number sequence covering all three plugins. They are
-maintainer rationale and do not ship with any plugin (`plugins/joe-bag-of-tricks/`,
-`plugins/joe-magic-bootstrap/`, or `plugins/joe-magic-design/`) — this holds whether the decision concerns a shipped component
-(ADR-001) or the authoring workflow (ADR-002).
+All ADRs live in repo-root `docs/adr/`, one global number sequence covering all three plugins.
+They are maintainer rationale and do not ship with any plugin (`plugins/joe-bag-of-tricks/`,
+`plugins/joe-magic-bootstrap/`, or `plugins/joe-magic-design/`) — this holds whether the
+decision concerns a shipped component (ADR-001) or the authoring workflow (ADR-002).
 
 ## Hard rules
 - Component dirs NEVER go inside `.claude-plugin/`. Only the manifest lives there.

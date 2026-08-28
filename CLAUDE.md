@@ -19,7 +19,8 @@ Plugin spec: https://code.claude.com/docs/en/plugins · Upstream: github.com/obr
 - Tracks superpowers upstream by release tag; may vendor other upstreams later
 - Also ships `plugins/joe-magic-bootstrap`, a second, separate plugin with one skill (`project`)
   that interactively bootstraps a project's CLAUDE.md + `.claude/` structure
-- Also ships `plugins/joe-magic-design`, a third, separate plugin with one skill (`pull-design`) that pulls a codebase's existing visual identity into a spec-conformant DESIGN.md
+- Also ships `plugins/joe-magic-design`, a third, separate plugin with one skill (`pull-design`)
+  that pulls a codebase's existing visual identity into a spec-conformant DESIGN.md
 
 ## What This Project Does NOT Do
 - NOT multi-harness. Claude Code only — do not add/maintain Codex, Gemini, Cursor, Kimi,
@@ -80,7 +81,8 @@ test; see @.claude/rules/authoring-skills-and-agents.md. Before any commit:
 - `plugins/joe-magic-bootstrap` has its own, identical validation gate:
   `claude plugin validate plugins/joe-magic-bootstrap`, run against its own plugin root, plus
   `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-bootstrap`.
-- `plugins/joe-magic-design` likewise: `claude plugin validate plugins/joe-magic-design` plus `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-design`.
+- `plugins/joe-magic-design` likewise: `claude plugin validate plugins/joe-magic-design` plus
+  `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-design`.
 - Editing/creating a skill or agent: follow @.claude/rules/authoring-skills-and-agents.md — it
   names which skill to invoke and whether the edit also owes a pressure test.
 NEVER claim a change works until you've loaded it and observed it — no "should work."
@@ -89,9 +91,10 @@ Inherited tests/pre-commit suites are kept-or-stripped per docs/customizations.m
 ## Git Workflow
 - Branches: feat/ fix/ docs/ chore/ refactor/ + short desc; sync/upstream-vX.Y.Z for upstream syncs
 - Release tags are scoped per plugin: `<plugin-name>-vX.Y.Z` (e.g. `joe-bag-of-tricks-v1.0.1`,
-  `joe-magic-bootstrap-v1.0.0`, `joe-magic-design-v1.0.0`), matching each plugin's own `plugin.json` version. Tag on the
-  version-bump commit. Pre-existing unscoped tags (`v0.1.0`–`v1.0.0`) predate the second plugin
-  and are not retagged. See docs/decisions/per-plugin-scoped-release-tags.md
+  `joe-magic-bootstrap-v1.0.0`, `joe-magic-design-v1.0.0`), matching each plugin's own
+  `plugin.json` version. Tag on the version-bump commit. Pre-existing unscoped tags
+  (`v0.1.0`–`v1.0.0`) predate the second plugin and are not retagged. See
+  docs/decisions/per-plugin-scoped-release-tags.md
 - Commits: Conventional Commits, single line, no body
 - Squash-merge all feature branches, upstream syncs included. The fork shares no upstream
   ancestry, so a sync is an ordinary branch — no merge commit to preserve. See docs/adr/002-no-remote-upstream-sync.md

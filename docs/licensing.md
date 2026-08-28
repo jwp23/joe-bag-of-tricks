@@ -13,4 +13,6 @@ hygiene is non-negotiable.
 - Keep upstream `LICENSE` files; the top-level [`NOTICE`](../NOTICE) credits obra/superpowers
   (MIT) and any other upstreams — keep it in sync with `docs/customizations.md` as upstreams are
   added or dropped.
+- A verbatim full-file copy ships the upstream license text beside it (e.g.
+  `plugins/joe-magic-design/LICENSE-APACHE-2.0`); a URL suffices only for a derived fragment.
 - Do not strip authorship headers from vendored or patched files.

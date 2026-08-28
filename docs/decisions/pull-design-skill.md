@@ -31,8 +31,11 @@ Four boundaries are deliberate:
 
 - Own plugin, not a `joe-bag-of-tricks` skill: `pull-design` references no skill in that plugin
   and nothing there references it, so it fails the "cross-references, ships as one unit" test that
-  defines that plugin. `joe-magic-bootstrap` is the precedent for a one-skill sibling plugin, and
-  a separate plugin leaves `joe-bag-of-tricks`'s always-loaded context budget untouched.
+  defines that plugin. `joe-magic-bootstrap` is the precedent for a one-skill sibling plugin. The
+  context-budget gate (`check-context-budget.sh`) measures only `joe-bag-of-tricks`, so a separate
+  plugin sits outside that gate; however, an installed skill's description loads in every session
+  regardless of which plugin ships it. The design rationale rests on the cross-reference argument
+  — nothing in either plugin references the other.
 - Conditional pointer over `@DESIGN.md` import: an import force-loads the whole file into every
   session, and a token table alone can run past a hundred lines. A pointer costs nothing until
   UI work starts, and matches how this repo lists its own reference docs.

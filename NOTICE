@@ -15,9 +15,9 @@ See that file's docstring for the specific attribution.
 This product includes a verbatim copy of the DESIGN.md format specification
 (plugins/joe-magic-design/skills/pull-design/spec.md) from the design.md
 project (https://github.com/google-labs-code/design.md), Copyright Google LLC,
-used under the Apache License, Version 2.0
-(http://www.apache.org/licenses/LICENSE-2.0). See that file's header for the
-specific attribution.
+used under the Apache License, Version 2.0. See that file's header for the
+specific attribution, and `plugins/joe-magic-design/LICENSE-APACHE-2.0` for the
+license text.
 
 See docs/customizations.md for the full per-file record of vendored,
 patched, and derived material and their upstream sources.

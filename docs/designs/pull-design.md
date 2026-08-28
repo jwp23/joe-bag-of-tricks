@@ -101,6 +101,8 @@ without the skill against a fixture, graded, then the same run with the skill.
 Repo gates for the new plugin mirror `joe-magic-bootstrap`'s:
 `claude plugin validate plugins/joe-magic-design`,
 `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-design`, and `betterleaks`.
-`check-context-budget.sh` measures `joe-bag-of-tricks` only; a separate plugin spends none of
-that budget, which is one reason it is separate. The plugin gets its own scoped
-release tag, `joe-magic-design-v1.0.0`, on its version-bump commit.
+`check-context-budget.sh` measures `joe-bag-of-tricks` only; the new plugin sits outside that
+gate, but an installed skill's description loads in every session regardless of which plugin
+ships it. The rationale for separate plugins rests on the cross-reference argument — nothing in
+either references the other. The plugin gets its own scoped release tag,
+`joe-magic-design-v1.0.0`, on its version-bump commit.
