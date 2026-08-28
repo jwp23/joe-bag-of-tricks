@@ -75,20 +75,40 @@ If still failing after 3 attempts, mark this branch **BLOCKED** with the root ca
 ### 5. CodeRabbit review
 
 **Decide once per train whether this repo has CodeRabbit at all.** Whether the app is installed is
-a property of the repository, not of the branch, so establish it before the first PR's poll and
-reuse that answer for every remaining branch:
+a property of the repository, not of the branch, so establish it on the train's first PR and reuse
+that answer for every remaining branch. What that decision costs when it is wrong is the whole
+train: a false "absent" merges every later PR past its findings, silently, with an outcome table
+that reads as clean. So the probe must be one a CodeRabbit installed *this morning* can pass.
+Comment history is not that probe — a fresh install has none — and check-runs are not either
+(`commits/{sha}/check-runs` never lists CodeRabbit). The signal is the **commit status** CodeRabbit
+sets on the PR's head SHA:
 
 ```bash
-gh api "repos/{owner}/{repo}/pulls/comments?per_page=100" \
-  --jq '[.[] | select(.user.login | startswith("coderabbitai"))] | length'
+gh api "repos/{owner}/{repo}/commits/{sha}/statuses" \
+  --jq '[.[] | select(.context == "CodeRabbit")] | first | "\(.state) \(.created_at)"'
 ```
 
-- **Non-zero** — CodeRabbit reviews this repo. Poll each PR for its review (up to 5 minutes, 10s interval).
-- **Zero** — no CodeRabbit comment has ever landed here. Poll only the train's **first** PR, and only for 60s, in case the app was enabled so recently it has no history. If nothing appears, record CodeRabbit as absent and skip this step for every remaining branch **without polling at all**.
+Statuses list newest first. The `pending` status arrives anywhere from ~90s to 6.5 minutes after
+the PR opens (measured on one repo, same day), and flips to `success` once the review has posted,
+typically ~3 minutes later. A PR whose head is pushed again gets a fresh SHA and fresh statuses.
 
-Never spend the full five minutes per PR on a repo that has no CodeRabbit. Across an 8-branch
-train that is 40 minutes of waiting for an answer the first API call already gave you. A skip
-recorded this way is a normal outcome, not a failure, and never blocks a branch.
+- **First PR of the train:** give the status up to **10 minutes from PR open** to appear — most of
+  that overlaps the CI wait in Step 3, so it rarely costs the full span. Any repo-wide CodeRabbit
+  comment (`pulls/comments?per_page=100` filtered on `user.login | startswith("coderabbitai")`)
+  is a faster positive answer and skips the wait. No status by the bound → record CodeRabbit as
+  **absent** for the train.
+- **Absent:** skip this step's wait for every remaining branch. The pre-merge gate in Step 7 still
+  runs on every PR — one API call — and is what makes a wrong answer here recoverable rather
+  than fatal.
+- **Present:** for each PR, wait until the status leaves `pending` (bound 10 minutes from the
+  latest push). Waiting on the status rather than a fixed timeout is the point: the latency
+  varies by repo and by CodeRabbit's load, and no guessed number was right twice on the same day.
+  If the bound expires with the status still `pending` or never set, fall through to the
+  inline-comments fetch below — findings that exist are handled either way, and note in the
+  report that the status never settled.
+
+A no-CodeRabbit repo pays one bounded wait per train, never one per PR. A skip recorded this way
+is a normal outcome, not a failure, and never blocks a branch.
 
 If a review does appear, extract the AI-agent prompt from the review body and the individual inline comments. For each actionable finding:
 
@@ -123,6 +143,24 @@ Check `gh pr view <number> --json mergeable`. If `CONFLICTING` (main moved durin
 4. Commit (through the hook), push, re-wait CI per Step 3.
 
 ### 7. Squash-merge and clean up
+
+**A PR is not mergeable while it has an unreplied CodeRabbit inline comment.** Check immediately
+before every merge, whatever Step 5 concluded for the train — this is the invariant that makes a
+wrong once-per-train detection recoverable instead of fatal:
+
+```bash
+gh api "repos/{owner}/{repo}/pulls/{number}/comments?per_page=100" \
+  --jq '[.[] | select(.in_reply_to_id != null) | .in_reply_to_id] as $replied
+        | [.[] | select((.user.login | startswith("coderabbitai")) and .in_reply_to_id == null)
+               | select(.id as $id | $replied | index($id) | not)] | length'
+```
+
+Non-zero means findings landed that nobody triaged — go back to Step 5 for this PR and handle
+them; an applied/deferred/rejected reply on each thread is what clears the count. It also
+overturns an "absent" answer from Step 5: CodeRabbit is evidently reviewing this repo (enabled
+mid-train, or slower than the bound), so every remaining PR waits on its status. An escalated
+finding stays unreplied by design, so a PR carrying one is **BLOCKED: escalated CodeRabbit
+finding(s)**, left open for the caller — never merged past it.
 
 ```bash
 gh pr merge <number> --squash --body "" --delete-branch
@@ -217,8 +255,9 @@ post-merge run detected)`.
 - Never force-push. A rejected push means the remote moved — investigate.
 - Never skip or bypass the pre-commit hook.
 - Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.
-- Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides.
-- Whether CodeRabbit reviews this repo is settled once per train, before the first poll, and reused. Never spend a full 5-minute poll per PR on a repo whose first API call already showed CodeRabbit has never commented.
+- Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides. A PR carrying an escalated finding is BLOCKED, not merged.
+- Whether CodeRabbit reviews this repo is settled once per train, on the first PR, from the `CodeRabbit` commit status — never from comment history, which a fresh install has none of. A no-CodeRabbit repo pays one bounded wait per train, never one per PR.
+- Never merge a PR with an unreplied CodeRabbit inline comment. The pre-merge count in Step 7 runs before every merge, on every repo, regardless of what detection concluded.
 - Remove a worktree only when `git worktree list` shows that exact path as a non-main worktree of this repository. Never a path git does not list, never the main worktree, and never on the strength of where the directory sits.
 - Every CI wait is a foreground settle loop that blocks until the checks settle. Never end a turn while CI is outstanding — backgrounded or not, a turn that ends waiting ends the delivery. If the Bash call times out mid-wait, run it again.
 - `run_in_background` is only for work whose result you will read back yourself with a later foreground command. Never use it as a wait you depend on being woken from, and never let "a background task is running" be the reason a turn ends.
