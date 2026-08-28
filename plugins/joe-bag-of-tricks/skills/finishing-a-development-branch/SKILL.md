@@ -229,7 +229,17 @@ Report: "PR ready at <URL>. All CI checks passing."
 
 ## Merging (when your human partner requests)
 
-When your human partner says to merge or close a PR, dispatch the `joe-bag-of-tricks:pr-merger` agent (model: haiku) with:
+When your human partner says to merge or close a PR, first check where this session is sitting.
+**If the session is inside the branch's own worktree via `EnterWorktree`, exit it (`ExitWorktree`,
+`keep`) before dispatching.** A worktree entered that way is git-locked for the life of the
+session (`lock reason: claude session <name> (pid …)`), and every Bash call a subagent makes
+inherits the session's worktree-isolation guard — so a merger dispatched from inside cannot
+remove the worktree, delete the branch, or even `cd` to the main checkout to pull `main`.
+Measured on one merge: PR merged, `main` left stale locally, worktree and branch left behind.
+Exiting first costs one tool call; the merger then cleans up as designed. Keep, not remove: the
+merger owns the removal and verifies the branch is merged before it does.
+
+Then dispatch the `joe-bag-of-tricks:pr-merger` agent (model: haiku) with:
 
 - **number**: the PR number
 
@@ -259,7 +269,7 @@ it.
 | 4. CI result | Background the wait; if failed: debug, fix, push, wait again |
 | 4.5 CodeRabbit | Dispatch coderabbit-reviewer: auto-apply or reject. Escalate to opus if needed |
 | 5. Cleanup | Remove worktree if applicable |
-| Merge | Dispatch pr-merger agent (on request) |
+| Merge | Exit the branch's EnterWorktree session first (keep), then dispatch pr-merger (on request) |
 
 ## Common Rationalizations
 
