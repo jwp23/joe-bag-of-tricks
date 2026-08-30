@@ -118,6 +118,17 @@ You MUST complete each phase before proceeding to the next.
    - Keep tracing up until you find the source
    - Fix at source, not at symptom
 
+#### Working from a tracker ticket
+
+A ticket's stated cause is a HYPOTHESIS, not a finding — even (especially) when the ticket was
+written by an agent with the code open. Reproduce the symptom and measure before fixing; if the
+evidence disproves the ticket's premise, record that on the ticket and fix what the evidence
+shows. Fixing the stated cause without reproducing it is Phase-1 skipping with extra steps.
+
+Evidence this matters: in one tracked crunch, 4 of 9 bug tickets were wrong about their own
+cause; every agent told to verify the premise disproved it by measurement, and every agent not
+told inherited it.
+
 ### Phase 2: Pattern Analysis
 
 **Find the pattern before fixing:**
