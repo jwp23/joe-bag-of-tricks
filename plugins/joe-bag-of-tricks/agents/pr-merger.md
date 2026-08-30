@@ -141,12 +141,13 @@ With the worktree gone, the branch can be deleted — local first, then remote. 
 the reason `--delete-branch` was dropped from Step 1:
 
 ```bash
-git branch -D {branch} 2>/dev/null || true
+git branch -D {branch}
 git push origin --delete {branch} 2>/dev/null || true   # tolerate a branch something else already removed
 ```
 
-If the worktree was left in place, git will refuse the local deletion — that is correct; leave
-the branch too and name the reason in the report.
+A refusal of the local deletion is not a stop. If the worktree was left in place, git refuses —
+that is correct: leave the branch, name the reason in the report, and go on to Step 6. If the
+branch never existed locally, there is nothing to clean — say so.
 
 ### 6. Report
 

@@ -197,6 +197,9 @@ gh pr view <number> --json state,mergedAt
 ```
 
 `MERGED` with a timestamp is a successful merge, whatever exit code the merge command returned.
+Anything else means the merge did not happen: report this branch **BLOCKED: merge failed
+(<error>)**, skip the rest of this step — the worktree and branch still hold the work, so no
+cleanup — and continue the train with the next branch.
 
 ```bash
 git checkout main && git pull
@@ -296,6 +299,11 @@ has to file that issue by hand.
 A plain `merged <sha>` means every Actions run on the merge commit succeeded. If the outcome
 rested on the PR gate because no run was detected, say `merged <sha> (PR gate only — no
 post-merge run detected)`.
+
+Under train-level verification (the Step 7 dispatch option), per-branch rows say `merged <sha>
+(train-level verification — PR gate at merge time)`, and the report ends with one line for the
+end-of-train enumeration on main: `main after train: <n> run(s) on <sha>, all succeeded`, or
+the failing/outstanding workflows named per the Step 7 outcomes.
 
 ## Rules
 
