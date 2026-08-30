@@ -19,6 +19,11 @@
       "name": "joe-magic-design",
       "source": "./plugins/joe-magic-design",
       "description": "Pulls a codebase's existing visual identity into a machine- and human-readable DESIGN.md."
+    },
+    {
+      "name": "joe-magic-sonar",
+      "source": "./plugins/joe-magic-sonar",
+      "description": "SonarCloud overall-code drift loop: a triage skill plus a reusable audit script for repos whose plan has no custom quality gate."
     }
   ]
 }

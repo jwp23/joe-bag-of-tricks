@@ -2,7 +2,7 @@
 
 Personal [Claude Code](https://code.claude.com) plugins — a curated bag of engineering-workflow **skills** and **agents** that travel with Joe across every machine and project.
 
-This repository is a plugin marketplace shipping three plugins: `joe-bag-of-tricks`, `joe-magic-bootstrap`, and `joe-magic-design`. Add the marketplace once on each machine, install the plugin(s) you want, and keep them in sync through git.
+This repository is a plugin marketplace shipping four plugins: `joe-bag-of-tricks`, `joe-magic-bootstrap`, `joe-magic-design`, and `joe-magic-sonar`. Add the marketplace once on each machine, install the plugin(s) you want, and keep them in sync through git.
 
 **New to the workflow?** [`docs/workflow-guide.md`](docs/workflow-guide.md) is a hands-on-keyboard
 walkthrough — what you type, start to finish, from an idea through a merged PR.
@@ -18,7 +18,7 @@ The markdown files are the source of truth; the HTML editions are generated from
 
 ## What's inside
 
-Three plugins.
+Four plugins.
 
 `joe-bag-of-tricks` — the engineering workflow toolkit, bundling:
 
@@ -64,6 +64,8 @@ Three plugins.
 
 `joe-magic-design` — pulls a codebase's existing visual identity (theme files, CSS variables, Tailwind config, icons, screenshots) into a spec-conformant `DESIGN.md` and points the project's CLAUDE.md at it (one skill, `pull-design`).
 
+`joe-magic-sonar` — enforces overall-code SonarCloud quality on repos whose plan has no custom gate: drift triage with three dispositions plus a reusable `sonar-audit.sh` CI audit (one skill, `fixing-sonarcloud-drift`).
+
 ## Workflow assumptions
 
 These skills encode `joe-bag-of-tricks`' opinionated workflow. They assume:
@@ -93,10 +95,14 @@ joe-bag-of-tricks/
     │   ├── .claude-plugin/
     │   │   └── plugin.json       # plugin manifest (semver version)
     │   └── skills/               # 1 skill (project)
-    └── joe-magic-design/
+    ├── joe-magic-design/
+    │   ├── .claude-plugin/
+    │   │   └── plugin.json       # plugin manifest (semver version)
+    │   └── skills/               # 1 skill (pull-design)
+    └── joe-magic-sonar/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin manifest (semver version)
-        └── skills/               # 1 skill (pull-design)
+        └── skills/               # 1 skill (fixing-sonarcloud-drift)
 ```
 
 ## Install on a machine
@@ -106,6 +112,7 @@ joe-bag-of-tricks/
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
 /plugin install joe-magic-bootstrap@joe-bag-of-tricks
 /plugin install joe-magic-design@joe-bag-of-tricks
+/plugin install joe-magic-sonar@joe-bag-of-tricks
 ```
 
 Plugins install at **user scope** by default, so the skills and agents are available in every project on that machine. Skills auto-trigger by description; you can also invoke them explicitly as `/joe-bag-of-tricks:<skill-name>`.
@@ -140,6 +147,7 @@ Test changes against your live setup before pushing:
 /plugin install joe-bag-of-tricks@joe-bag-of-tricks
 /plugin install joe-magic-bootstrap@joe-bag-of-tricks
 /plugin install joe-magic-design@joe-bag-of-tricks
+/plugin install joe-magic-sonar@joe-bag-of-tricks
 /plugin validate /path/to/joe-bag-of-tricks
 ```
 
@@ -154,5 +162,7 @@ Thirteen of the twenty-one skills are adapted from the [Superpowers](https://git
 The remaining skills (`implementer-contract`, `readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`, `using-skills`, `ux-audit`, `writing-agents`) and all seven agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
 
 `joe-magic-design` ships a verbatim copy of the DESIGN.md format specification (`skills/pull-design/spec.md`) from Google's [design.md](https://github.com/google-labs-code/design.md) project, used under the Apache License 2.0; the file carries its attribution.
+
+`joe-magic-sonar`'s skill and audit script are original to this toolkit, extracted from a downstream project's SonarCloud drift workflow.
 
 See [NOTICE](NOTICE) for the full upstream attribution and [docs/licensing.md](docs/licensing.md) for the licensing policy.

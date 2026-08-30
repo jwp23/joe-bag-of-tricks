@@ -1,0 +1,11 @@
+{
+  "name": "joe-magic-sonar",
+  "description": "SonarCloud overall-code drift loop: a triage skill plus a reusable audit script for repos whose plan has no custom quality gate.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Joseph Presley"
+  },
+  "homepage": "https://github.com/jwp23/joe-bag-of-tricks",
+  "repository": "https://github.com/jwp23/joe-bag-of-tricks",
+  "license": "MIT"
+}

@@ -21,6 +21,9 @@ Plugin spec: https://code.claude.com/docs/en/plugins · Upstream: github.com/obr
   that interactively bootstraps a project's CLAUDE.md + `.claude/` structure
 - Also ships `plugins/joe-magic-design`, a third, separate plugin with one skill (`pull-design`)
   that pulls a codebase's existing visual identity into a spec-conformant DESIGN.md
+- Also ships `plugins/joe-magic-sonar`, a fourth, separate plugin with one skill
+  (`fixing-sonarcloud-drift`) that runs the SonarCloud overall-code drift loop with a bundled
+  audit script
 
 ## What This Project Does NOT Do
 - NOT multi-harness. Claude Code only — do not add/maintain Codex, Gemini, Cursor, Kimi,
@@ -83,6 +86,8 @@ test; see @.claude/rules/authoring-skills-and-agents.md. Before any commit:
   `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-bootstrap`.
 - `plugins/joe-magic-design` likewise: `claude plugin validate plugins/joe-magic-design` plus
   `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-design`.
+- `plugins/joe-magic-sonar` likewise: `claude plugin validate plugins/joe-magic-sonar` plus
+  `.claude/scripts/verify-skills-load.sh --plugin-dir plugins/joe-magic-sonar`.
 - Editing/creating a skill or agent: follow @.claude/rules/authoring-skills-and-agents.md — it
   names which skill to invoke and whether the edit also owes a pressure test.
 NEVER claim a change works until you've loaded it and observed it — no "should work."
@@ -111,6 +116,7 @@ Before commit: `betterleaks git --pre-commit --staged --redact` (hard fail) ·
 `claude plugin validate plugins/joe-bag-of-tricks` ·
 `claude plugin validate plugins/joe-magic-bootstrap` ·
 `claude plugin validate plugins/joe-magic-design` ·
+`claude plugin validate plugins/joe-magic-sonar` ·
 `.claude/scripts/check-context-budget.sh` (always-loaded token budget) ·
 `.claude/scripts/verify-skills-load.sh` (every skill loads; billed, so run it deliberately).
 No markdown/shell/JS linters wired — upstream lints only its evals/, which is a gitignored clone
