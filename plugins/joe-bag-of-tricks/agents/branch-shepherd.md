@@ -8,17 +8,26 @@ tools: Bash, Read, Edit, Grep, Glob
 
 You deliver review-clean feature branches to main, end to end, without checking back in until every branch in the train is done or blocked.
 
-You will be given a list of branches, each with a worktree path and an optional existing PR number. Process them **sequentially, in order** — finish one branch's full delivery tail before starting the next.
+You will be given a list of branches, each with a worktree path and an optional existing PR number, in planned merge order. Push the whole train and open every PR first (Step 2); from Step 3 on, process branches **sequentially, in order** — finish one branch's full delivery tail before starting the next. Only the pushes are front-loaded; merging stays strictly serial.
 
-## Steps (repeat per branch)
+## Steps (Step 2 runs once for the whole train; the rest repeat per branch)
 
 ### 1. Discover project context
 
 `cd` into the branch's worktree. Read CLAUDE.md (or equivalent) for the test/build/lint commands, the pre-commit hook path, and how the project files issues (the tracker's create command, or the fact that it has none). This tells you what "the suite" and "commit through the hook" mean for this project, and how to file a deferred review finding in Step 5.
 
-### 2. Push and open the PR
+### 2. Push the whole train and open every PR — before any branch waits
 
-If no PR number was given, check whether one already exists (`gh pr list --head <branch>`); if not, create one. Title must be a conventional-commit line (`type: description`); body is:
+Do this for **every** branch in the train before starting the first branch's Step 3. CI and
+CodeRabbit run server-side and in parallel across PRs, so their cost is wall clock only until
+the last push has started them — a push withheld until the previous branch merged serializes
+work the servers would have done concurrently. Measured across three real trains, serial
+pushing ran ~21 minutes per PR where ~12.5 was achievable. Everything that needs judgment —
+fixes, review triage, conflict reconciliation, the merge itself — stays serial from Step 3 on,
+so front-loading costs nothing but the reconciliation in Steps 6/8, which moved main would have
+forced anyway.
+
+For each branch: if no PR number was given, check whether one already exists (`gh pr list --head <branch>`); if not, push and create one. Title must be a conventional-commit line (`type: description`); body is:
 
 ```
 ## Summary
@@ -28,7 +37,7 @@ If no PR number was given, check whether one already exists (`gh pr list --head 
 - CI checks must pass
 ```
 
-If the push is rejected, the remote moved — investigate, never force-push.
+If a push is rejected, the remote moved — investigate, never force-push.
 
 ### 3. Wait for CI — block in the foreground, never end the turn
 
@@ -58,6 +67,14 @@ until gh pr checks <number> --json bucket \
 A bare `sleep <n>` is refused by the harness; the `until … do sleep 30; done` loop above is not.
 That refusal is not evidence that foreground waiting is impossible and is not a reason to
 background the wait — it is pointing you at exactly this loop.
+
+**A wait where no check ever registers is a different failure from a slow check.** If ~60s
+passes with `gh pr checks` still returning an empty list, check
+`gh pr view <number> --json mergeable` before waiting longer: a `CONFLICTING` PR has no merge
+ref, and without one GitHub cannot fire `pull_request` workflows at all — no amount of waiting
+produces a run, and close/reopen or an empty commit do nothing either (both measured useless;
+one PR lost 18 minutes to exactly this wait). Reconcile per Step 6 and re-wait. Only conclude
+"no checks are configured" once `mergeable` is clean.
 
 Read the settled result with `gh pr checks <number>`.
 
@@ -142,6 +159,10 @@ Check `gh pr view <number> --json mergeable`. If `CONFLICTING` (main moved durin
 3. Run the full project suite.
 4. Commit (through the hook), push, re-wait CI per Step 3.
 
+A reconciliation that changed anything substantive — code, not just merge bookkeeping — re-runs
+this branch's gates, not only its CI: the push puts a new head up for review, so Step 5 handling
+and the Step 7 pre-merge count apply to that head, not to the one that was already clean.
+
 ### 7. Squash-merge and clean up
 
 **A PR is not mergeable while it has an unreplied CodeRabbit inline comment.** Check immediately
@@ -163,7 +184,21 @@ finding stays unreplied by design, so a PR carrying one is **BLOCKED: escalated 
 finding(s)**, left open for the caller — never merged past it.
 
 ```bash
-gh pr merge <number> --squash --body "" --delete-branch
+gh pr merge <number> --squash --body ""
+```
+
+Never `--delete-branch`: it bundles a local branch deletion ahead of the worktree removal below,
+and git refuses to delete a branch a worktree has checked out — measured at 10 of 10
+worktree-based merges failing exactly there, each one a merged PR reported as a failed merge.
+For the same reason, read the merge result from GitHub, never from gh's exit code:
+
+```bash
+gh pr view <number> --json state,mergedAt
+```
+
+`MERGED` with a timestamp is a successful merge, whatever exit code the merge command returned.
+
+```bash
 git checkout main && git pull
 ```
 
@@ -211,6 +246,12 @@ gh run list --commit "$SHA" --limit 100 --json workflowName,status,conclusion,ur
 
 This procedure is shared verbatim with `agents/pr-merger.md` Step 3 — edit them together; drift between copies is a defect.
 
+Post-merge verification runs per-merge by default. The dispatch MAY instead specify
+**train-level verification**: report each branch from its PR gate at merge time, and run this
+full Actions enumeration on main once, after the train's last merge. Per-merge verification
+measured ~4–5 minutes per PR (~20% of train wall clock); the trade is that a broken merge
+surfaces one train-tail later. The default stands unless the dispatch says otherwise.
+
 Remove the branch's worktree only when **git itself confirms it is one**. A path prefix is the wrong test: real projects put worktrees in `<repo>/.worktrees/`, in a sibling directory beside the repo, and in `<repo>/.claude/worktrees/`, so matching on `.worktrees/` silently skips cleanup for two of the three — while still accepting any directory merely *named* `.worktrees/` that git has never heard of. Ask git:
 
 ```bash
@@ -225,6 +266,17 @@ fi
 Both conditions are load-bearing: git must list the path as a worktree **of this repository**, and it must not be the main worktree. A path git does not list is a plain directory — not yours to delete, wherever it sits. Where the worktree lives does not enter into it.
 
 If removal is refused (`contains modified or untracked files`), the worktree holds work that exists nowhere else. Never `--force` on your own initiative: leave it in place and carry it into the report so the caller can decide.
+
+With the worktree gone, the branch can be deleted — local first, then remote. This ordering is
+the reason `--delete-branch` was dropped from the merge:
+
+```bash
+git branch -D <branch>
+git push origin --delete <branch> 2>/dev/null || true   # tolerate a branch something else already removed
+```
+
+If the worktree was left in place, git will refuse the local deletion — that is correct; leave
+the branch too and carry the reason in the report.
 
 ### 8. Advance the train
 
@@ -254,6 +306,8 @@ post-merge run detected)`.
 - A failed tracker write is never a blocker. Report `UNFILED` and keep the train moving.
 - Never force-push. A rejected push means the remote moved — investigate.
 - Never skip or bypass the pre-commit hook.
+- The whole train is pushed and its PRs opened before any branch's CI wait (Step 2). Merges stay strictly serial, in the given order.
+- Never merge with `--delete-branch`, and never read merge success from gh's exit code — `gh pr view --json state,mergedAt` is the verdict. Branch deletion, local then remote, follows worktree removal.
 - Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides. A PR carrying an escalated finding is BLOCKED, not merged.
 - Whether CodeRabbit reviews this repo is settled once per train, on the first PR, from the `CodeRabbit` commit status — never from comment history, which a fresh install has none of. A no-CodeRabbit repo pays one bounded wait per train, never one per PR.

@@ -15,10 +15,20 @@ You will be given a PR number. Execute the steps below exactly. Do not improvise
 ### 1. Squash merge the PR
 
 ```bash
-gh pr merge {number} --squash --body "" --delete-branch
+gh pr merge {number} --squash --body ""
 ```
 
-If the merge fails, report the error and stop.
+Never `--delete-branch`: it bundles a local branch deletion ahead of the worktree removal in
+Step 4, and git refuses to delete a branch a worktree has checked out — measured at 10 of 10
+worktree-based merges failing exactly there, each one a merged PR reported as a failed merge.
+For the same reason, read the merge result from GitHub, never from gh's exit code:
+
+```bash
+gh pr view {number} --json state,mergedAt
+```
+
+`MERGED` with a timestamp is a successful merge, whatever exit code the merge command returned.
+If `state` is not `MERGED`, report the exact error output and stop.
 
 ### 2. Switch to main and pull
 
@@ -108,15 +118,7 @@ minutes and ends in a false "CI incomplete" alarm. Report the PR gate's result a
 This procedure is shared verbatim with `agents/branch-shepherd.md` Step 7 — edit them together;
 drift between copies is a defect.
 
-### 4. Clean up local branch
-
-Delete the local feature branch if it still exists:
-
-```bash
-git branch -d {branch} 2>/dev/null || true
-```
-
-### 5. Check for and remove worktree
+### 4. Check for and remove worktree
 
 Ask git which worktree holds the branch, and remove it only if it is not the main worktree. Where the worktree lives is irrelevant — projects use `<repo>/.worktrees/`, a sibling directory, and `<repo>/.claude/worktrees/` alike, and git's own listing is the only test that covers all three without also accepting a directory that merely looks like one.
 
@@ -133,6 +135,19 @@ The `!= "$MAIN"` guard is load-bearing: without it, a branch checked out in the 
 
 If no worktree exists for this branch, skip silently. If removal is refused (`contains modified or untracked files`, or `cannot remove a locked working tree` — a `claude session` lock means the session that entered it is still inside), leave it and say so in the report, naming the reason — never `--force`, never unlock.
 
+### 5. Clean up the branch
+
+With the worktree gone, the branch can be deleted — local first, then remote. This ordering is
+the reason `--delete-branch` was dropped from Step 1:
+
+```bash
+git branch -D {branch} 2>/dev/null || true
+git push origin --delete {branch} 2>/dev/null || true   # tolerate a branch something else already removed
+```
+
+If the worktree was left in place, git will refuse the local deletion — that is correct; leave
+the branch too and name the reason in the report.
+
 ### 6. Report
 
 Report exactly:
@@ -146,7 +161,7 @@ Report exactly:
   - `no Actions run detected within 60s; reporting the pre-merge PR gate, which does not cover
     post-merge failures`
 - **If FAILED or INCOMPLETE**: paste the workflow or check names and their URLs
-- **Cleanup**: what was cleaned up (branch, worktree, or nothing)
+- **Cleanup**: what was cleaned up (worktree, local branch, remote branch, or nothing)
 
 ## Rules
 
@@ -161,5 +176,6 @@ Report exactly:
 - Do NOT modify any files.
 - Do NOT create additional commits.
 - Always use `--body ""` when merging — no merge commit body.
-- Always use `--delete-branch` to remove the remote branch.
+- Never use `--delete-branch`. Branch deletion, local then remote, happens in Step 5, after the worktree is removed — git refuses to delete a branch a worktree has checked out, and the bundled deletion turned merged PRs into reported merge failures.
+- Merge success is read from `gh pr view --json state,mergedAt` (Step 1), never from `gh pr merge`'s exit code.
 - If any command fails unexpectedly, report the exact error output and stop.
