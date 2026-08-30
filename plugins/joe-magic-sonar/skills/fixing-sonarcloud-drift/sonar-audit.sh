@@ -59,21 +59,39 @@ fi
   exit 2
 }
 
+# Both values reach API query strings, a jq program, and a GitHub issue title;
+# a strict charset keeps injection out of all three.
+for v in "$branch" "$project"; do
+  [[ "$v" =~ ^[A-Za-z0-9._:/-]+$ ]] || {
+    echo "invalid characters in branch/project: $v" >&2
+    exit 2
+  }
+done
+
 ISSUE_TITLE="SonarCloud drift on $branch"
 
 : "${SONAR_TOKEN:?SONAR_TOKEN is required}"
 [[ -n "${GH_TOKEN:-}" ]] || report_only=1
 
 sonar_get() {
+  # -G + --data-urlencode builds the query safely; the auth header is read from
+  # a process substitution so the token never appears on curl's argv (ps-visible).
   local path="$1"
-  curl -sSf -H "Authorization: Bearer $SONAR_TOKEN" "$HOST/$path"
+  shift
+  local params=()
+  local q
+  for q in "$@"; do
+    params+=(--data-urlencode "$q")
+  done
+  curl -sSf -G "${params[@]}" \
+    -H @<(printf 'Authorization: Bearer %s\n' "$SONAR_TOKEN") "$HOST/$path"
 }
 
 # strip the "projectKey:" prefix from a component to leave the file path
 strip_component='sub("^[^:]*:"; "")'
 
-issues_json="$(sonar_get "api/issues/search?componentKeys=$project&branch=$branch&resolved=false&ps=100")"
-hotspots_json="$(sonar_get "api/hotspots/search?projectKey=$project&branch=$branch&status=TO_REVIEW&ps=100")"
+issues_json="$(sonar_get api/issues/search "componentKeys=$project" "branch=$branch" "resolved=false" "ps=100")"
+hotspots_json="$(sonar_get api/hotspots/search "projectKey=$project" "branch=$branch" "status=TO_REVIEW" "ps=100")"
 
 issue_count="$(jq -r '.total' <<<"$issues_json")"
 hotspot_count="$(jq -r '.paging.total' <<<"$hotspots_json")"
@@ -106,7 +124,11 @@ if [[ "$report_only" -eq 1 ]]; then
   exit 0
 fi
 
-existing="$(gh issue list --state open --search "in:title \"$ISSUE_TITLE\"" --json number --jq '.[0].number' 2>/dev/null || true)"
+# Exact title match — `--search in:title` is a phrase search, which both matches
+# superstring titles ("... on main-v2") and would let quotes in the phrase inject
+# search qualifiers. $ISSUE_TITLE is charset-safe to embed (validated above).
+existing="$(gh issue list --state open --json number,title \
+  --jq ".[] | select(.title == \"$ISSUE_TITLE\") | .number" 2>/dev/null | head -n 1 || true)"
 
 if [[ "$total" -eq 0 ]]; then
   if [[ -n "$existing" ]]; then
