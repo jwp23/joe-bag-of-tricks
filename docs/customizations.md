@@ -123,6 +123,12 @@ existing `verify.js` — deliberately NOT a second harness and NOT a section of
 `scripted-browser-verification`, which it names as REQUIRED BACKGROUND and whose rule/output
 contract it inherits. The skill states which checks are mechanical assertions and which are agent
 judgment over captured evidence. See `docs/decisions/ux-audit-skill.md`.
+2026-08-30: `record-decision` gained a "When a Decision Changes" section plus a Common Mistakes
+entry — supersede, don't amend: a changed decision gets a NEW ADR with a dated "Superseded by"
+pointer on the old one, resolving an ambiguity between clauses counts as a new decision, stale
+details get a one-line dated pointer note, and only the lighter `docs/decisions/` docs update in
+place (GH #76). Observed baseline: three in-session ADR amendments on throwntom, reproduced in a
+fixture probe (1 of 2 pre-fix runs amended in place).
 
 `writing-agents` and `implementer-contract` also carry explicit rows: they sit on the wrapped
 second line of the list above, which `.claude/scripts/check-vendored-drift.sh` does not read, so
