@@ -324,6 +324,10 @@ Can't check all boxes? You skipped TDD. Start over.
 
 Bug found? Write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
 
+For a commit that FIXES something, RED means proving the test discriminates: with the fix reverted the test FAILS, with the fix applied it passes. A test that is green both ways proves nothing — and this failure concentrates exactly where the cause feels obvious. No exception for a one-line fix: "reverting is overkill" is how vacuous tests ship. State the revert-check result when reporting the fix.
+
+Downgrading an assertion (exact → tolerant, error → warning) to keep a fix's test green is not a fix — it is the strongest defect signal there is. Stop and re-diagnose.
+
 Never fix bugs without a test.
 
 ## Final Rule
