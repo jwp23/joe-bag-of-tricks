@@ -51,6 +51,21 @@ Ask your human partner if uncertain: "Should I record this as an ADR or decision
 5. **Review** — Present to your human partner for approval before committing
 6. **Commit** — `docs: record ADR-NNN title` or `docs: record title`
 
+## When a Decision Changes
+
+An ADR records why a decision was made, as it stood then. It is history; history is not edited.
+
+- When a decision changes, write a NEW ADR that supersedes the old one, and mark the old one
+  with a pointer: "> Superseded (in part) YYYY-MM-DD by ADR-NNN." Do not rewrite the
+  superseded text.
+- Resolving an ambiguity between two clauses of an existing ADR is making a NEW decision, even
+  though it feels like clarification. It gets a new ADR.
+- A detail that merely went stale (a renamed flag, a rebound shortcut) needs at most a one-line
+  dated pointer note; the decision text stands. The current value lives in design docs or code,
+  not in the decision record.
+- Decision docs (`docs/decisions/`) are lighter: update in place is fine, but note the date
+  when the change reverses the recorded rationale.
+
 ## Quick Reference
 
 | | ADR | Decision Doc |
@@ -69,6 +84,10 @@ Ask your human partner if uncertain: "Should I record this as an ADR or decision
 **Wrong classification**
 - Tactical choice recorded as ADR, or vice versa
 - Fix: Ask your human partner. When uncertain, err toward decision doc (lighter weight)
+
+**Amending an ADR because its text no longer matches reality**
+- That is precisely what a superseding ADR is for
+- Fix: new ADR + "Superseded by" pointer on the old one
 
 **Skipping the review step**
 - Recorded decision doesn't match what was actually decided
