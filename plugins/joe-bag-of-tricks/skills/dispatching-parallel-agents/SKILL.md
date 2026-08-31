@@ -191,6 +191,15 @@ project tracks), each one needs real delivery, not just integration back into yo
    conflicts if main moves mid-train, squash-merges, and cleans up worktrees — sequentially,
    across every branch in the list — and reports one outcome table.
 
+**Name the governing rules in the train brief.** The shepherd checks combined behaviour before
+each merge — whether a later branch's new call sites obey an earlier one's new guard, whether a
+call one branch removed is still gone after the next one lands — and it can only check what it
+knows to look for. So the brief lists the rules, bans, and eliminated patterns any branch in the
+train establishes, with the grep-able pattern where one exists. Unnamed, that check falls back to
+what the shepherd can infer from each branch's own diff, which is where two real trains lost a
+banned window-activation call and a set of ungated menu commands to main — both caught only
+because the orchestrator happened to ask.
+
 ### Scope batches by concept, not by ticket
 
 Tickets are evidence that a concept is broken, rarely a complete description of it. A brief
