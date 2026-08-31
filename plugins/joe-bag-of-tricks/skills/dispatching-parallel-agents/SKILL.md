@@ -191,6 +191,23 @@ project tracks), each one needs real delivery, not just integration back into yo
    conflicts if main moves mid-train, squash-merges, and cleans up worktrees — sequentially,
    across every branch in the list — and reports one outcome table.
 
+### Scope batches by concept, not by ticket
+
+Tickets are evidence that a concept is broken, rarely a complete description of it. A brief
+that names a file, a screen, or a single UI element is surface-scoped; a concept-scoped brief
+names the rule that should hold everywhere ("every affordance that reaches the daemon while
+the daemon is absent"), with the tickets attached as examples.
+
+In the brief, have the agent enumerate the surfaces the concept touches before implementing,
+and state the correct behaviour at each — the agent has the code open and can bound the class
+more cheaply than anyone later. Say explicitly: if you find instances the tickets do not
+mention, fix them here and say so in your report — do not file them as new tickets. Without
+that line a conscientious agent files rather than fixes, and one under-scoped dispatch grows
+the backlog by several tickets that were really one.
+
+File overlap (step 1) is orthogonal: concept scoping decides WHAT is in a batch; file overlap
+decides WHICH batches can run concurrently.
+
 ### Choosing between this and subagent-driven-development
 
 The deciding axis is dependency structure, not task count:

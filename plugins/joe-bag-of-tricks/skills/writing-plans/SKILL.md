@@ -189,6 +189,7 @@ After creating all tasks, look at the spec with fresh eyes and check the bd hier
 1. **Spec coverage:** Skim each section/requirement in the spec. Can you point to a bd task that implements it? List any gaps and fill them.
 2. **Placeholder scan:** Check every task design for the red flags in the "No Placeholders" section above. Fix them.
 3. **Type consistency:** Do the types, method signatures, and property names in later tasks match what earlier tasks define? The per-task Interfaces blocks are where you verify this — a function called `clearLayers()` in one task but `clearFullLayers()` in another is a bug.
+4. **Sibling coverage:** for each bug-shaped task, does the hierarchy state whether other surfaces of the same concept were checked, or which tasks share a cause?
 
 ## Execution Handoff
 

@@ -182,7 +182,10 @@ Write your full report to the report file the dispatch prompt gave you:
 - Any issues or concerns
 - **Discovered work** (if any): bugs, missing features, or tech debt found outside your task's
   scope, with enough context for the controller to track it (title, description, suggested
-  priority)
+  priority). Mark each item either "checked: this is the only site" (say what you grepped or
+  read to conclude that) or "not checked: may be one instance of a broader class" (name the
+  class if you can), and say when items share a cause — you already have the code open, and
+  nobody can produce this line as cheaply later
 
 Then report back with ONLY these five things, under 15 lines total:
 - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
