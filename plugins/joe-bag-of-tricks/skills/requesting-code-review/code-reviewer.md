@@ -68,6 +68,9 @@ Subagent (general-purpose):
     - Edge cases covered?
     - Integration tests where they matter?
     - All tests passing?
+    - For fix commits: revert the fix (in a scratch worktree — this
+      checkout is read-only) and confirm the new test fails; flag any
+      assertion weakened inside the fix's own diff as a probable defect.
 
     **Production readiness:**
     - Migration strategy if schema changed?
