@@ -111,7 +111,7 @@ your path and complete them in order.
 2. **Ask clarifying questions** — one at a time, the ones that matter
 3. **Present short design in chat** — approach, files touched, testing
 4. **Get approval** — STOP and wait for an explicit yes; presenting the design and starting in the same breath is skipping the gate
-5. **Implement** — create a single bd task for the change, then proceed with the normal development workflow (TDD applies); no design doc, no epic
+5. **Implement** — create a single bd task for the change, then proceed with the normal development workflow (TDD applies); no design doc, no epic. If this session's context is already materially loaded (a long brainstorming dialogue, prior heavy work), hand the task to a dispatched implementer via subagent-driven-development rather than implementing it inline here — the dialogue that produced the design is not free to carry into the code that builds it.
 
 **Architectural:**
 1. **Explore project context** — check files, docs (including `docs/designs/` for a doc covering this area), recent commits
