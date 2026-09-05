@@ -25,6 +25,8 @@ Skills override default system prompt behavior, but **user instructions always t
 
 If CLAUDE.md or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
 
+A skill that directs a subagent dispatch carries the user's authorization for it — orchestration-tool opt-in caveats (Workflow) govern those tools, not skill-directed Agent dispatches.
+
 ## How to Access Skills
 
 Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.

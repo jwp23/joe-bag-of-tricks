@@ -181,7 +181,10 @@ project tracks), each one needs real delivery, not just integration back into yo
    fix loop, exactly as subagent-driven-development's Task Loop runs it — don't skip the loop
    just because the item is small. Then run a security pass — combined across the whole batch
    at the end, or per-branch as each one finishes, whichever fits the batch's size — per
-   security-review.
+   security-review. Dispatch each branch's review with its own fresh context — never fold
+   another worktree's diff into a review call already carrying one. A reviewer that has read
+   branch N's diff has no budget left to also hold branch N+1's; the fix is another dispatch,
+   not a bigger one.
 3. **Accumulate, don't deliver one at a time.** As each branch goes review-clean, add it to a
    running list (worktree path, and the PR number if one already exists). Do not dispatch
    finishing-a-development-branch per branch as you go — that serializes CI waits across the
@@ -190,6 +193,15 @@ project tracks), each one needs real delivery, not just integration back into yo
    of it) is accumulated. It pushes, opens PRs, waits out CI, handles CodeRabbit, reconciles
    conflicts if main moves mid-train, squash-merges, and cleans up worktrees — sequentially,
    across every branch in the list — and reports one outcome table.
+5. **While that shepherd is alive, it is the only one.** A branch going review-clean mid-train
+   is not a reason to spin up a second shepherd, and it is not a reason to sit on the branch
+   until some future train either — both race the live one on `main` or silently delay
+   delivery. Reach the running shepherd with `SendMessage` and let it fold the branch into the
+   train it is already running.
+6. **Keep the implementer side moving while the train runs.** A shepherd mid-train is not a
+   reason for the implementer side to go idle — any independent, review-ready task in the
+   backlog is a candidate to claim and dispatch right now, exactly as if no train were in
+   flight, so the next review-clean branch is already waiting when the shepherd is free for it.
 
 **Name the governing rules in the train brief.** The shepherd checks combined behaviour before
 each merge — whether a later branch's new call sites obey an earlier one's new guard, whether a
