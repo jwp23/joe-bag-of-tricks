@@ -121,9 +121,10 @@ You MUST complete each phase before proceeding to the next.
 #### Working from the tracker
 
 Before diagnosing a reported symptom, search the project's issue tracker for prior work on it. A
-past session may have already run Phase 1 on this exact symptom and left the diagnosis, a
-disproven hypothesis, or a workaround candidate behind — re-deriving any of that from scratch
-spends turns that one search would have saved.
+past session may have already run Phase 1 on this exact symptom and left evidence behind — a
+measurement, a disproven hypothesis, a workaround candidate — and re-deriving that from scratch
+spends turns one search would have saved. What you find is input to Phase 1, not a substitute
+for it.
 
 A ticket's stated cause is a HYPOTHESIS, not a finding — even (especially) when the ticket was
 written by an agent with the code open. Reproduce the symptom and measure before fixing; if the
