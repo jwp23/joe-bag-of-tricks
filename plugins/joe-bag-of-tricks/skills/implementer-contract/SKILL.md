@@ -171,6 +171,10 @@ contract as your first report.
 ## Report Format
 
 Write your full report to the report file the dispatch prompt gave you:
+- **Bd note text:** one line, ready for the controller to paste verbatim into
+  `bd note <task-id> "..."` (or fold into the `bd close --reason` at task close) — commit
+  range and the one-line test summary, e.g. `commits a1b2c3d..e4f5a6b, 14/14 passing, output
+  pristine`. The controller owns bd; you write text it can copy, not a bd command it runs.
 - What you implemented (or what you attempted, if blocked)
 - What you tested and test results
 - **TDD Evidence** (if TDD was required for this task):
