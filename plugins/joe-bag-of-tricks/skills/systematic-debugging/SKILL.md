@@ -118,16 +118,28 @@ You MUST complete each phase before proceeding to the next.
    - Keep tracing up until you find the source
    - Fix at source, not at symptom
 
-#### Working from a tracker ticket
+#### Working from the tracker
+
+Before diagnosing a reported symptom, search the project's issue tracker for prior work on it. A
+past session may have already run Phase 1 on this exact symptom and left evidence behind — a
+measurement, a disproven hypothesis, a workaround candidate — and re-deriving that from scratch
+spends turns one search would have saved. What you find is input to Phase 1, not a substitute
+for it.
 
 A ticket's stated cause is a HYPOTHESIS, not a finding — even (especially) when the ticket was
 written by an agent with the code open. Reproduce the symptom and measure before fixing; if the
 evidence disproves the ticket's premise, record that on the ticket and fix what the evidence
 shows. Fixing the stated cause without reproducing it is Phase-1 skipping with extra steps.
 
+When a workaround is verified working, record it on the tracker at that moment, not after the
+fix ships — a recovery step that only lives in scrollback is gone the moment context clears, and
+the next session pays to re-derive it.
+
 Evidence this matters: in one tracked crunch, 4 of 9 bug tickets were wrong about their own
 cause; every agent told to verify the premise disproved it by measurement, and every agent not
-told inherited it.
+told inherited it. In another session, a full diagnosis and a working recovery incantation sat
+recorded on a tracker issue for two hours while a fresh session spent ~40 turns re-deriving the
+same diagnosis, then never recorded the workaround either.
 
 ### Phase 2: Pattern Analysis
 
