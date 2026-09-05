@@ -24,11 +24,17 @@
 #   timeout - checks were still pending when max-seconds elapsed
 #
 # coderabbit:
-#   success       - the CodeRabbit commit status on the PR's head SHA is success
-#   pending       - the status is pending and no rate-limit comment was found
-#   rate_limited  - a CodeRabbit comment on the PR mentions rate limiting; a
-#                   rate-limited review must never block a merge — the caller
-#                   escalates it, it does not wait longer for this to clear
+#   success       - the CodeRabbit commit status on the PR's head SHA reports
+#                   "Review completed" AND a real CodeRabbit PR comment corroborates
+#                   it. A bare state=success is not enough on its own: a rate-limited
+#                   decline also reports state=success, distinguished only by its
+#                   description ("Review rate limited") — checked before state ever
+#                   enters the decision.
+#   pending       - review has not completed and no rate-limit signal was found
+#                   (from the status description or a CodeRabbit PR comment)
+#   rate_limited  - the status description or a CodeRabbit PR comment reports rate
+#                   limiting; a rate-limited review must never block a merge — the
+#                   caller escalates it, it does not wait longer for this to clear
 #   absent        - no CodeRabbit commit status exists at all (app not installed,
 #                   or not yet posted)
 #
@@ -67,14 +73,34 @@ fi
 
 repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 head_sha=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
-coderabbit=$(gh api "repos/$repo/commits/$head_sha/statuses" \
-  --jq '[.[] | select(.context == "CodeRabbit")] | first | .state // "absent"' 2>/dev/null || echo "absent")
+statuses_json=$(gh api "repos/$repo/commits/$head_sha/statuses" 2>/dev/null || echo '[]')
+cr_state=$(jq -r '[.[] | select(.context == "CodeRabbit")] | first | .state // "absent"' <<<"$statuses_json")
+cr_desc=$(jq -r '[.[] | select(.context == "CodeRabbit")] | first | .description // ""' <<<"$statuses_json")
 
-if [ "$coderabbit" = "pending" ]; then
-  rate_limited=$(gh api "repos/$repo/issues/$pr/comments?per_page=100" \
+# A rate-limited decline reports state=success with description "Review rate limited" —
+# indistinguishable from a real review on .state alone. The description carries the real
+# verdict; check it before state ever enters the decision.
+if [ "$cr_state" = "absent" ]; then
+  coderabbit="absent"
+elif printf '%s' "$cr_desc" | grep -qi "rate limit"; then
+  coderabbit="rate_limited"
+elif [ "$cr_state" = "pending" ]; then
+  # The description hasn't caught up yet; a real CodeRabbit comment already reporting
+  # rate limiting is the same signal arriving through a different channel.
+  rate_limited_comment=$(gh api "repos/$repo/issues/$pr/comments?per_page=100" \
     --jq '[.[] | select(.user.login | startswith("coderabbitai")) | select(.body | test("rate limit"; "i"))] | length' \
     2>/dev/null || echo 0)
-  [ "$rate_limited" != "0" ] && coderabbit="rate_limited"
+  if [ "$rate_limited_comment" != "0" ]; then coderabbit="rate_limited"; else coderabbit="pending"; fi
+elif [ "$cr_state" = "success" ] && printf '%s' "$cr_desc" | grep -qi "review completed"; then
+  # The status alone is still not proof of a delivered review — corroborate with an
+  # actual CodeRabbit PR comment before trusting "success". Neither signal alone suffices.
+  has_comment=$(gh api "repos/$repo/issues/$pr/comments?per_page=100" \
+    --jq '[.[] | select(.user.login | startswith("coderabbitai"))] | length' 2>/dev/null || echo 0)
+  if [ "$has_comment" != "0" ]; then coderabbit="success"; else coderabbit="pending"; fi
+else
+  # Any other state/description combination (error, failure, an unrecognized
+  # description) is unconfirmed either way — never misreport it as a clean review.
+  coderabbit="pending"
 fi
 
 mergeable=$(gh pr view "$pr" --json mergeable --jq .mergeable 2>/dev/null || echo "UNKNOWN")

@@ -41,15 +41,24 @@ If a push is rejected, the remote moved — investigate, never force-push.
 
 ### 3. Wait for CI — one blocking call, no narration between waits
 
-Run `scripts/wait-for-pr-settle.sh <number>` (relative to this agent file) as an ordinary
-**foreground** `Bash` command and let it block until the PR's checks settle. This is the fork's
-one canonical PR-settle wait — dependency-free (`gh`/`jq` only), capped at ~600s, and its single
-JSON line also carries CodeRabbit's status and `mergeable`, so this same call is Step 5's and
-Step 6's first read too, not a second poll. Do not background it, and do not end your turn while
-it runs: a turn that ends waiting is over, and the delivery strands there. Measured across 11
-real deliveries, waiting by ending the turn stalled 8 times out of 9 — several runs never
-produced a final report at all — while every run that polled in the foreground finished its
-whole train.
+This agent's own tools carry no working-directory anchor back to the plugin that shipped it, so
+locate it first — `gh` and `jq` alone won't do this part, but `claude` itself will:
+
+```bash
+PLUGIN_ROOT="$(claude plugin list --json | jq -r '.[] | select(.id | startswith("joe-bag-of-tricks@")) | .installPath')"
+```
+
+(A `--plugin-dir` dev session has no cache entry to report; use that dir directly instead.)
+
+Run `"$PLUGIN_ROOT/agents/scripts/wait-for-pr-settle.sh" <number>` as an ordinary **foreground**
+`Bash` command and let it block until the PR's checks settle. This is the fork's one canonical
+PR-settle wait — dependency-free (`gh`/`jq` only) beyond the lookup above, capped at ~600s, and
+its single JSON line also carries CodeRabbit's status and `mergeable`, so this same call is
+Step 5's and Step 6's first read too, not a second poll. Do not background it, and do not end
+your turn while it runs: a turn that ends waiting is over, and the delivery strands there.
+Measured across 11 real deliveries, waiting by ending the turn stalled 8 times out of 9 —
+several runs never produced a final report at all — while every run that polled in the
+foreground finished its whole train.
 
 - Set the Bash call's `timeout` to its maximum. If the script reports `checks: "timeout"`, run it
   again — repeated foreground calls are the correct way to wait longer, and cost nothing but a
@@ -94,13 +103,18 @@ sets on the PR's head SHA:
 
 ```bash
 gh api "repos/{owner}/{repo}/commits/{sha}/statuses" \
-  --jq '[.[] | select(.context == "CodeRabbit")] | first | "\(.state) \(.created_at)"'
+  --jq '[.[] | select(.context == "CodeRabbit")] | first | "\(.state) \(.description) \(.created_at)"'
 ```
 
-Step 3's `wait-for-pr-settle.sh` already reads this same signal into its `coderabbit` field
-(`success` / `pending` / `rate_limited` / `absent`) — reuse that call's output here rather than
-querying the status a second time; only re-run it (or the raw command above) when you need a
-fresher read after a later push.
+**The status's `state` alone is not the verdict — its `description` is.** A rate-limited decline
+also reports `state=success`, distinguished only by a description of "Review rate limited"; only
+"Review completed" is an actual review, and even that gets corroborated against a real CodeRabbit
+PR comment before it's trusted; `.state`/`.created_at` alone is exactly the reading that merged
+five unreviewed PRs past a rate-limited decline that looked clean. Step 3's `wait-for-pr-settle.sh`
+already applies this reading into its `coderabbit` field (`success` / `pending` / `rate_limited` /
+`absent`) — reuse that call's output here rather than querying the status a second time; only
+re-run it (or the raw command above, description included) when you need a fresher read after a
+later push.
 
 Statuses list newest first. The `pending` status arrives anywhere from ~90s to 6.5 minutes after
 the PR opens (measured on one repo, same day), and flips to `success` once the review has posted,
@@ -117,8 +131,11 @@ typically ~3 minutes later. A PR whose head is pushed again gets a fresh SHA and
 - **Present:** for each PR, wait until the status leaves `pending` (bound 10 minutes from the
   latest push). Waiting on the status rather than a fixed timeout is the point: the latency
   varies by repo and by CodeRabbit's load, and no guessed number was right twice on the same day.
-  If the bound expires with the status still `pending` or never set, fall through to the
-  inline-comments fetch below — findings that exist are handled either way, and note in the
+  Leaving `pending` is not itself the verdict: read `coderabbit` off `wait-for-pr-settle.sh`'s
+  output once it settles — `rate_limited` goes to the paragraph below, never here; only
+  `success` (description-and-comment corroborated) means a review actually landed. If the bound
+  expires still `pending`, or settles to neither `success` nor `rate_limited`, fall through to
+  the inline-comments fetch below — findings that exist are handled either way, and note in the
   report that the status never settled.
 
 A no-CodeRabbit repo pays one bounded wait per train, never one per PR. A skip recorded this way
@@ -358,7 +375,7 @@ the failing/outstanding workflows named per the Step 7 outcomes.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides. A PR carrying an escalated finding is BLOCKED, not merged.
 - Whether CodeRabbit reviews this repo is settled once per train, on the first PR, from the `CodeRabbit` commit status — never from comment history, which a fresh install has none of. A no-CodeRabbit repo pays one bounded wait per train, never one per PR.
 - A rate-limited CodeRabbit review never blocks a merge, and is never waited on or re-triggered. Merge on green CI once Step 6's combined-behaviour check is clean, mark the branch `merged <sha> (no CodeRabbit review — rate limited)`, and escalate the PR in the final report with a recommended follow-up `coderabbit-reviewer` dispatch.
-- Every PR-settle wait is `scripts/wait-for-pr-settle.sh` (relative to this agent file), run once as a foreground blocking call — never an inline `until`/`sleep` loop, and never narration between two waits on the same PR.
+- Every PR-settle wait is `wait-for-pr-settle.sh` (Step 3's `PLUGIN_ROOT` lookup), run once as a foreground blocking call — never an inline `until`/`sleep` loop, and never narration between two waits on the same PR.
 - Never merge a PR with an unreplied CodeRabbit inline comment. The pre-merge count in Step 7 runs before every merge, on every repo, regardless of what detection concluded.
 - Remove a worktree only when `git worktree list` shows that exact path as a non-main worktree of this repository. Never a path git does not list, never the main worktree, and never on the strength of where the directory sits.
 - Every CI wait is a foreground settle loop that blocks until the checks settle. Never end a turn while CI is outstanding — backgrounded or not, a turn that ends waiting ends the delivery. If the Bash call times out mid-wait, run it again.
