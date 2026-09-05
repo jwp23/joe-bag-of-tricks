@@ -257,6 +257,10 @@ wait is the same settle loop as Step 4, polling `gh run list --commit` rather th
 not post-merge verification. Treat main as unverified and check it yourself before building on
 it.
 
+**New scope surfacing after the merge** (a follow-up ask, a just-noticed gap) is a new task, not
+a continuation of this one. Route it to a fresh context or a dispatched implementer — never onto
+this session's context, which already carries the whole finished branch.
+
 ## Quick Reference
 
 | Step | Action |
