@@ -409,6 +409,10 @@ Template: [implementer-prompt.md](implementer-prompt.md)
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
+Every bd note or close reason you write for this task is the implementer's own
+paste-ready bd note text from its report, verbatim or trivially extended — never
+your own re-narration of what the report already says.
+
 **DONE:** Generate the review package (`scripts/review-package BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
@@ -432,7 +436,11 @@ it into implementation.
 
 If the implementer reported discovered work, create a bead for it now:
 `bd create --title="..." --type=task --priority=2 --deps discovered-from:<task-id>`.
-Ignoring discovered work is a silent discard.
+Ignoring discovered work is a silent discard. `bd create` prints the new
+bead's ID — take it from that output and hold it in your own tracking, not
+`bd list | grep`. A bead you just created is never lost; going back to find
+it is wasted work, and grepping a list you already know the answer to is a
+sign that ID slipped out of your context.
 
 ### 3. Review the task
 
@@ -691,6 +699,8 @@ your behalf.
 | "This decision feels hard, I should handle it carefully myself" | Feeling hard IS the trigger signal you can't trust. Check the structural triggers; if one fires, dispatch an adjudicator. |
 | "The implementer spawned its own reviewer — free extra assurance" | It's a duplicate seat reviewing the same diff; the task review is the gate. A worker-spawned reviewer is a defect to flag, not rigor. |
 | "This needs a human — I'll park the run and wait" | Only the four stop classes stop you. Everything else is a ruling: decide, bd note it, keep going. The roll-up at Finish is where it reaches them. |
+| "I'll summarize the report in my own words for the bd note" | The report already has paste-ready bd note text. Re-narrating it is the 121KB-of-typed-notes failure mode. Paste it. |
+| "I forgot the ID, let me `bd list \| grep` for it" | `bd create` printed it. A bead you created this session is a scroll-back, not a search. |
 
 ## Example Workflow
 
