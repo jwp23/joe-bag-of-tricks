@@ -39,44 +39,36 @@ For each branch: if no PR number was given, check whether one already exists (`g
 
 If a push is rejected, the remote moved — investigate, never force-push.
 
-### 3. Wait for CI — block in the foreground, never end the turn
+### 3. Wait for CI — one blocking call, no narration between waits
 
-Run the settle loop as an ordinary **foreground** `Bash` command and let it block until every
-check reaches a terminal state. Do not background it, and do not end your turn while CI is
-outstanding: a turn that ends waiting is over, and the delivery strands there. Measured across
-11 real deliveries, waiting by ending the turn stalled 8 times out of 9 — several runs never
+Run `scripts/wait-for-pr-settle.sh <number>` (relative to this agent file) as an ordinary
+**foreground** `Bash` command and let it block until the PR's checks settle. This is the fork's
+one canonical PR-settle wait — dependency-free (`gh`/`jq` only), capped at ~600s, and its single
+JSON line also carries CodeRabbit's status and `mergeable`, so this same call is Step 5's and
+Step 6's first read too, not a second poll. Do not background it, and do not end your turn while
+it runs: a turn that ends waiting is over, and the delivery strands there. Measured across 11
+real deliveries, waiting by ending the turn stalled 8 times out of 9 — several runs never
 produced a final report at all — while every run that polled in the foreground finished its
 whole train.
 
-```bash
-until gh pr checks <number> --json bucket \
-  --jq 'length > 0 and (map(select(.bucket == "pending")) | length == 0)' 2>/dev/null \
-  | grep -qx true; do sleep 30; done
-```
+- Set the Bash call's `timeout` to its maximum. If the script reports `checks: "timeout"`, run it
+  again — repeated foreground calls are the correct way to wait longer, and cost nothing but a
+  turn. Never narrate elapsed time between these calls; the script's own output is the only
+  status worth reporting, and a chatty turn between waits multiplies the cost of each one.
+- `checks: "none"` is a different failure from a slow check: read `mergeable` from the same
+  output before waiting longer — a `CONFLICTING` PR has no merge ref, and without one GitHub
+  cannot fire `pull_request` workflows at all. No amount of waiting produces a run, and
+  close/reopen or an empty commit do nothing either (both measured useless; one PR lost 18
+  minutes to exactly this wait). Reconcile per Step 6 and re-wait. Only conclude "no checks are
+  configured" once `mergeable` is clean.
+- The settled result must come from the script having exited. A one-off `gh pr checks` probe, a
+  scheduled wakeup, or a bare `sleep` is not a wait; never report a status you read before it
+  settled. A bare `sleep <n>` is refused by the harness — that refusal is not evidence that
+  foreground waiting is impossible, and the script (a checked-in file, not an inline loop) is
+  exactly what it is pointing you at.
 
-- `length > 0` covers the window right after a push where no check has registered yet. Without it, an empty check list reads as "everything settled."
-- The pipe into `grep` is deliberate. `gh pr checks` exits non-zero while checks are pending (code 8) and again when one fails; taking the exit code from `grep` instead keeps the loop alive.
-- Poll at 30s. Faster only burns API quota.
-- Set the Bash call's `timeout` to its maximum. If the loop is still running when the tool times
-  out, run the identical command again — repeated foreground calls are the correct way to wait
-  longer, and cost nothing but a turn.
-- The settled result must come from the loop having exited. A one-off `gh pr checks` probe, a
-  scheduled wakeup, or a bare sleep is not a wait; never report a status you read before the
-  loop settled.
-
-A bare `sleep <n>` is refused by the harness; the `until … do sleep 30; done` loop above is not.
-That refusal is not evidence that foreground waiting is impossible and is not a reason to
-background the wait — it is pointing you at exactly this loop.
-
-**A wait where no check ever registers is a different failure from a slow check.** If ~60s
-passes with `gh pr checks` still returning an empty list, check
-`gh pr view <number> --json mergeable` before waiting longer: a `CONFLICTING` PR has no merge
-ref, and without one GitHub cannot fire `pull_request` workflows at all — no amount of waiting
-produces a run, and close/reopen or an empty commit do nothing either (both measured useless;
-one PR lost 18 minutes to exactly this wait). Reconcile per Step 6 and re-wait. Only conclude
-"no checks are configured" once `mergeable` is clean.
-
-Read the settled result with `gh pr checks <number>`.
+Read the settled checks result from the script's `checks` field; fall back to
+`gh pr checks <number>` only if you need individual check names for a Step 4 investigation.
 
 ### 4. CI failure — bounded root-cause fix
 
@@ -105,6 +97,11 @@ gh api "repos/{owner}/{repo}/commits/{sha}/statuses" \
   --jq '[.[] | select(.context == "CodeRabbit")] | first | "\(.state) \(.created_at)"'
 ```
 
+Step 3's `wait-for-pr-settle.sh` already reads this same signal into its `coderabbit` field
+(`success` / `pending` / `rate_limited` / `absent`) — reuse that call's output here rather than
+querying the status a second time; only re-run it (or the raw command above) when you need a
+fresher read after a later push.
+
 Statuses list newest first. The `pending` status arrives anywhere from ~90s to 6.5 minutes after
 the PR opens (measured on one repo, same day), and flips to `success` once the review has posted,
 typically ~3 minutes later. A PR whose head is pushed again gets a fresh SHA and fresh statuses.
@@ -126,6 +123,14 @@ typically ~3 minutes later. A PR whose head is pushed again gets a fresh SHA and
 
 A no-CodeRabbit repo pays one bounded wait per train, never one per PR. A skip recorded this way
 is a normal outcome, not a failure, and never blocks a branch.
+
+**Rate limiting never blocks a merge.** `coderabbit: "rate_limited"` means CodeRabbit itself has
+said it cannot review right now — re-triggering `@coderabbitai review` or waiting longer asks it
+to do the same work it already declined. Stop polling this PR's review status, merge it once
+Step 3's checks and Step 6's combined-behaviour check are clean, and record the branch in the
+outcome table as `merged <sha> (no CodeRabbit review — rate limited)`. Carry the PR into the
+final report's escalation list with a recommended follow-up `coderabbit-reviewer` dispatch once
+the rate limit clears — the human partner decides whether and when to run it.
 
 If a review does appear, extract the AI-agent prompt from the review body and the individual inline comments. For each actionable finding:
 
@@ -319,10 +324,14 @@ One outcome table, ≤5 lines per branch:
 
 | Branch | Outcome | Deferred | Escalations |
 |---|---|---|---|
-| `<branch>` | merged `<sha>` / merged `<sha>`, post-merge BROKEN: `<workflows>` / merged `<sha>`, post-merge UNKNOWN: `<reason>` / BLOCKED: `<reason>` | issue IDs, or `UNFILED: <reason>`, or none | list, or none |
+| `<branch>` | merged `<sha>` / merged `<sha>` (no CodeRabbit review — rate limited) / merged `<sha>`, post-merge BROKEN: `<workflows>` / merged `<sha>`, post-merge UNKNOWN: `<reason>` / BLOCKED: `<reason>` | issue IDs, or `UNFILED: <reason>`, or none | list, or none |
 
 An `UNFILED` deferral is a loud line in this table — never a BLOCKED branch. It means the caller
 has to file that issue by hand.
+
+A branch merged while CodeRabbit was rate-limited is never BLOCKED — it merged, and the row says
+so — but it does belong in the Escalations column: name the PR and recommend a follow-up
+`coderabbit-reviewer` dispatch once the rate limit clears.
 
 A plain `merged <sha>` means every Actions run on the merge commit succeeded. If the outcome
 rested on the PR gate because no run was detected, say `merged <sha> (PR gate only — no
@@ -348,6 +357,8 @@ the failing/outstanding workflows named per the Step 7 outcomes.
 - Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides. A PR carrying an escalated finding is BLOCKED, not merged.
 - Whether CodeRabbit reviews this repo is settled once per train, on the first PR, from the `CodeRabbit` commit status — never from comment history, which a fresh install has none of. A no-CodeRabbit repo pays one bounded wait per train, never one per PR.
+- A rate-limited CodeRabbit review never blocks a merge, and is never waited on or re-triggered. Merge on green CI once Step 6's combined-behaviour check is clean, mark the branch `merged <sha> (no CodeRabbit review — rate limited)`, and escalate the PR in the final report with a recommended follow-up `coderabbit-reviewer` dispatch.
+- Every PR-settle wait is `scripts/wait-for-pr-settle.sh` (relative to this agent file), run once as a foreground blocking call — never an inline `until`/`sleep` loop, and never narration between two waits on the same PR.
 - Never merge a PR with an unreplied CodeRabbit inline comment. The pre-merge count in Step 7 runs before every merge, on every repo, regardless of what detection concluded.
 - Remove a worktree only when `git worktree list` shows that exact path as a non-main worktree of this repository. Never a path git does not list, never the main worktree, and never on the strength of where the directory sits.
 - Every CI wait is a foreground settle loop that blocks until the checks settle. Never end a turn while CI is outstanding — backgrounded or not, a turn that ends waiting ends the delivery. If the Bash call times out mid-wait, run it again.
