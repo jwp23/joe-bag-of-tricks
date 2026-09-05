@@ -34,47 +34,36 @@
 
 ## Rationale
 
-- `implementer-contract-as-preloaded-skill.md` already proved `skills:` frontmatter injects a
-  named skill's full text into a subagent's context with zero tool calls, verified with a
-  canary-phrase probe. This decision reuses that mechanism rather than re-litigating it: same
-  `skills:` list shape (a YAML sequence of bare skill names), same reason it works (harness
-  injection is free and verbatim; a markdown link in an agent body is not expanded).
-- `writing-skills` and `writing-agents` carry neither `disable-model-invocation: true` nor
-  `user-invocable: false` — confirmed by reading their frontmatter directly. The preloaded-skill
-  decision above found `disable-model-invocation: true` silently breaks preloading (the probe
-  returned the absence sentinel with it set), so this was a real precondition to check, not a
-  formality.
-- Model tier: unchanged from `implementer`. Skill/agent edits are ordinary multi-file integration
-  work of the same difficulty implementer already handles — wiring a `skills:` list, following an
-  established frontmatter shape, applying documented review checklists. Nothing about editing a
-  `SKILL.md` calls for `implementer-mechanical`'s mechanical-only ceiling or
-  `implementer-complex`'s design-judgment tier; a task that does escalates through the existing
-  ladder exactly as it would from `implementer` (`orchestration-model-tiering.md`).
-- Roster-gating check (read `.claude/scripts/check-context-budget.sh`, not just the roster-budget
-  decision, per that decision's own instruction that the script decides what it counts):
-  `AGENTS_DIR` is hardcoded to `${PLUGIN_DIR}/agents` (`plugins/joe-bag-of-tricks/agents`), and
-  the tier-2 loop globs only that directory. `.claude/agents/skill-editing-implementer.md` is
-  outside it, so `check-context-budget.sh` does not count this agent's roster line at all — the
-  gate ran unchanged (see the implementation report) and needed no `BUDGET` change. This is a
-  gap, not a feature: the real harness injects a project-level `.claude/agents/` entry into the
-  same Agent-tool roster `<system-reminder>` as a plugin agent (the capture procedure in
-  `agent-roster-in-the-context-budget.md` does not distinguish the two), so this agent's line is
-  real per-session cost that the gate is structurally blind to. Recorded here rather than
-  silently fixed, because widening `AGENTS_DIR` to also glob `.claude/agents` is itself a
-  decision — it would begin gating every future authoring-only agent, a scope the gate has never
-  had — and is left to the orchestrator/Joe rather than made unilaterally inside this bead.
-- `docs/customizations.md` needs no new row: its own scope statement covers "Plugin payload...
-  nested under `plugins/joe-bag-of-tricks/`" plus repo-root files it already tracks by name;
-  `.claude/` is authoring-only and outside the manifest's stated scope, matching every other
-  file already under `.claude/agents/`-adjacent dirs (none of which has a manifest row).
-- Live-dispatch verification — "a dispatched instance verifiably has all three skills loaded" —
-  is deferred to the orchestrator after merge: the Agent roster is fixed at session start, so a
-  brand-new agent added in this session's own worktree is not dispatchable from the session that
-  created it. What is verified here is static: the `skills:` entries resolve to real,
-  correctly-named skills that exist on disk and are preloadable (not gated behind
-  `disable-model-invocation`), matching how `implementer-contract-as-preloaded-skill.md` itself
-  was eventually reproved (a real probe dispatch, run once the mechanism was in a position to be
-  dispatched).
+- Reuses the mechanism `implementer-contract-as-preloaded-skill.md` already proved — `skills:` as
+  a YAML sequence of bare skill names, injected verbatim and free by the harness — rather than
+  re-litigating it. Precondition checked directly, not assumed: neither `writing-skills` nor
+  `writing-agents` carries `disable-model-invocation: true` or `user-invocable: false`, the flag
+  that decision found silently breaks preloading.
+- **Verified, not assumed, this round**: unprefixed skill names in a repo-local `.claude/agents/`
+  agent's `skills:` list resolve across the plugin boundary to `plugins/joe-bag-of-tricks/skills/*`.
+  Proved by dispatching `.claude/agents/skill-editing-implementer` via a fresh headless
+  `claude -p` session and reading its `--debug-file` log for `Preloaded skill '<name>'` lines —
+  the authoritative instrument for the load question, since a quoting canary alone can return a
+  false-negative "ABSENT" for a skill the debug log shows was loaded (see the task report for the
+  full RED/GREEN transcript). A `joe-bag-of-tricks:`-prefixed form was raised as an alternative
+  but never itself verified to be accepted in a `skills:` list, so the committed agent keeps the
+  proven bare-name form. Re-run this same `claude -p --debug-file` + grep method to re-prove it
+  after any future change to the harness's skill-resolution behavior.
+- Model tier unchanged from `implementer`: skill/agent edits are the same ordinary multi-file
+  integration work implementer already handles, so nothing here calls for
+  `implementer-mechanical`'s mechanical-only ceiling or `implementer-complex`'s design-judgment
+  tier; a task that needs one escalates through the existing ladder
+  (`orchestration-model-tiering.md`).
+- Roster-gating check (read `check-context-budget.sh` itself, not just the roster-budget
+  decision, per that decision's own instruction): `AGENTS_DIR` is hardcoded to
+  `plugins/joe-bag-of-tricks/agents`, so a `.claude/agents/` file is outside the tier-2 glob and
+  the gate does not count this agent's roster line — it ran unchanged, no `BUDGET` change needed.
+  This is a real gap: the harness injects a project-level `.claude/agents/` entry into the same
+  roster `<system-reminder>` as a plugin agent, so the cost is real and merely unmeasured.
+  Left unfixed deliberately — widening `AGENTS_DIR` is its own scope decision — and recorded as
+  discovered work in the task report.
+- `docs/customizations.md` needs no new row: its scope is plugin payload plus named repo-root
+  files, and `.claude/` sits outside that, same as every other file under `.claude/`.
 - Decided 2026-09-05, task `joe-bag-of-tricks-dtr.9`.
 
 ## Revisit Trigger
