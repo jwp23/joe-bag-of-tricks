@@ -41,24 +41,15 @@ If a push is rejected, the remote moved — investigate, never force-push.
 
 ### 3. Wait for CI — one blocking call, no narration between waits
 
-This agent's own tools carry no working-directory anchor back to the plugin that shipped it, so
-locate it first — `gh` and `jq` alone won't do this part, but `claude` itself will:
-
-```bash
-PLUGIN_ROOT="$(claude plugin list --json | jq -r '.[] | select(.id | startswith("joe-bag-of-tricks@")) | .installPath')"
-```
-
-(A `--plugin-dir` dev session has no cache entry to report; use that dir directly instead.)
-
-Run `"$PLUGIN_ROOT/agents/scripts/wait-for-pr-settle.sh" <number>` as an ordinary **foreground**
-`Bash` command and let it block until the PR's checks settle. This is the fork's one canonical
-PR-settle wait — dependency-free (`gh`/`jq` only) beyond the lookup above, capped at ~600s, and
-its single JSON line also carries CodeRabbit's status and `mergeable`, so this same call is
-Step 5's and Step 6's first read too, not a second poll. Do not background it, and do not end
-your turn while it runs: a turn that ends waiting is over, and the delivery strands there.
-Measured across 11 real deliveries, waiting by ending the turn stalled 8 times out of 9 —
-several runs never produced a final report at all — while every run that polled in the
-foreground finished its whole train.
+Run `"${CLAUDE_PLUGIN_ROOT}/agents/scripts/wait-for-pr-settle.sh" <number>` as an ordinary
+**foreground** `Bash` command and let it block until the PR's checks settle. This is the fork's
+one canonical PR-settle wait — dependency-free (`gh`/`jq` only), capped at ~600s, and its single
+JSON line also carries CodeRabbit's status and `mergeable`, so this same call is Step 5's and
+Step 6's first read too, not a second poll. Do not background it, and do not end your turn while
+it runs: a turn that ends waiting is over, and the delivery strands there. Measured across 11
+real deliveries, waiting by ending the turn stalled 8 times out of 9 — several runs never
+produced a final report at all — while every run that polled in the foreground finished its
+whole train.
 
 - Set the Bash call's `timeout` to its maximum. If the script reports `checks: "timeout"`, run it
   again — repeated foreground calls are the correct way to wait longer, and cost nothing but a
@@ -375,7 +366,7 @@ the failing/outstanding workflows named per the Step 7 outcomes.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides. A PR carrying an escalated finding is BLOCKED, not merged.
 - Whether CodeRabbit reviews this repo is settled once per train, on the first PR, from the `CodeRabbit` commit status — never from comment history, which a fresh install has none of. A no-CodeRabbit repo pays one bounded wait per train, never one per PR.
 - A rate-limited CodeRabbit review never blocks a merge, and is never waited on or re-triggered. Merge on green CI once Step 6's combined-behaviour check is clean, mark the branch `merged <sha> (no CodeRabbit review — rate limited)`, and escalate the PR in the final report with a recommended follow-up `coderabbit-reviewer` dispatch.
-- Every PR-settle wait is `wait-for-pr-settle.sh` (Step 3's `PLUGIN_ROOT` lookup), run once as a foreground blocking call — never an inline `until`/`sleep` loop, and never narration between two waits on the same PR.
+- Every PR-settle wait is `${CLAUDE_PLUGIN_ROOT}/agents/scripts/wait-for-pr-settle.sh`, run once as a foreground blocking call — never an inline `until`/`sleep` loop, and never narration between two waits on the same PR.
 - Never merge a PR with an unreplied CodeRabbit inline comment. The pre-merge count in Step 7 runs before every merge, on every repo, regardless of what detection concluded.
 - Remove a worktree only when `git worktree list` shows that exact path as a non-main worktree of this repository. Never a path git does not list, never the main worktree, and never on the strength of where the directory sits.
 - Every CI wait is a foreground settle loop that blocks until the checks settle. Never end a turn while CI is outstanding — backgrounded or not, a turn that ends waiting ends the delivery. If the Bash call times out mid-wait, run it again.
