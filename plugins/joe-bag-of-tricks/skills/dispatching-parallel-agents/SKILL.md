@@ -209,14 +209,22 @@ project tracks), each one needs real delivery, not just integration back into yo
    per-batch cost (Step 1 project discovery, the once-per-train CodeRabbit decision) is paid
    fewer times, while still cutting the quadratic growth roughly in half.
 
-   Create a state file first, outside every branch's worktree — e.g.
+   Allocate a state-file path first, outside every branch's worktree — e.g.
    `"$(git rev-parse --show-toplevel)"/.joe-bag-of-tricks/trains/<label>-state.md` — since a
-   worktree is removed as soon as its branch merges and would take the file with it. Dispatch
-   batch 1 with position `first` and that path; wait for its report, confirm its rows landed in
-   the file, then dispatch batch 2 with position `middle` (or `last` if it's the final batch) and
-   the same path. Only the `last` batch's report is the train's outcome table — pass it straight
-   to the human partner rather than stitching earlier batches' reports together yourself; that
-   stitching is exactly the re-derivation the state file exists to avoid.
+   worktree is removed as soon as its branch merges and would take the file with it. Decide the
+   path only; don't touch it on disk yourself — the `first`-position shepherd owns creating it.
+   Dispatch batch 1 with position `first` and that path; wait for its report, confirm its rows
+   landed in the file, then dispatch batch 2 with position `middle` (or `last` if it's the final
+   batch) and the same path. Only the `last` batch's report is the train's outcome table — pass
+   it straight to the human partner rather than stitching earlier batches' reports together
+   yourself; that stitching is exactly the re-derivation the state file exists to avoid.
+
+   **A batch that never reports (dies, crashes, times out) is not a stuck train.** Read the
+   state file: its rows show which of that batch's branches already finished. Dispatch a fresh
+   shepherd for only the unfinished branches from that same batch, at the same batch position
+   (`first`/`middle`/`last`) the dead one held — never a new position, and never fold the
+   remainder into the next batch, which would blur where one batch's report ends and the next
+   begins.
 5. **While that shepherd is alive, it is the only one.** A branch going review-clean mid-train
    is not a reason to spin up a second shepherd, and it is not a reason to sit on the branch
    until some future train either — both race the live one on `main` or silently delay

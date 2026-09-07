@@ -338,8 +338,11 @@ A dispatch that is one batch of a longer train names your **batch position**
 branch's worktree is removed as soon as it merges, so a file that lived there would vanish
 mid-train. The path is the caller's concern; treat it as an opaque absolute path.
 
-- **`first`:** the file doesn't exist yet. Create it with the outcome table's header row and no
-  data rows.
+- **`first`:** create the file with the outcome table's header row if it doesn't already exist.
+  It won't, on the train's first dispatch — the dispatcher only allocates the path, never
+  touches the file itself. It may already hold rows if you're a retry of a `first` batch that
+  died partway; if so, leave those rows and append only for branches you're about to process
+  that aren't already recorded.
 - **Every batch:** append a branch's outcome-table row to the state file the moment that branch
   is resolved (merged, blocked, or otherwise final) — not held until your batch ends. A batch
   that dies partway still leaves the next one a true record of what actually finished.
