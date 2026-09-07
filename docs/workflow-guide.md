@@ -178,10 +178,10 @@ failed) and any escalations.
 This mirrors Joe's own `~/.claude/CLAUDE.md` "Autonomous runs" section — read that as the
 canonical statement; this is how it plays out inside these skills.
 
-Narration is terse: at most one short line between actions. Orchestrator context gets re-read
-every turn, so verbose statuses aren't free color commentary — they're a recurring tax that adds
-up over a long run (a major driver of cap exhaustion in the 2026-08 spe run). Durable state goes
-in bd, git, or memory — never conversation prose:
+Narration is silent by default: nothing between actions, not even one-line statuses.
+Orchestrator context gets re-read every turn, so statuses aren't free color commentary —
+they're a recurring tax that adds up over a long run (a major driver of cap exhaustion in the
+2026-08 spe run). Durable state goes in bd, git, or memory — never conversation prose:
 
 - **bd** is the durable record — task status, fix-round notes, close reasons, and anything
   worth remembering across a compaction (`bd remember`). Conversation memory does not survive
