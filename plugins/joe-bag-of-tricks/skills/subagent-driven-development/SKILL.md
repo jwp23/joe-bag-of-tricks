@@ -459,16 +459,19 @@ needed.
   call. Use the BASE you recorded before dispatching the implementer —
   never `HEAD~1`, which silently truncates multi-commit tasks. Never
   dispatch a task reviewer without a diff file.
-- **Reviewer inputs:** the task reviewer gets three paths — the same brief
-  file, the report file, and the review package — plus the global
-  constraints that bind the task.
+- **Reviewer inputs:** the task reviewer gets four paths — the same brief
+  file, the report file, the review package, and the review-file path it
+  writes its own report to — plus the global constraints that bind the
+  task.
 - **Reviewer return contract:** the reviewer writes its FULL report to a
   file (brief `…-brief.md` → review `…-review.md`) and returns only the two
-  verdicts plus Critical/Important findings as one-liners (≤15 lines).
-  Reviewer prose returned inline is permanently resident in the controller's
-  context and re-read every turn after — across a multi-task epic that is
-  thousands of tokens of pure bloat. The findings list must still be
-  complete enough to run the fix loop without opening the file.
+  verdicts plus Critical/Important findings as one-liners (≤15 lines) —
+  the template's Return Contract section spells out exactly what stays out
+  (Strengths, Minor findings, the Assessment reasoning). Reviewer prose
+  returned inline is permanently resident in the controller's context and
+  re-read every turn after — across a multi-task epic that is thousands of
+  tokens of pure bloat. The findings list must still be complete enough to
+  run the fix loop without opening the file.
 - The global-constraints block you hand the reviewer is its attention
   lens. Copy the binding requirements verbatim from the epic's Global
   Constraints (`bd show <epic-id>` — the design field set during
@@ -574,11 +577,14 @@ whole suite.
 **The re-review is scoped.** Run `scripts/review-package FIX_BASE HEAD`
 where FIX_BASE is the head the previous review saw, and dispatch
 [re-review-prompt.md](re-review-prompt.md) with the findings list, the
-brief, the report file, and the printed diff path. The re-reviewer verdicts
-each finding ADDRESSED or NOT ADDRESSED and flags new breakage in the fix
-diff only. New Critical/Important breakage in the fix diff joins the open
-findings list. Out-of-scope observations go to the task bead as deferred
-minors — they never extend the loop.
+brief, the report file, the printed diff path, and the original review-file
+path (the re-reviewer appends its round to that same file). The re-reviewer
+verdicts each finding ADDRESSED or NOT ADDRESSED and flags new breakage in
+the fix diff only, returning only those one-liners plus the round verdict
+and the review file path (its template's Return Contract section). New
+Critical/Important breakage in the fix diff joins the open findings list.
+Out-of-scope observations go to the task bead as deferred minors — they
+never extend the loop.
 
 **After each round,** append to the task bead:
 `bd note <task-id> "Fix round <R>/5: <X> addressed, <Y> open — <finding one-liners>; commits <a7>..<b7>"`
@@ -755,9 +761,9 @@ Implementer: [Later]
   - Wrote full report to .../task-bd-abc-report.md; returned a <15-line status summary
 
 [Run scripts/review-package BASE HEAD; dispatch task reviewer (model: sonnet)
- with the brief, report, and diff-package paths]
-Task reviewer: Spec ✅ - all requirements met, nothing extra.
-  Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
+ with the brief, report, diff-package, and review-file paths]
+Task reviewer: Spec ✅. Task quality: Approved. No Critical/Important findings.
+  Full report: .../task-bd-abc-review.md
 
 [bd close bd-abc --reason "commits abc123f..def456a, review clean"]
 
