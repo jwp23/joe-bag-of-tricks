@@ -1,8 +1,8 @@
 # Example Workflow
 
 Illustrative walkthrough of two tasks under an epic, dispatch-by-dispatch. Referenced
-from SKILL.md's Task Loop; content moved here verbatim during the s31
-progressive-disclosure pass.
+from SKILL.md's Example Workflow section — kept as a separate file so SKILL.md itself
+stays free of the worked-example prose.
 
 ```
 You: I'm using Subagent-Driven Development to execute this plan.

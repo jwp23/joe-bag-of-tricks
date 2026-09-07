@@ -176,7 +176,9 @@ Write your full report to the report file the dispatch prompt gave you:
   range and the one-line test summary, e.g. `commits a1b2c3d..e4f5a6b, 14/14 passing, output
   pristine`. The controller owns bd; you write text it can copy, not a bd command it runs.
 - What you implemented (or what you attempted, if blocked)
-- What you tested and test results
+- What you tested and test results, with the exact command(s) run — a
+  pass/fail summary alone ("14/14 passing") is not evidence; the command is
+  what lets the controller tell "all green" from "0 tests in 0 suites ran"
 - **What you could not verify:** anything you couldn't confirm — no network access to a runner,
   no credentials, an environment gap, an untestable code path — and why, so "tested" is never
   read as "fully verified" when it wasn't

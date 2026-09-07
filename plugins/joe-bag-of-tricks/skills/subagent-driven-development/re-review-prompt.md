@@ -35,7 +35,8 @@ Subagent (general-purpose):
     **Head:** [HEAD_SHA]
     **Diff file:** [DIFF_FILE]
     **Append your full findings to:** [REVIEW_FILE] (the review file from
-    the previous round)
+    the previous round) — read the existing file first; append your
+    findings below the prior round's content, never overwrite it
 
     Read the diff file once — it contains the fix commits, a stat summary,
     and the fix diff with surrounding context. Do not re-run git commands.

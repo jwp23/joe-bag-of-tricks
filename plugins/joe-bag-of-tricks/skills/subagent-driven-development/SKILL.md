@@ -498,7 +498,18 @@ needed.
   you are not editing that template, state explicitly in the dispatch that
   this permission supersedes that line for this task only, scoped to the
   trivial fix just described, so the reviewer isn't left holding two
-  contradictory instructions. See
+  contradictory instructions. Never grant this permission on a task you are
+  overlapping with its successor (see Overlap above): overlap already puts
+  N+1's implementer writing in the worktree while N's review is open, and
+  the grant would make N's reviewer a second writer at the same time — if
+  N is overlapped, N's reviewer stays strictly read-only for this round,
+  and any trivial finding it turns up goes through the normal fix loop
+  instead. Because the terse Return Contract in task-reviewer-prompt.md
+  enumerates the final message exhaustively and has no room for a
+  self-fixed item, also tell the reviewer in the dispatch to name the
+  self-fixed item as a one-liner in its terse return, not only under the
+  "Self-Fixed (Trivial)" heading in the review file — otherwise the extra
+  commit and the item both go unseen by you until you open the file. See
   docs/decisions/reviewer-applies-trivial-fixes-mechanical-tier.md.
 
 The task reviewer may report "⚠️ Cannot verify from diff" items — requirements
