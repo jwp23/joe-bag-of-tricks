@@ -497,7 +497,12 @@ needed.
   Scope it to wording and doc-accuracy only: anything touching logic, tests,
   or structure is still a finding for the normal fix loop, even on this
   tier. Standard and complex tasks keep the reviewer strictly read-only —
-  this exception never extends past mechanical. See
+  this exception never extends past mechanical. The shared reviewer
+  templates still say "read-only... do not mutate... in any way" — since
+  you are not editing that template, state explicitly in the dispatch that
+  this permission supersedes that line for this task only, scoped to the
+  trivial fix just described, so the reviewer isn't left holding two
+  contradictory instructions. See
   docs/decisions/reviewer-applies-trivial-fixes-mechanical-tier.md.
 
 The task reviewer may report "⚠️ Cannot verify from diff" items — requirements
