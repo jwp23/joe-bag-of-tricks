@@ -177,10 +177,8 @@ project tracks), each one needs real delivery, not just integration back into yo
    touch the same files or tests — into a single family sharing one branch; keep truly
    independent items on separate branches. Use using-git-worktrees for each. Give each item's
    implementer dispatch the report contract from /joe-bag-of-tricks:implementer-contract's
-   Report Format — exact commands run per gate, TDD evidence, files changed, self-review,
-   discovered work — rather than improvising a RETURN block per brief. One shared contract
-   compares across a batch; a fresh one per brief does not, and a pass/fail summary in place of
-   exact commands is exactly the gap that hid a failing test runner behind "all green."
+   Report Format rather than improvising a RETURN block per brief. One shared contract compares
+   across a batch; a fresh one per brief does not.
 2. **Work each branch to review-clean before moving to delivery.** Apply the same per-branch
    review discipline as a single task: a task review (spec compliance + code quality) with a
    fix loop, exactly as subagent-driven-development's Task Loop runs it — don't skip the loop
