@@ -177,13 +177,22 @@ Write your full report to the report file the dispatch prompt gave you:
   pristine`. The controller owns bd; you write text it can copy, not a bd command it runs.
 - What you implemented (or what you attempted, if blocked)
 - What you tested and test results
+- **What you could not verify:** anything you couldn't confirm — no network access to a runner,
+  no credentials, an environment gap, an untestable code path — and why, so "tested" is never
+  read as "fully verified" when it wasn't
 - **TDD Evidence** (if TDD was required for this task):
   - RED: command run, relevant failing output before implementation, and why the failure was
     expected
   - GREEN: command run and relevant passing output after implementation
 - Files changed
 - Self-review findings (if any)
+- **Whether the task's stated premise held:** if the brief's description of the problem turned
+  out to be wrong, already fixed, or pointed at the wrong file or line, say so explicitly rather
+  than silently working around it
 - Any issues or concerns
+- **Fixed beyond what was asked:** anything you fixed that the task didn't request, with why —
+  the near-opposite of Discovered work below, which is scoped to things you found but
+  deliberately did NOT fix
 - **Discovered work** (if any): bugs, missing features, or tech debt found outside your task's
   scope, with enough context for the controller to track it (title, description, suggested
   priority). Mark each item either "checked: this is the only site" (say what you grepped or
