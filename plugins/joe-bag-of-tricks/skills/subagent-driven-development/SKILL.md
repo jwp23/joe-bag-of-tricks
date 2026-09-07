@@ -579,12 +579,12 @@ where FIX_BASE is the head the previous review saw, and dispatch
 [re-review-prompt.md](re-review-prompt.md) with the findings list, the
 brief, the report file, the printed diff path, and the original review-file
 path (the re-reviewer appends its round to that same file). The re-reviewer
-verdicts each finding ADDRESSED or NOT ADDRESSED and flags new breakage in
-the fix diff only, returning only those one-liners plus the round verdict
-and the review file path (its template's Return Contract section). New
-Critical/Important breakage in the fix diff joins the open findings list.
-Out-of-scope observations go to the task bead as deferred minors — they
-never extend the loop.
+verdicts each finding ADDRESSED or NOT ADDRESSED, flags new breakage in the
+fix diff only, and notes out-of-scope observations — returning only those
+three sets of one-liners plus the round verdict and the review file path
+(its template's Return Contract section). New Critical/Important breakage
+in the fix diff joins the open findings list. Out-of-scope observations go
+to the task bead as deferred minors — they never extend the loop.
 
 **After each round,** append to the task bead:
 `bd note <task-id> "Fix round <R>/5: <X> addressed, <Y> open — <finding one-liners>; commits <a7>..<b7>"`
@@ -773,19 +773,22 @@ Task 2 (bd-def): Recovery modes
 [bd update bd-def --claim; task-brief; dispatch joe-bag-of-tricks:implementer]
 Implementer: reports DONE, discovered work: "Found edge case in error path"
 [bd create --title="Edge case in error path" ... --deps discovered-from:bd-def]
-[Run review-package BASE HEAD; dispatch task reviewer (model: sonnet)]
+[Run review-package BASE HEAD; dispatch task reviewer (model: sonnet)
+ with the brief, report, diff-package, and review-file paths]
 Task reviewer: Spec ❌:
   - Missing: Progress reporting (spec says "report every 100 items")
   Issues (Important): Magic number (100)
+  Full report: .../task-bd-def-review.md
 
 [Fix round 1: resume the implementer with both findings]
 Implementer: Added progress reporting, extracted PROGRESS_INTERVAL constant.
   Re-ran test/recovery.test.js — 10/10 passing. Fix report appended.
 
-[Run review-package FIX_BASE HEAD; dispatch scoped re-review (model: haiku)]
+[Run review-package FIX_BASE HEAD; dispatch scoped re-review (model: haiku)
+ appending to .../task-bd-def-review.md]
 Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
   Magic number — ADDRESSED (src/recovery.js:7). New breakage: none.
-  Verdict: all findings addressed.
+  Verdict: all findings addressed. Full report: .../task-bd-def-review.md
 
 [bd note bd-def "Fix round 1/5: 2 addressed, 0 open; commits d4e5f6a..b7c8d9e"]
 [bd close bd-def --reason "commits ghi789b..jkl012c, review clean"]
