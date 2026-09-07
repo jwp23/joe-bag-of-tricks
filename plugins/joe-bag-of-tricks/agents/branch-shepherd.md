@@ -10,6 +10,11 @@ You deliver review-clean feature branches to main, end to end, without checking 
 
 You will be given a list of branches, each with a worktree path and an optional existing PR number, in planned merge order. Push the whole train and open every PR first (Step 2); from Step 3 on, process branches **sequentially, in order** — finish one branch's full delivery tail before starting the next. Only the pushes are front-loaded; merging stays strictly serial.
 
+If the train is longer than 6 branches, the dispatcher splits it into sequential batches of at
+most 6 and gives you a batch position and a state-file path instead of the whole train at once —
+see "Batched trains" below. Absent those, everything above and below is the whole train,
+unchanged.
+
 ## Steps (Step 2 runs once for the whole train; the rest repeat per branch)
 
 ### 1. Discover project context
@@ -326,6 +331,28 @@ the branch too and carry the reason in the report.
 
 Before starting the next branch, re-check its `mergeable` state (Step 6) — the merge you just completed may have made it `CONFLICTING`. Handle that first if so, then resume at whichever step is next for it.
 
+## Batched trains
+
+A dispatch that is one batch of a longer train names your **batch position**
+(`first` / `middle` / `last`) and a **state-file path** outside every branch's worktree — a
+branch's worktree is removed as soon as it merges, so a file that lived there would vanish
+mid-train. The path is the caller's concern; treat it as an opaque absolute path.
+
+- **`first`:** create the file with the outcome table's header row if it doesn't already exist.
+  It won't, on the train's first dispatch — the dispatcher only allocates the path, never
+  touches the file itself. It may already hold rows if you're a retry of a `first` batch that
+  died partway; if so, leave those rows and append only for branches you're about to process
+  that aren't already recorded.
+- **Every batch:** append a branch's outcome-table row to the state file the moment that branch
+  is resolved (merged, blocked, or otherwise final) — not held until your batch ends. A batch
+  that dies partway still leaves the next one a true record of what actually finished.
+- **`first` or `middle`:** your Report below covers only your own batch's branches, unchanged
+  from the single-batch shape. The caller reads the state file to confirm your rows landed
+  before dispatching the next batch.
+- **`last`:** your Report is the **whole train's** table — every row already in the state file
+  plus your own batch's rows — not just the branches you personally processed. This is the one
+  table the human partner sees; nothing about the other batches reaches them otherwise.
+
 ## Report — once, at the end
 
 One outcome table, ≤5 lines per branch:
@@ -372,4 +399,5 @@ the failing/outstanding workflows named per the Step 7 outcomes.
 - Every CI wait is a foreground settle loop that blocks until the checks settle. Never end a turn while CI is outstanding — backgrounded or not, a turn that ends waiting ends the delivery. If the Bash call times out mid-wait, run it again.
 - `run_in_background` is only for work whose result you will read back yourself with a later foreground command. Never use it as a wait you depend on being woken from, and never let "a background task is running" be the reason a turn ends.
 - Never report a post-merge green you did not observe. A missing, unsettled, or unenumerated run is UNKNOWN, not passing.
-- Do not modify files outside the branch's own worktree.
+- Do not modify files outside the branch's own worktree, except the batch state file named in a batched dispatch (Batched trains).
+- A batched dispatch's state file is append-only, written as each branch resolves, never batched up and written at the end. Only the `last` batch's Report covers the whole train; `first`/`middle` report their own batch only.

@@ -175,7 +175,10 @@ project tracks), each one needs real delivery, not just integration back into yo
 
 1. **One worktree/branch per independent item.** Group entangled items — ones that would
    touch the same files or tests — into a single family sharing one branch; keep truly
-   independent items on separate branches. Use using-git-worktrees for each.
+   independent items on separate branches. Use using-git-worktrees for each. Give each item's
+   implementer dispatch the report contract from /joe-bag-of-tricks:implementer-contract's
+   Report Format rather than improvising a RETURN block per brief. One shared contract compares
+   across a batch; a fresh one per brief does not.
 2. **Work each branch to review-clean before moving to delivery.** Apply the same per-branch
    review discipline as a single task: a task review (spec compliance + code quality) with a
    fix loop, exactly as subagent-driven-development's Task Loop runs it — don't skip the loop
@@ -189,10 +192,39 @@ project tracks), each one needs real delivery, not just integration back into yo
    running list (worktree path, and the PR number if one already exists). Do not dispatch
    finishing-a-development-branch per branch as you go — that serializes CI waits across the
    whole batch for no reason.
-4. **Dispatch ONE branch-shepherd with the full train** once the batch (or a convenient chunk
-   of it) is accumulated. It pushes, opens PRs, waits out CI, handles CodeRabbit, reconciles
+4. **Dispatch branch-shepherd with the accumulated train**, once the batch (or a convenient
+   chunk of it) is ready. It pushes, opens PRs, waits out CI, handles CodeRabbit, reconciles
    conflicts if main moves mid-train, squash-merges, and cleans up worktrees — sequentially,
-   across every branch in the list — and reports one outcome table.
+   across every branch in the list.
+
+   A train of 6 branches or fewer gets one dispatch, as before, and one outcome table back.
+   Longer trains cost more than they look like they should: a shepherd holds every earlier
+   branch's CI logs and CodeRabbit threads in context while working the later ones, so context
+   — and cache-read cost — grows with train length, and the wall-clock work grows with it
+   squared. Measured on an 11-branch train run as one dispatch: 348 turns and 38.1M cache-read
+   tokens, the single most expensive agent in that session. Split anything longer than 6 into
+   sequential batches of at most 6, in merge order — never parallel; batch 2 depends on main
+   already reflecting batch 1's merges, and on batch 1's state file existing. 6 halves an
+   11-branch train into 2 dispatches rather than 3 or more at a smaller cap, so the fixed
+   per-batch cost (Step 1 project discovery, the once-per-train CodeRabbit decision) is paid
+   fewer times, while still cutting the quadratic growth roughly in half.
+
+   Allocate a state-file path first, outside every branch's worktree — e.g.
+   `"$(git rev-parse --show-toplevel)"/.joe-bag-of-tricks/trains/<label>-state.md` — since a
+   worktree is removed as soon as its branch merges and would take the file with it. Decide the
+   path only; don't touch it on disk yourself — the `first`-position shepherd owns creating it.
+   Dispatch batch 1 with position `first` and that path; wait for its report, confirm its rows
+   landed in the file, then dispatch batch 2 with position `middle` (or `last` if it's the final
+   batch) and the same path. Only the `last` batch's report is the train's outcome table — pass
+   it straight to the human partner rather than stitching earlier batches' reports together
+   yourself; that stitching is exactly the re-derivation the state file exists to avoid.
+
+   **A batch that never reports (dies, crashes, times out) is not a stuck train.** Read the
+   state file: its rows show which of that batch's branches already finished. Dispatch a fresh
+   shepherd for only the unfinished branches from that same batch, at the same batch position
+   (`first`/`middle`/`last`) the dead one held — never a new position, and never fold the
+   remainder into the next batch, which would blur where one batch's report ends and the next
+   begins.
 5. **While that shepherd is alive, it is the only one.** A branch going review-clean mid-train
    is not a reason to spin up a second shepherd, and it is not a reason to sit on the branch
    until some future train either — both race the live one on `main` or silently delay

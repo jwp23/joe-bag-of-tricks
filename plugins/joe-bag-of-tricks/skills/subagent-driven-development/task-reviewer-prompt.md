@@ -34,6 +34,7 @@ Subagent (general-purpose):
     **Base:** [BASE_SHA]
     **Head:** [HEAD_SHA]
     **Diff file:** [DIFF_FILE]
+    **Write your full report to:** [REVIEW_FILE]
 
     Read the diff file once — it contains the commit list, a stat summary,
     and the full diff with surrounding context, and it is your view of the
@@ -137,10 +138,11 @@ Subagent (general-purpose):
     "yes." A tight report that cites lines gives the controller everything
     it needs.
 
-    Your final message is the report itself: begin directly with the
-    spec-compliance verdict. Every line is a verdict, a finding with
-    file:line, or a check you ran — no preamble, no process narration,
-    no closing summary.
+    Write that report — every section below, in full — to [REVIEW_FILE].
+    Your final message is not the report: see Return Contract at the end of
+    this template. Prose you return inline stays resident in the
+    controller's context for the rest of the session; prose you write to
+    the file does not.
 
     ## Calibration
 
@@ -185,6 +187,20 @@ Subagent (general-purpose):
     **Task quality:** [Approved | Needs fixes]
 
     **Reasoning:** [1-2 sentence technical assessment]
+
+    ## Return Contract
+
+    Everything above goes in [REVIEW_FILE]. Your final message is only
+    this, under 15 lines total:
+
+    - **Spec Compliance:** ✅ | ❌ | ⚠️ — name any ⚠️ items in one line each
+    - **Task quality:** Approved | Needs fixes
+    - Each Critical/Important finding as a one-liner with file:line
+      (Minor findings and Strengths stay in the file)
+    - The review file path
+
+    No Strengths, no restated finding prose, no reasoning paragraph, no
+    closing summary — that detail is already in the file you wrote.
 ```
 
 **Placeholders:**
@@ -203,6 +219,11 @@ Subagent (general-purpose):
 - `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
   package to (`scripts/review-package BASE HEAD` prints the unique path it
   wrote; the package never enters the controller's context)
+- `[REVIEW_FILE]` — REQUIRED: the path this reviewer writes its full report
+  to (brief `…-brief.md` → review `…-review.md`, per SKILL.md's Reviewer
+  return contract)
 
-**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
-(Critical/Important/Minor), Task quality verdict
+**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Task quality
+verdict, each Critical/Important finding as a one-liner, and the review
+file path — under 15 lines total. Strengths, Minor findings, and the full
+Assessment reasoning live only in the review file.

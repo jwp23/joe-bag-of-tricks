@@ -34,6 +34,9 @@ Subagent (general-purpose):
     **Fix base:** [FIX_BASE_SHA] (the head the previous review saw)
     **Head:** [HEAD_SHA]
     **Diff file:** [DIFF_FILE]
+    **Append your full findings to:** [REVIEW_FILE] (the review file from
+    the previous round) — read the existing file first; append your
+    findings below the prior round's content, never overwrite it
 
     Read the diff file once — it contains the fix commits, a stat summary,
     and the fix diff with surrounding context. Do not re-run git commands.
@@ -74,9 +77,9 @@ Subagent (general-purpose):
 
     ## Output Format
 
-    Your final message is the report itself: begin directly with the first
-    finding's verdict. Every line is a verdict, a finding with file:line,
-    or a check you ran — no preamble, no process narration.
+    Write the sections below, in full, appended to [REVIEW_FILE]. Your
+    final message is not this report: see Return Contract at the end of
+    this template.
 
     ### Finding Verdicts
 
@@ -99,6 +102,21 @@ Subagent (general-purpose):
 
     **Fix round:** [All findings addressed, no new Critical/Important
     breakage | Findings remain open] — list the open ones.
+
+    ## Return Contract
+
+    Everything above is appended to [REVIEW_FILE]. Your final message is
+    only this:
+
+    - Each finding as a one-liner: ADDRESSED | NOT ADDRESSED, with
+      file:line for anything NOT ADDRESSED
+    - New breakage one-liners with severity and file:line, or "None"
+    - Out-of-scope observations as one-liners, or "None"
+    - **Fix round:** [verdict] — list the open ones, if any
+    - The review file path
+
+    No restated finding prose, no reasoning paragraph, no preamble — that
+    detail is already in the file you appended to.
 ```
 
 **Placeholders:**
@@ -111,6 +129,9 @@ Subagent (general-purpose):
 - `[FIX_BASE_SHA]` — the head the previous review saw
 - `[HEAD_SHA]` — current commit
 - `[DIFF_FILE]` — the path `scripts/review-package FIX_BASE HEAD` printed
+- `[REVIEW_FILE]` — the review file the original task reviewer wrote (see
+  task-reviewer-prompt.md); the re-reviewer appends each round to it
 
-**Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED),
-new breakage in the fix diff, out-of-scope observations, and a round verdict.
+**Re-reviewer returns:** per-finding one-liners (ADDRESSED / NOT ADDRESSED),
+new-breakage one-liners, out-of-scope one-liners, a round verdict, and the
+review file path — full reasoning lives only in the file.

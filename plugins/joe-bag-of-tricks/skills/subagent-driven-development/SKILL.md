@@ -249,20 +249,14 @@ table:
 | Implementer (mechanical) | `joe-bag-of-tricks:implementer-mechanical` (haiku, low effort) | Clear spec, 1-2 files, plan provides code snippets. Review stage catches mistakes. |
 | Implementer (integration) | `joe-bag-of-tricks:implementer` (sonnet, medium effort) | Multi-file coordination, message passing, pattern matching. |
 | Implementer (complex) | `joe-bag-of-tricks:implementer-complex` (opus, high effort) | Design judgment, broad codebase understanding, architectural decisions. |
-| Task reviewer (spec + quality) | `model: "sonnet"` | One dispatch covers both a structured spec comparison and a judgment-heavy quality read. Escalate to `opus` for a subtle or high-risk diff (see Review tasks below) — never drop to `haiku`: it caught 0/10 planted defects in upstream's own evaluation and rationalized them away. |
+| Task reviewer (spec + quality) | `model: "sonnet"` | One dispatch covers both a structured spec comparison and a judgment-heavy quality read. Escalate to `opus` for a subtle or high-risk diff — never drop to `haiku`: it caught 0/10 planted defects in upstream's own evaluation and rationalized them away. |
 | Scoped re-reviewer | `model: "haiku"` or `"sonnet"` | Verifying a small fix diff against a fixed findings list. Match the tier to the fix diff's size and risk. |
 | Final reviewer | `model: "fable"` (top tier; if Fable is not in this session's roster, use the top tier that is) | Holistic assessment across the entire branch. |
 
-**Most implementation tasks are mechanical when the plan is well-specified.** Plans from writing-plans include code snippets, file paths, and acceptance criteria — enough context for `implementer-mechanical` to succeed.
-
-**Turn count beats token price.** Wall-clock and context cost scale with how many turns a subagent takes, and the cheapest models routinely take 2-3× the turns on multi-step work — costing more overall. Use `sonnet` as the floor for reviewers, and `implementer` as the floor for implementers working from prose descriptions. When the task's plan text contains the complete code to write, the implementation is transcription plus testing: dispatch `implementer-mechanical` for that task. Single-file mechanical fixes also take the cheapest tier.
-
-**Complexity signals for implementers:**
-- Touches 1-2 files with a complete spec → `implementer-mechanical`
-- Touches multiple files with integration concerns → `implementer`
-- Requires design judgment or broad codebase understanding → `implementer-complex`
-
-**Review tasks:** choose the model with the same judgment, scaled to the diff's size, complexity, and risk. A small mechanical diff does not need `opus`; a subtle concurrency change does — escalate the task reviewer to `opus` for those.
+Rationale for the table above (why mechanical-first, turn count vs. token price, the
+complexity signals behind each tier, review-model scaling) lives in
+[references/model-selection-rationale.md](references/model-selection-rationale.md) — the
+table itself is the operative rule.
 
 **Fix-loop escalation (rounds 4-5):** re-dispatch one step up the implementer
 ladder (`implementer-mechanical` → `implementer` → `implementer-complex`) from
@@ -272,10 +266,9 @@ the agent that got stuck. The ladder tops out at `implementer-complex`.
 
 **Always name the agent type or the model explicitly when dispatching.** An implementer dispatch names its agent type, which carries the model and effort with it. A reviewer dispatch names its model, and an omitted model inherits your session's model — often the most capable and most expensive — which silently defeats this section.
 
-**Escalation.** You cannot reliably see what you are missing. That is a property of models,
-not of tiers — an orchestrator on the top tier is as blind to its own gaps as one on a
-mid-tier model, so never escalate because a call *feels* hard. Escalate when one of these
-fires, each detectable by counting or comparing:
+**Escalation.** Never escalate because a call *feels* hard — see
+[references/model-selection-rationale.md](references/model-selection-rationale.md) for why.
+Escalate when one of these fires, each detectable by counting or comparing:
 
 | # | Fires when |
 |---|---|
@@ -459,16 +452,19 @@ needed.
   call. Use the BASE you recorded before dispatching the implementer —
   never `HEAD~1`, which silently truncates multi-commit tasks. Never
   dispatch a task reviewer without a diff file.
-- **Reviewer inputs:** the task reviewer gets three paths — the same brief
-  file, the report file, and the review package — plus the global
-  constraints that bind the task.
+- **Reviewer inputs:** the task reviewer gets four paths — the same brief
+  file, the report file, the review package, and the review-file path it
+  writes its own report to — plus the global constraints that bind the
+  task.
 - **Reviewer return contract:** the reviewer writes its FULL report to a
   file (brief `…-brief.md` → review `…-review.md`) and returns only the two
-  verdicts plus Critical/Important findings as one-liners (≤15 lines).
-  Reviewer prose returned inline is permanently resident in the controller's
-  context and re-read every turn after — across a multi-task epic that is
-  thousands of tokens of pure bloat. The findings list must still be
-  complete enough to run the fix loop without opening the file.
+  verdicts plus Critical/Important findings as one-liners (≤15 lines) —
+  the template's Return Contract section spells out exactly what stays out
+  (Strengths, Minor findings, the Assessment reasoning). Reviewer prose
+  returned inline is permanently resident in the controller's context and
+  re-read every turn after — across a multi-task epic that is thousands of
+  tokens of pure bloat. The findings list must still be complete enough to
+  run the fix loop without opening the file.
 - The global-constraints block you hand the reviewer is its attention
   lens. Copy the binding requirements verbatim from the epic's Global
   Constraints (`bd show <epic-id>` — the design field set during
@@ -489,6 +485,32 @@ needed.
   loop. If the prompt you are writing contains "do not flag," "don't treat X
   as a defect," "at most Minor," or "the plan chose" — stop: you are
   pre-judging, usually to spare yourself a review loop.
+- **Mechanical-tier exception (trivial fixes only):** when the task's
+  implementer was `implementer-mechanical`, say so in the dispatch and grant
+  the reviewer permission to fix a trivial wording, comment, or doc-accuracy
+  issue directly on the branch — commit it separately and report it under a
+  "Self-Fixed (Trivial)" heading, not as a Critical/Important/Minor finding.
+  Scope it to wording and doc-accuracy only: anything touching logic, tests,
+  or structure is still a finding for the normal fix loop, even on this
+  tier. Standard and complex tasks keep the reviewer strictly read-only —
+  this exception never extends past mechanical. The shared reviewer
+  templates still say "read-only... do not mutate... in any way" — since
+  you are not editing that template, state explicitly in the dispatch that
+  this permission supersedes that line for this task only, scoped to the
+  trivial fix just described, so the reviewer isn't left holding two
+  contradictory instructions. Never grant this permission on a task you are
+  overlapping with its successor (see Overlap above): overlap already puts
+  N+1's implementer writing in the worktree while N's review is open, and
+  the grant would make N's reviewer a second writer at the same time — if
+  N is overlapped, N's reviewer stays strictly read-only for this round,
+  and any trivial finding it turns up goes through the normal fix loop
+  instead. Because the terse Return Contract in task-reviewer-prompt.md
+  enumerates the final message exhaustively and has no room for a
+  self-fixed item, also tell the reviewer in the dispatch to name the
+  self-fixed item as a one-liner in its terse return, not only under the
+  "Self-Fixed (Trivial)" heading in the review file — otherwise the extra
+  commit and the item both go unseen by you until you open the file. See
+  docs/decisions/reviewer-applies-trivial-fixes-mechanical-tier.md.
 
 The task reviewer may report "⚠️ Cannot verify from diff" items — requirements
 that live in unchanged code or span tasks. These do not block the rest of the
@@ -504,13 +526,18 @@ Template: [task-reviewer-prompt.md](task-reviewer-prompt.md)
 The loop triggers when the review reports spec ❌, any Critical or Important
 finding, or a ⚠️ item you confirmed as a real gap.
 
-Before the loop starts, two routes leave it immediately:
+Before the loop starts, three routes leave it immediately:
 
 - Record Minor findings on the task bead as you go
   (`bd note <task-id> "Minor (deferred): <one-liner>"`), and point the final
   whole-branch review at the closed tasks under the epic (`bd show <task-id>`)
   so it can triage which must be fixed before merge. A roll-up nobody reads is
   a silent discard. Minor findings never enter the loop.
+- A mechanical-tier reviewer's self-fixed trivial item (see Review the task)
+  leaves the loop immediately too — it arrives already fixed and committed,
+  not as an open finding, so there is nothing left for a fix dispatch to do.
+  Record it on the task bead the same way as a Minor
+  (`bd note <task-id> "Self-fixed (trivial): <one-liner>"`).
 - A finding labeled plan-mandated — or any finding that conflicts with what
   the task's design requires — is yours to rule on: weigh the finding
   against the task text, decide with the spec as the binding authority (via
@@ -554,11 +581,14 @@ whole suite.
 **The re-review is scoped.** Run `scripts/review-package FIX_BASE HEAD`
 where FIX_BASE is the head the previous review saw, and dispatch
 [re-review-prompt.md](re-review-prompt.md) with the findings list, the
-brief, the report file, and the printed diff path. The re-reviewer verdicts
-each finding ADDRESSED or NOT ADDRESSED and flags new breakage in the fix
-diff only. New Critical/Important breakage in the fix diff joins the open
-findings list. Out-of-scope observations go to the task bead as deferred
-minors — they never extend the loop.
+brief, the report file, the printed diff path, and the original review-file
+path (the re-reviewer appends its round to that same file). The re-reviewer
+verdicts each finding ADDRESSED or NOT ADDRESSED, flags new breakage in the
+fix diff only, and notes out-of-scope observations — returning only those
+three sets of one-liners plus the round verdict and the review file path
+(its template's Return Contract section). New Critical/Important breakage
+in the fix diff joins the open findings list. Out-of-scope observations go
+to the task bead as deferred minors — they never extend the loop.
 
 **After each round,** append to the task bead:
 `bd note <task-id> "Fix round <R>/5: <X> addressed, <Y> open — <finding one-liners>; commits <a7>..<b7>"`
@@ -704,81 +734,8 @@ your behalf.
 
 ## Example Workflow
 
-```
-You: I'm using Subagent-Driven Development to execute this plan.
-
-[Setup: worktree verified]
-[bd children <epic-id> --pretty — 2 features, 5 tasks, Total: 8 issues across
- 3 levels; none closed, fresh start]
-[Pre-flight scan noted on the epic: "Scan: 8 issues across 3 levels — ..."]
-
---- Feature 1 (bd-feat1): Hook system ---
-
-[Load feature tasks: bd children bd-feat1 --json]
-
-Task 1 (bd-abc): Hook installation script
-  Complexity: 1-2 files, clear spec with code snippets → implementer-mechanical
-
-[bd update bd-abc --claim; record BASE]
-[Run scripts/task-brief bd-abc; prints .../task-bd-abc-brief.md]
-[Dispatch joe-bag-of-tricks:implementer-mechanical with brief path + report path + context]
-
-Implementer: "Before I begin - should the hook be installed at user or system level?"
-
-You: "User level (~/.local/share/my-app/hooks/)"
-
-Implementer: [Later]
-  - Implemented install-hook command
-  - Added tests, 5/5 passing
-  - Self-review: Found I missed --force flag, added it
-  - Committed
-  - Wrote full report to .../task-bd-abc-report.md; returned a <15-line status summary
-
-[Run scripts/review-package BASE HEAD; dispatch task reviewer (model: sonnet)
- with the brief, report, and diff-package paths]
-Task reviewer: Spec ✅ - all requirements met, nothing extra.
-  Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
-
-[bd close bd-abc --reason "commits abc123f..def456a, review clean"]
-
-Task 2 (bd-def): Recovery modes
-  Complexity: multi-file, integration with hook system → implementer
-
-[bd update bd-def --claim; task-brief; dispatch joe-bag-of-tricks:implementer]
-Implementer: reports DONE, discovered work: "Found edge case in error path"
-[bd create --title="Edge case in error path" ... --deps discovered-from:bd-def]
-[Run review-package BASE HEAD; dispatch task reviewer (model: sonnet)]
-Task reviewer: Spec ❌:
-  - Missing: Progress reporting (spec says "report every 100 items")
-  Issues (Important): Magic number (100)
-
-[Fix round 1: resume the implementer with both findings]
-Implementer: Added progress reporting, extracted PROGRESS_INTERVAL constant.
-  Re-ran test/recovery.test.js — 10/10 passing. Fix report appended.
-
-[Run review-package FIX_BASE HEAD; dispatch scoped re-review (model: haiku)]
-Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
-  Magic number — ADDRESSED (src/recovery.js:7). New breakage: none.
-  Verdict: all findings addressed.
-
-[bd note bd-def "Fix round 1/5: 2 addressed, 0 open; commits d4e5f6a..b7c8d9e"]
-[bd close bd-def --reason "commits ghi789b..jkl012c, review clean"]
-
-[bd children bd-feat1 — every row ✓; bd close bd-feat1 --reason "All tasks complete"]
-
---- Feature 2 (bd-feat2): Verification ---
-...
-[bd children <epic-id> — all 8 rows ✓; bd close <epic-id> --reason "All features complete"]
-
-[Run scripts/review-package MERGE_BASE HEAD; dispatch final code reviewer
- (model: fable; top-available-tier fallback if not in roster) with the printed path —
- requesting-code-review's code-reviewer.md]
-Final reviewer: All requirements met. Deferred minors triaged: none block merge.
-
-[Delete the SDD workspace — the record now lives in bd and git]
-
-Done! Using finishing-a-development-branch.
-```
+Dispatch-by-dispatch walkthrough of two tasks under an epic:
+[references/example-workflow.md](references/example-workflow.md).
 
 ## Integration
 
