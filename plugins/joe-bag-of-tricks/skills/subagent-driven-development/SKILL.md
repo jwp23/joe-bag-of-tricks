@@ -509,8 +509,7 @@ needed.
   self-fixed item, also tell the reviewer in the dispatch to name the
   self-fixed item as a one-liner in its terse return, not only under the
   "Self-Fixed (Trivial)" heading in the review file — otherwise the extra
-  commit and the item both go unseen by you until you open the file. See
-  docs/decisions/reviewer-applies-trivial-fixes-mechanical-tier.md.
+  commit and the item both go unseen by you until you open the file.
 
 The task reviewer may report "⚠️ Cannot verify from diff" items — requirements
 that live in unchanged code or span tasks. These do not block the rest of the

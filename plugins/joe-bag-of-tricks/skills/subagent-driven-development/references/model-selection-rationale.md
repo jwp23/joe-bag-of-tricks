@@ -17,6 +17,6 @@ section. The table and the fire-conditions themselves are the operative rules an
 
 **Escalation.** You cannot reliably see what you are missing. That is a property of models,
 not of tiers — an orchestrator on the top tier is as blind to its own gaps as one on a
-mid-tier model, so never escalate because a call *feels* hard. Escalate when one of these
-fires, each detectable by counting or comparing: (see the trigger table in SKILL.md's Model
-Selection section for the fire-conditions themselves).
+mid-tier model, so never escalate because a call *feels* hard. Escalate when one of the
+trigger table's conditions fires, each detectable by counting or comparing — see SKILL.md's
+Model Selection section for the fire-conditions themselves.
