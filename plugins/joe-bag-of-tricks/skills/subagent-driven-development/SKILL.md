@@ -11,7 +11,12 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 
 **Core principle:** Fresh subagent per task + task review (spec + quality) + broad final review = high quality, fast iteration
 
-**Narration:** between tool calls, narrate at most one short line — bd state and the tool results carry the record.
+**Narration:** print nothing between tool calls in the routine loop — bd state and the
+tool results carry the record, and every line you print stays resident in your context,
+re-read every turn for the rest of the run. The only mid-run prose worth its cost is a
+decision your human partner needs to see when it happens: a ruling, a deviation from the
+plan, or one of the four stop classes. What was done is reported once, in the end-of-run
+summary — never as a running commentary.
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are the four named below, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
@@ -353,9 +358,9 @@ short timeouts, and never sit in one silent, open-ended wait either.
 While you have local work — bd notes, packaging the next review,
 reading reports — keep working; child results arrive on their own.
 When you are genuinely idle, wait in bounded stretches (five to ten
-minutes, where your platform allows), and between stretches post one
-line of status and reconcile your live children: list them, and chase
-any that finished without reporting. A bounded stretch keeps nearly
+minutes, where your platform allows), and between stretches reconcile
+your live children: list them, and chase any that finished without
+reporting. A bounded stretch keeps nearly
 all of a long wait's efficiency while guaranteeing a stuck or lost
 child is noticed within minutes, not at the end of the session.
 

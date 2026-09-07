@@ -13,6 +13,12 @@ When you have multiple unrelated failures (different test files, different subsy
 
 **Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
 
+**Narration:** the controller's mid-run output rule is stated once, in
+/joe-bag-of-tricks:subagent-driven-development under **Narration**, and applies unchanged
+here: print nothing between actions — the only mid-run prose is a decision your human
+partner needs to see when it happens. What was done is reported once, in the end-of-run
+roll-up.
+
 ## When to Use
 
 ```dot
