@@ -489,6 +489,16 @@ needed.
   loop. If the prompt you are writing contains "do not flag," "don't treat X
   as a defect," "at most Minor," or "the plan chose" — stop: you are
   pre-judging, usually to spare yourself a review loop.
+- **Mechanical-tier exception (trivial fixes only):** when the task's
+  implementer was `implementer-mechanical`, say so in the dispatch and grant
+  the reviewer permission to fix a trivial wording, comment, or doc-accuracy
+  issue directly on the branch — commit it separately and report it under a
+  "Self-Fixed (Trivial)" heading, not as a Critical/Important/Minor finding.
+  Scope it to wording and doc-accuracy only: anything touching logic, tests,
+  or structure is still a finding for the normal fix loop, even on this
+  tier. Standard and complex tasks keep the reviewer strictly read-only —
+  this exception never extends past mechanical. See
+  docs/decisions/reviewer-applies-trivial-fixes-mechanical-tier.md.
 
 The task reviewer may report "⚠️ Cannot verify from diff" items — requirements
 that live in unchanged code or span tasks. These do not block the rest of the
@@ -504,13 +514,18 @@ Template: [task-reviewer-prompt.md](task-reviewer-prompt.md)
 The loop triggers when the review reports spec ❌, any Critical or Important
 finding, or a ⚠️ item you confirmed as a real gap.
 
-Before the loop starts, two routes leave it immediately:
+Before the loop starts, three routes leave it immediately:
 
 - Record Minor findings on the task bead as you go
   (`bd note <task-id> "Minor (deferred): <one-liner>"`), and point the final
   whole-branch review at the closed tasks under the epic (`bd show <task-id>`)
   so it can triage which must be fixed before merge. A roll-up nobody reads is
   a silent discard. Minor findings never enter the loop.
+- A mechanical-tier reviewer's self-fixed trivial item (see Review the task)
+  leaves the loop immediately too — it arrives already fixed and committed,
+  not as an open finding, so there is nothing left for a fix dispatch to do.
+  Record it on the task bead the same way as a Minor
+  (`bd note <task-id> "Self-fixed (trivial): <one-liner>"`).
 - A finding labeled plan-mandated — or any finding that conflicts with what
   the task's design requires — is yours to rule on: weigh the finding
   against the task text, decide with the spec as the binding authority (via
