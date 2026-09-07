@@ -309,11 +309,15 @@ otherwise strictly serial — implement, review, close, claim next — and on a 
 of mechanical tasks about a quarter of the wall clock is you waiting on reviews
 that come back clean. Once task N's implementer has reported DONE and you have
 dispatched N's reviewer, you may claim and dispatch task N+1 without waiting for
-that review, when BOTH hold:
+that review, when ALL of these hold:
 
 - N+1 is a mechanical dispatch — its brief carries the code it needs — and
 - N's review is expected clean: N was itself mechanical AND its implementer
-  returned plain DONE.
+  returned plain DONE, and
+- N's reviewer dispatch did not carry the mechanical-tier trivial-fix grant
+  (see Mechanical-tier exception below) — the grant makes N's reviewer a
+  writer, and overlap would put a second writer in the worktree alongside
+  N+1's implementer while N's review is still open.
 
 **Never overlap** when N went to `implementer-complex`, when N returned
 DONE_WITH_CONCERNS / BLOCKED / NEEDS_CONTEXT, or when N is already in a fix
@@ -498,13 +502,12 @@ needed.
   you are not editing that template, state explicitly in the dispatch that
   this permission supersedes that line for this task only, scoped to the
   trivial fix just described, so the reviewer isn't left holding two
-  contradictory instructions. Never grant this permission on a task you are
-  overlapping with its successor (see Overlap above): overlap already puts
-  N+1's implementer writing in the worktree while N's review is open, and
-  the grant would make N's reviewer a second writer at the same time — if
-  N is overlapped, N's reviewer stays strictly read-only for this round,
-  and any trivial finding it turns up goes through the normal fix loop
-  instead. Because the terse Return Contract in task-reviewer-prompt.md
+  contradictory instructions. Grant it here regardless of whether you've
+  decided to overlap N+1 yet — that decision may not exist at this point in
+  the run. The gate is enforced on the other side: Overlap's own third
+  precondition (above) checks this grant at the moment overlap is actually
+  decided, and blocks it outright when N's reviewer carries it. Because the
+  terse Return Contract in task-reviewer-prompt.md
   enumerates the final message exhaustively and has no room for a
   self-fixed item, also tell the reviewer in the dispatch to name the
   self-fixed item as a one-liner in its terse return, not only under the
@@ -715,7 +718,7 @@ your behalf.
 | "This finding is obviously wrong, I'll drop it" | You adjudicate only at the cap, and every ruling is a `bd note`. Silent discards are forbidden. |
 | "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. Every round ends with a scoped re-review. |
 | "Reviews slow the loop down" | The loop without reviews is just unverified churn. Reviews are the loop's brakes and steering. Overlap the wait, never the gate. |
-| "This review will be clean too, I'll overlap it" | Overlap has two conditions, both checkable: N+1 mechanical, and N mechanical with a plain DONE. Complex, DONE_WITH_CONCERNS, or mid-fix-round means wait — expecting clean is not one of the conditions. |
+| "This review will be clean too, I'll overlap it" | Overlap has three conditions, all checkable at the moment you decide: N+1 mechanical, N mechanical with a plain DONE, and N's reviewer not holding the mechanical-tier grant. Complex, DONE_WITH_CONCERNS, or mid-fix-round means wait — expecting clean is not one of the conditions. |
 | "N's review found something; I'll rebase the fix under N+1" | Never rewrite history under a live implementer. Fix commits go on top, and the scoped re-review's FIX_BASE is the HEAD just before the fix dispatch. |
 | "Overlapping is bookkeeping I can keep in my head" | It is a moving base. `bd note` it on N+1 before dispatch or don't overlap — after compaction the note is the only thing that says N+1 built on unreviewed work. |
 | "These four tasks are each their own task, so each gets its own dispatch" | Same shape, same package, no independent review surface = one dispatch. Four cold starts and four test gates buy one reviewable unit. |
