@@ -1,7 +1,7 @@
 {
   "name": "joe-magic-bootstrap",
   "description": "Interactively generates a production-ready CLAUDE.md and .claude/ structure for a project.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Joseph Presley"
   },
