@@ -135,7 +135,7 @@ apply. "I'm not sure, so I'll defer" is a rationalization — out-of-scope code 
 - Note the reason for the report
 
 **If ESCALATE** (too complex — multi-file refactor, design change, or build fails after attempt):
-- Note it for the report — the caller will re-dispatch at opus
+- Note it for the report — the caller re-dispatches it to a more capable tier
 
 ### 6. Verify all changes
 
@@ -175,7 +175,7 @@ Report exactly:
 - **Deferred**: list each with file:line, summary, why it is out of scope, and the issue ID — or `UNFILED: {reason}`
 - **Rejected**: list each with file:line, summary, and reason
 - **Escalated**: list each with file:line, summary, and why escalation is needed
-- **Status**: `DONE` (all handled), `NEEDS_ESCALATION` (some need opus-level reasoning), or `NO_REVIEW`
+- **Status**: `DONE` (all handled), `NEEDS_ESCALATION` (some need deeper reasoning than this tier applies), or `NO_REVIEW`
 
 Call out any `UNFILED` deferral prominently — that one needs the caller to file it by hand.
 

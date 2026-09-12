@@ -18,10 +18,10 @@ You will be given a PR number. Execute the steps below exactly. Do not improvise
 gh pr merge {number} --squash --body ""
 ```
 
-Never `--delete-branch`: it bundles a local branch deletion ahead of the worktree removal in
-Step 4, and git refuses to delete a branch a worktree has checked out — measured at 10 of 10
-worktree-based merges failing exactly there, each one a merged PR reported as a failed merge.
-For the same reason, read the merge result from GitHub, never from gh's exit code:
+Never `--delete-branch`: git refuses to delete a branch a worktree has checked out, so the
+bundled deletion fails after the merge has already happened and the PR is reported as a failed
+merge. Branch deletion happens in Step 5, after the worktree is removed. Read the merge result
+from GitHub, never from gh's exit code:
 
 ```bash
 gh pr view {number} --json state,mergedAt
@@ -137,8 +137,7 @@ If no worktree exists for this branch, skip silently. If removal is refused (`co
 
 ### 5. Clean up the branch
 
-With the worktree gone, the branch can be deleted — local first, then remote. This ordering is
-the reason `--delete-branch` was dropped from Step 1:
+With the worktree gone, the branch can be deleted — local first, then remote:
 
 ```bash
 git branch -D {branch}

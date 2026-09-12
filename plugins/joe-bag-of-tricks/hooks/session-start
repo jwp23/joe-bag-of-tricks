@@ -24,7 +24,7 @@ escape_for_json() {
 }
 
 using_skills_escaped=$(escape_for_json "$using_skills_content")
-session_context="<EXTREMELY_IMPORTANT>\nBelow is the full content of your 'joe-bag-of-tricks:using-skills' skill — your introduction to using skills. For all other skills, use the 'Skill' tool:\n\n${using_skills_escaped}\n</EXTREMELY_IMPORTANT>"
+session_context="<using-skills>\nBelow is the full content of your 'joe-bag-of-tricks:using-skills' skill — your introduction to using skills. For all other skills, use the 'Skill' tool:\n\n${using_skills_escaped}\n</using-skills>"
 
 # Claude Code reads hookSpecificOutput.additionalContext.
 # printf (not heredoc) avoids the bash 5.3+ heredoc hang (see obra/superpowers#571).
