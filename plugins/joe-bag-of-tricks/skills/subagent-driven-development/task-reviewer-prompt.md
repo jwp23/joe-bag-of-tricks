@@ -157,8 +157,8 @@ Subagent (general-purpose):
     block), that IS a finding — report it as Important, labeled
     plan-mandated. The plan's authorship does not grade its own work; the
     human decides.
-    Acknowledge what was done well before listing issues — accurate praise
-    helps the implementer trust the rest of the feedback.
+    Note what was done well only where it changes a verdict — for example a
+    deliberate simplification that a Minor finding would otherwise undo.
 
     ## Output Format
 

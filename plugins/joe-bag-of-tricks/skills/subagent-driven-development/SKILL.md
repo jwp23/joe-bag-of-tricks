@@ -388,8 +388,7 @@ diffs need it.
   concerns.
 - A dispatch prompt describes one task, not the session's history. Do not
   paste accumulated prior-task summaries ("state after Tasks 1-3") into
-  later dispatches — a real session's dispatch hit 42k chars of which 99%
-  was pasted history. A fresh subagent needs its task, the interfaces it
+  later dispatches. A fresh subagent needs its task, the interfaces it
   touches, and the global constraints. Nothing else.
 - The dispatch carries the no-subagents contract (it is in the
   implementer template): the implementer never dispatches subagents —
@@ -565,9 +564,8 @@ findings — the report file is the persistent memory either way.
 **Never dispatch a fork for a fix round.** A fork inherits the controller's
 entire session context and runs on the controller's model — the most
 expensive possible dispatch for what is usually the smallest diff of the
-task. A real session paid ~250k tokens forking a 2-line fix that a resumed
-implementer or a fresh cheap-tier dispatch would have done for ~5k. Resume
-the implementer; when that's impossible, a fresh implementer with the brief
+task, for what a resumed implementer or a fresh cheap-tier dispatch does at a
+small fraction of the cost. Resume the implementer; when that's impossible, a fresh implementer with the brief
 and report paths is the fallback — never a fork.
 
 **Rounds 4-5 — dispatch a fresh implementer one step up the agent ladder** (per
@@ -736,7 +734,7 @@ your behalf.
 | "This decision feels hard, I should handle it carefully myself" | Feeling hard IS the trigger signal you can't trust. Check the structural triggers; if one fires, dispatch an adjudicator. |
 | "The implementer spawned its own reviewer — free extra assurance" | It's a duplicate seat reviewing the same diff; the task review is the gate. A worker-spawned reviewer is a defect to flag, not rigor. |
 | "This needs a human — I'll park the run and wait" | Only the four stop classes stop you. Everything else is a ruling: decide, bd note it, keep going. The roll-up at Finish is where it reaches them. |
-| "I'll summarize the report in my own words for the bd note" | The report already has paste-ready bd note text. Re-narrating it is the 121KB-of-typed-notes failure mode. Paste it. |
+| "I'll summarize the report in my own words for the bd note" | The report already has paste-ready bd note text. Re-narrating it costs your context every turn for the rest of the run. Paste it. |
 | "I forgot the ID, let me `bd list \| grep` for it" | `bd create` printed it. A bead you created this session is a scroll-back, not a search. |
 
 ## Example Workflow

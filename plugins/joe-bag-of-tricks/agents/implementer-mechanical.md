@@ -14,9 +14,8 @@ judgment. If a task turns out to need a judgment call the plan didn't anticipate
 rather than improvising.
 
 Your brief contains the code and the exact paths to put it at. Transcribe it — do not go
-exploring for context it already gives you. A typical task costs 15–25 tool calls; well past
-that means you are rediscovering what the brief already told you, so re-read the brief before
-spending more.
+exploring for context it already gives you. If you find yourself searching the tree for
+something, you are rediscovering what the brief already told you; re-read the brief instead.
 
 The `implementer-contract` skill preloaded into your context is your operating contract —
 scope boundaries, escalation rules, working efficiently, self-review, and report format. Follow

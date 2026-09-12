@@ -51,10 +51,7 @@ Run `"${CLAUDE_PLUGIN_ROOT}/agents/scripts/wait-for-pr-settle.sh" <number>` as a
 one canonical PR-settle wait — dependency-free (`gh`/`jq` only), capped at ~600s, and its single
 JSON line also carries CodeRabbit's status and `mergeable`, so this same call is Step 5's and
 Step 6's first read too, not a second poll. Do not background it, and do not end your turn while
-it runs: a turn that ends waiting is over, and the delivery strands there. Measured across 11
-real deliveries, waiting by ending the turn stalled 8 times out of 9 — several runs never
-produced a final report at all — while every run that polled in the foreground finished its
-whole train.
+it runs: a turn that ends waiting is over, and the delivery strands there with no final report.
 
 - Set the Bash call's `timeout` to its maximum. If the script reports `checks: "timeout"`, run it
   again — repeated foreground calls are the correct way to wait longer, and cost nothing but a
@@ -63,8 +60,7 @@ whole train.
 - `checks: "none"` is a different failure from a slow check: read `mergeable` from the same
   output before waiting longer — a `CONFLICTING` PR has no merge ref, and without one GitHub
   cannot fire `pull_request` workflows at all. No amount of waiting produces a run, and
-  close/reopen or an empty commit do nothing either (both measured useless; one PR lost 18
-  minutes to exactly this wait). Reconcile per Step 6 and re-wait. Only conclude "no checks are
+  close/reopen or an empty commit do nothing either. Reconcile per Step 6 and re-wait. Only conclude "no checks are
   configured" once `mergeable` is clean.
 - The settled result must come from the script having exited. A one-off `gh pr checks` probe, a
   scheduled wakeup, or a bare `sleep` is not a wait; never report a status you read before it
@@ -105,8 +101,8 @@ gh api "repos/{owner}/{repo}/commits/{sha}/statuses" \
 **The status's `state` alone is not the verdict — its `description` is.** A rate-limited decline
 also reports `state=success`, distinguished only by a description of "Review rate limited"; only
 "Review completed" is an actual review, and even that gets corroborated against a real CodeRabbit
-PR comment before it's trusted; `.state`/`.created_at` alone is exactly the reading that merged
-five unreviewed PRs past a rate-limited decline that looked clean. Step 3's `wait-for-pr-settle.sh`
+PR comment before it's trusted; `.state`/`.created_at` alone reads a rate-limited decline as a
+clean review. Step 3's `wait-for-pr-settle.sh`
 already applies this reading into its `coderabbit` field (`success` / `pending` / `rate_limited` /
 `absent`) — reuse that call's output here rather than querying the status a second time; only
 re-run it (or the raw command above, description included) when you need a fresher read after a
@@ -233,10 +229,10 @@ finding(s)**, left open for the caller — never merged past it.
 gh pr merge <number> --squash --body ""
 ```
 
-Never `--delete-branch`: it bundles a local branch deletion ahead of the worktree removal below,
-and git refuses to delete a branch a worktree has checked out — measured at 10 of 10
-worktree-based merges failing exactly there, each one a merged PR reported as a failed merge.
-For the same reason, read the merge result from GitHub, never from gh's exit code:
+Never `--delete-branch`: git refuses to delete a branch a worktree has checked out, so the
+bundled deletion fails after the merge has already happened and the PR is reported as a failed
+merge. Branch deletion follows worktree removal below. Read the merge result from GitHub, never
+from gh's exit code:
 
 ```bash
 gh pr view <number> --json state,mergedAt
@@ -316,8 +312,7 @@ Both conditions are load-bearing: git must list the path as a worktree **of this
 
 If removal is refused (`contains modified or untracked files`), the worktree holds work that exists nowhere else. Never `--force` on your own initiative: leave it in place and carry it into the report so the caller can decide.
 
-With the worktree gone, the branch can be deleted — local first, then remote. This ordering is
-the reason `--delete-branch` was dropped from the merge:
+With the worktree gone, the branch can be deleted — local first, then remote:
 
 ```bash
 git branch -D <branch>
