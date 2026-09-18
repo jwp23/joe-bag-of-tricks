@@ -140,7 +140,8 @@ claim until you have checked it against the code, and a brief telling you to use
 verbatim does not waive this. If checking finds it false, ship it with an inline qualifier in
 that same comment, docstring, or commit message, or don't ship it and report NEEDS_CONTEXT
 instead — flagging the mismatch only in your report while the artifact itself states the claim
-unqualified is still shipping a false claim.
+unqualified is still shipping a false claim. What you could not check at all is labelled as
+inferred, in that same place.
 
 ## Before Reporting Back: Self-Review
 
