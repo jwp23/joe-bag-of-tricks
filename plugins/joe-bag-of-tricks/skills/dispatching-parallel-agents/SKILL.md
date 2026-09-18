@@ -267,6 +267,21 @@ the backlog by several tickets that were really one.
 File overlap (step 1) is orthogonal: concept scoping decides WHAT is in a batch; file overlap
 decides WHICH batches can run concurrently.
 
+### Bugs go to `debugger`
+
+Three dispatches in this skill go to `joe-bag-of-tricks:debugger` — opus, with the root-cause
+debugging procedure preloaded — rather than to an implementer tier or `general-purpose`:
+
+- **A batch item whose ticket is a bug.** Its stated cause is a hypothesis, and a cheap tier
+  implements the stated cause.
+- **A failure wave.** When the independent domains are failures to diagnose — failing test
+  files, broken subsystems — each domain's agent is a `debugger`.
+- **A branch the shepherd reports `BLOCKED: CI failure, reproduces locally`.** Dispatch
+  `debugger` with the shepherd's diagnosis and the worktree path, then dispatch a shepherd for
+  that branch at the batch position it held. `BLOCKED: CI failure, does not reproduce locally`
+  names a difference between CI and this machine instead; that one goes to your human partner —
+  a stronger model meets the same wall.
+
 ### Choosing between this and subagent-driven-development
 
 The deciding axis is dependency structure, not task count:
@@ -319,5 +334,7 @@ during delivery.
 **Dispatches:**
 - **branch-shepherd** agent (sonnet) - Delivers the accumulated train of review-clean
   branches unattended (Delivering Parallel Work)
+- **debugger** agent (opus) - Bug items, failure-wave domains, and a shepherd BLOCKED whose CI
+  failure reproduces locally (Bugs go to `debugger`)
 - **adjudicator** agent (fable) - One-shot ruling when an escalation trigger fires
   (Escalating a hard call)
