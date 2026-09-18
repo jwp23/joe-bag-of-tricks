@@ -75,7 +75,7 @@ shepherd holds no Agent tool and preloads no skill.
 ```
 bug bead ──────────────────────────────► debugger ──► report ──► task review (unchanged)
 feature bead ──► implementer tier ──► report ──► task review ──► fix loop (unchanged)
-                  └ mechanical, unexpected failure ─► BLOCKED ─► controller ─► debugger
+                      └ any-tier, unexpected failure ─► BLOCKED ─► controller ─► debugger
 review-clean branches ──► shepherd ──► merged
                            └ stop condition ─► BLOCKED + diagnosis ─► orchestrator
                                                  ├ reproduces locally ─► debugger ─► shepherd again
