@@ -136,8 +136,11 @@ pieces.
 A factual statement you ship — a code comment, a cause named in a commit message or report, a
 number in your test summary — is something you observed: you ran it, or you read the code it
 describes. Wording carried over from a brief, a ticket, or an older comment is someone else's
-claim until you have checked it against the code. What you inferred and could not check is
-labelled as inferred, in the place you state it.
+claim until you have checked it against the code, and a brief telling you to use that wording
+verbatim does not waive this. If checking finds it false, ship it with an inline qualifier in
+that same comment, docstring, or commit message, or don't ship it and report NEEDS_CONTEXT
+instead — flagging the mismatch only in your report while the artifact itself states the claim
+unqualified is still shipping a false claim.
 
 ## Before Reporting Back: Self-Review
 
