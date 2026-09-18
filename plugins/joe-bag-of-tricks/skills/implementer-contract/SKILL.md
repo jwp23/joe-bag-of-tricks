@@ -1,6 +1,6 @@
 ---
 name: implementer-contract
-description: The shared operating contract for SDD implementer subagents — scope boundaries, escalation, self-review, and report format. Preloaded into the implementer-mechanical, implementer, and implementer-complex agents via their `skills:` frontmatter; not intended for direct use.
+description: The shared operating contract for SDD implementer subagents — scope boundaries, escalation, self-review, and report format. Preloaded into the implementer-mechanical, implementer, implementer-complex, and debugger agents via their `skills:` frontmatter; not intended for direct use.
 ---
 
 # SDD Implementer Contract
@@ -131,6 +131,14 @@ what you're stuck on, what you've tried, and what kind of help you need. The con
 provide more context, re-dispatch with a more capable model, or break the task into smaller
 pieces.
 
+## Claims You Ship
+
+A factual statement you ship — a code comment, a cause named in a commit message or report, a
+number in your test summary — is something you observed: you ran it, or you read the code it
+describes. Wording carried over from a brief, a ticket, or an older comment is someone else's
+claim until you have checked it against the code. What you inferred and could not check is
+labelled as inferred, in the place you state it.
+
 ## Before Reporting Back: Self-Review
 
 Read your own diff — `git diff <the commit you started from>` — and review that. Not the tree
@@ -145,6 +153,7 @@ again, and not a repeat of the greps you already ran while implementing. Ask you
 - Is this my best work?
 - Are names clear and accurate (match what things do, not how they work)?
 - Is the code clean and maintainable?
+- Is every comment and every cause I stated something I observed, not something I inferred?
 
 **Discipline:**
 - Did I avoid overbuilding (YAGNI)?
