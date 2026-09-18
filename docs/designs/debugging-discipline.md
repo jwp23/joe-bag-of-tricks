@@ -37,7 +37,7 @@ It dispatches nothing and owns no tracker writes, like every implementer.
 | SDD task whose bead is `-t bug` | `subagent-driven-development` controller | Dispatch `debugger`. Never `implementer-mechanical`. |
 | Parallel batch item whose bead is `-t bug` | `dispatching-parallel-agents` orchestrator | Dispatch `debugger`. |
 | Parallel wave whose domains are failures to diagnose | `dispatching-parallel-agents` orchestrator | Dispatch `debugger` per domain, not `general-purpose`. |
-| `implementer-mechanical` reports BLOCKED / NEEDS_CONTEXT on a failure it did not expect | SDD controller | A wrong brief is fixed and re-dispatched as today; an undiagnosed failure goes to `debugger`. |
+| An implementer (any tier) reports BLOCKED / NEEDS_CONTEXT on a failure it could not explain | SDD controller | A wrong brief is fixed and re-dispatched as today; an undiagnosed failure goes to `debugger`. |
 | Shepherd reports a branch BLOCKED on a failure that reproduces locally | the orchestrator that dispatched the shepherd | Dispatch `debugger` against that worktree, then re-dispatch the shepherd for the branch. |
 | Shepherd reports a branch BLOCKED on a failure that does not reproduce locally | the orchestrator | Surfaces to the human partner with the named environment delta. No dispatch. |
 
