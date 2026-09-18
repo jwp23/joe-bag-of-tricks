@@ -59,6 +59,7 @@ Four plugins.
 | `implementer` | sonnet | medium | Implements a single SDD task — the default tier for ordinary multi-file integration work |
 | `implementer-complex` | opus | high | Implements an SDD task that needs design judgment or broad context; also the fix-loop escalation target |
 | `adjudicator` | fable | high | Rules on one escalated question from an orchestrator — contradictory reports, a governing-decision conflict, an exhausted fix loop, a Critical finding — and edits nothing |
+| `debugger` | opus | high | Diagnoses and fixes a bug or failing gate by root cause — bug tasks, failure-wave domains, delivery failures handed back by an orchestrator — with `systematic-debugging` preloaded. |
 
 `joe-magic-bootstrap` — interactively generates a project's CLAUDE.md + `.claude/` structure (one skill, `project`).
 

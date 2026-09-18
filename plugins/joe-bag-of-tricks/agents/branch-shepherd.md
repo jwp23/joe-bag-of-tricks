@@ -75,12 +75,29 @@ Read the settled checks result from the script's `checks` field; fall back to
 
 If any check failed, up to **3 attempts** for this branch:
 
-1. Investigate the root cause from the failing check's logs — never patch a symptom.
+1. Investigate the root cause from the failing check's logs, and reproduce the failure locally
+   before editing — never patch a symptom.
 2. Fix locally, run the project suite.
 3. Commit through the pre-commit hook (never `--no-verify`), push.
 4. Re-wait per Step 3.
 
-If still failing after 3 attempts, mark this branch **BLOCKED** with the root cause found so far, and move on to the next branch in the train.
+Two findings end the loop for this branch at once, whatever attempts remain:
+
+- **The failure does not reproduce locally.** The cause is then a difference between CI and
+  this machine — runner image, toolchain version, OS — and an edit made here is a guess at it.
+  Compare what the CI log prints about its environment with your own and name the difference.
+- **A fix relocated the failure.** The check still fails, at a different test, line, or message
+  than before. One symptom per push is not convergence; the cause sits upstream of everything
+  patched so far.
+
+Either way mark the branch **BLOCKED** and move on to the next branch in the train:
+`BLOCKED: CI failure, reproduces locally: <diagnosis>` or
+`BLOCKED: CI failure, does not reproduce locally: <CI value> vs <local value>`. The caller
+routes the first to a debugging agent and the second to your human partner, so the reason says
+which.
+
+If still failing after 3 attempts, mark this branch **BLOCKED** with the same reason form and
+the root cause found so far, and move on.
 
 ### 5. CodeRabbit review
 
@@ -384,7 +401,7 @@ the failing/outstanding workflows named per the Step 7 outcomes.
 - The whole train is pushed and its PRs opened before any branch's CI wait (Step 2). Merges stay strictly serial, in the given order.
 - Never merge with `--delete-branch`, and never read merge success from gh's exit code — `gh pr view --json state,mergedAt` is the verdict. Branch deletion, local then remote, follows worktree removal.
 - A clean merge is evidence about text, not about behaviour. The Step 6 combined-behaviour checks run before every merge that follows another in the train, and a violation they find is fixed or BLOCKED — never merged and mentioned.
-- Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train.
+- Bound CI fix attempts at 3 per branch; beyond that, report BLOCKED and continue the train. A failure that does not reproduce locally, or a fix that relocated the failure, ends the loop before the bound — and the BLOCKED reason says whether the failure reproduces locally.
 - Escalate design-level CodeRabbit suggestions rather than guessing — the caller decides. A PR carrying an escalated finding is BLOCKED, not merged.
 - Whether CodeRabbit reviews this repo is settled once per train, on the first PR, from the `CodeRabbit` commit status — never from comment history, which a fresh install has none of. A no-CodeRabbit repo pays one bounded wait per train, never one per PR.
 - A rate-limited CodeRabbit review never blocks a merge, and is never waited on or re-triggered. Merge on green CI once Step 6's combined-behaviour check is clean, mark the branch `merged <sha> (no CodeRabbit review — rate limited)`, and escalate the PR in the final report with a recommended follow-up `coderabbit-reviewer` dispatch.

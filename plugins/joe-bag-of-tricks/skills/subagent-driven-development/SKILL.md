@@ -254,6 +254,7 @@ table:
 | Implementer (mechanical) | `joe-bag-of-tricks:implementer-mechanical` (haiku, low effort) | Clear spec, 1-2 files, plan provides code snippets. Review stage catches mistakes. |
 | Implementer (integration) | `joe-bag-of-tricks:implementer` (sonnet, medium effort) | Multi-file coordination, message passing, pattern matching. |
 | Implementer (complex) | `joe-bag-of-tricks:implementer-complex` (opus, high effort) | Design judgment, broad codebase understanding, architectural decisions. |
+| Bug task (any tier's size) | `joe-bag-of-tricks:debugger` (opus, high effort) | The task's bead is `-t bug`, or the work is diagnosing a failure. Carries the root-cause procedure preloaded. A bug is never mechanical-tier work however small the expected diff: a ticket's stated cause is a hypothesis, and a cheap tier implements the stated cause. |
 | Task reviewer (spec + quality) | `model: "sonnet"` | One dispatch covers both a structured spec comparison and a judgment-heavy quality read. Escalate to `opus` for a subtle or high-risk diff — never drop to `haiku`: it caught 0/10 planted defects in upstream's own evaluation and rationalized them away. |
 | Scoped re-reviewer | `model: "haiku"` or `"sonnet"` | Verifying a small fix diff against a fixed findings list. Match the tier to the fix diff's size and risk. |
 | Final reviewer | `model: "fable"` (top tier; if Fable is not in this session's roster, use the top tier that is) | Holistic assessment across the entire branch. |
@@ -267,7 +268,7 @@ table itself is the operative rule.
 ladder (`implementer-mechanical` → `implementer` → `implementer-complex`) from
 the agent that got stuck. The ladder tops out at `implementer-complex`.
 
-**Escalation is the safety net:** If `implementer-mechanical` reports BLOCKED, re-dispatch `implementer`. If `implementer` reports BLOCKED, re-dispatch `implementer-complex`. Never retry the same agent type without changing something (see step 2 below).
+**Escalation is the safety net:** If `implementer-mechanical` reports BLOCKED, re-dispatch `implementer`. If `implementer` reports BLOCKED, re-dispatch `implementer-complex`. The exception is a BLOCKED or NEEDS_CONTEXT that reports a failure the implementer could not explain: that goes to `debugger`, not up the ladder — the ladder adds reasoning, `debugger` adds the procedure. Never retry the same agent type without changing something (see step 3 below).
 
 **Always name the agent type or the model explicitly when dispatching.** An implementer dispatch names its agent type, which carries the model and effort with it. A reviewer dispatch names its model, and an omitted model inherits your session's model — often the most capable and most expensive — which silently defeats this section.
 
@@ -418,16 +419,23 @@ your own re-narration of what the report already says.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
-**NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
+**NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch — unless the report is a failure the implementer could not explain, which follows the BLOCKED list's item 2 (dispatch `debugger`) instead.
 
 **BLOCKED:** The implementer cannot complete the task. Assess the blocker:
 1. If it's a context problem, provide more context and re-dispatch the same agent type
-2. If the task requires more reasoning, re-dispatch one step up the implementer
+2. If it's a failure the implementer could not explain — a test or command that fails against
+   what the brief says — dispatch `joe-bag-of-tricks:debugger` with the brief path, the report
+   file, and the failure evidence from the report
+3. If the task requires more reasoning, re-dispatch one step up the implementer
    ladder (`implementer-mechanical` → `implementer` → `implementer-complex`)
-3. If the task is too large, break it into smaller pieces
-4. If the plan itself is wrong, rule on the correction, record it
+4. If the task is too large, break it into smaller pieces
+5. If the plan itself is wrong, rule on the correction, record it
    (`bd note <task-id> "Ruling: ..."`), and re-dispatch with the ruling
    carried in the dispatch
+
+A BLOCKED from `debugger` has no tier above it. It is a context problem (1), a plan problem
+(the last item), or your human partner's call — never a reason to send the task back to an
+implementer tier.
 
 **Never** ignore an escalation or force the same agent type to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -705,6 +713,12 @@ push, PR, CI, CodeRabbit, squash-merge, cleanup — unattended, rather than cond
 yourself step by step. **Dispatch it in the background** and keep working while it runs; it
 reports back one outcome line for the branch.
 
+If that line is `BLOCKED: CI failure, reproduces locally: …`, dispatch
+`joe-bag-of-tricks:debugger` with the shepherd's diagnosis and the worktree path, then dispatch
+the shepherd for the branch again. If it is `BLOCKED: CI failure, does not reproduce locally: …`,
+the line names a difference between CI and this machine; take it to your human partner — a
+stronger model meets the same wall.
+
 For interactive, step-by-step delivery instead — watching each stage and deciding as you go —
 use finishing-a-development-branch directly; its procedure is what branch-shepherd runs on
 your behalf.
@@ -758,6 +772,8 @@ Dispatch-by-dispatch walkthrough of two tasks under an epic:
 - **implementer-mechanical** / **implementer** / **implementer-complex** agents (haiku /
   sonnet / opus) - One per task, chosen per Model Selection; also the fix-loop and BLOCKED
   escalation ladder
+- **debugger** agent (opus) - Bug tasks, an implementer's unexplained failure, and a shepherd
+  BLOCKED whose CI failure reproduces locally (Model Selection, Finish)
 - **branch-shepherd** agent (sonnet) - Runs the finishing-a-development-branch tail
   unattended for the finished branch (Finish)
 - **adjudicator** agent (fable) - One-shot ruling when an escalation trigger fires (Escalation)

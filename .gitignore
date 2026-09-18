@@ -19,6 +19,8 @@ __pycache__/
 .dolt/
 *.db
 .beads-credential-key
+# bd's cooperative-gate flock files, written beside .beads and never deleted
+*.gate.lock*
 
 .claude/fixtures/pull-design/**/screenshot.png
 .claude/fixtures/pull-design/runs/*
