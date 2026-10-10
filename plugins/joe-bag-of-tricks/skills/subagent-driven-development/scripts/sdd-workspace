@@ -18,8 +18,13 @@
 # Usage: sdd-workspace
 set -euo pipefail
 
-root=$(git rev-parse --show-toplevel)
+# Physical path, spelled the way pwd -P spells paths: on Git Bash, rev-parse
+# prints C:/Users/... while pwd prints /c/Users/..., and callers comparing
+# this against pwd-derived paths need both in the same form.
+root=$(CDPATH='' cd -- "$(git rev-parse --show-toplevel)" && pwd -P)
 dir="$root/.joe-bag-of-tricks/sdd"
 mkdir -p "$dir"
-printf '*\n' > "$dir/.gitignore"
-cd "$dir" && pwd
+# Create-only: a repo may commit its own .gitignore here; overwriting it would
+# revert that on every run.
+[ -e "$dir/.gitignore" ] || printf '*\n' > "$dir/.gitignore"
+CDPATH='' cd -- "$dir" && pwd

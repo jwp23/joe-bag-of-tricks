@@ -128,7 +128,7 @@ Subagent (general-purpose):
 - `[REPORT_FILE]` — the implementer's report file (fix reports appended)
 - `[FIX_BASE_SHA]` — the head the previous review saw
 - `[HEAD_SHA]` — current commit
-- `[DIFF_FILE]` — the path `scripts/review-package FIX_BASE HEAD` printed
+- `[DIFF_FILE]` — the path `bash scripts/review-package FIX_BASE HEAD` printed
 - `[REVIEW_FILE]` — the review file the original task reviewer wrote (see
   task-reviewer-prompt.md); the re-reviewer appends each round to it
 
