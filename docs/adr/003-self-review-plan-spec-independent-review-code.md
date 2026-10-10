@@ -66,3 +66,5 @@ inline self-review? (2) what model tier should the SDD merged task-reviewer defa
 - A self-review checklist relies on the author running it honestly. Mitigated by making the checklist
   explicit and concrete (the "No Placeholders" list, per-task Interfaces blocks for type consistency)
   rather than a vague "look it over."
+
+> Superseded (in part) 2026-10-10 by ADR-009: spec/design-document review moves to the builder check in `brainstorming`. The plan-review decision (inline self-review in `writing-plans`) stands.

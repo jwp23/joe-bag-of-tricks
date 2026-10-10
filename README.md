@@ -28,11 +28,12 @@ Four plugins.
 |-------|--------------|
 | `test-driven-development` | Implementing any feature or bugfix — write the failing test first |
 | `systematic-debugging` | Investigating why something is broken, slow, or surprising |
+| `diagnosing-sessions` | A session went wrong and you want to know why, or need a bug report for the maintainers |
 | `verification-before-completion` | About to claim work is done, fixed, or passing |
 | `using-skills` | Starting a conversation — discover and invoke relevant skills |
 | `brainstorming` | Starting creative/design work before implementation |
 | `writing-plans` | Turning a spec into a bd (beads) issue hierarchy |
-| `executing-plans` | Executing a bd task hierarchy with review checkpoints |
+| `executing-plans` | Executing a bd task hierarchy natively in this session — one final review instead of one per task |
 | `subagent-driven-development` | Executing independent tasks via dispatched implementer subagents |
 | `dispatching-parallel-agents` | Facing 2+ independent tasks with no shared state |
 | `using-git-worktrees` | Isolating feature work from the current workspace |
@@ -40,6 +41,7 @@ Four plugins.
 | `receiving-code-review` | Evaluating review feedback before acting on it |
 | `security-review` | Auditing changes for vulnerabilities before a PR |
 | `finishing-a-development-branch` | Push → PR → CI → CodeRabbit → cleanup |
+| `authoring-beads` | Filing a bead outside a planning session |
 | `record-decision` | Capturing a technical decision (ADR or decision doc) |
 | `readme-sync` | Keeping docs in sync after user-facing changes |
 | `writing-skills` | Creating, editing, or verifying skills |
@@ -90,8 +92,8 @@ joe-bag-of-tricks/
     ├── joe-bag-of-tricks/
     │   ├── .claude-plugin/
     │   │   └── plugin.json       # plugin manifest (semver version)
-    │   ├── skills/               # 21 skills
-    │   └── agents/               # 7 agents
+    │   ├── skills/               # 23 skills
+    │   └── agents/               # 8 agents
     ├── joe-magic-bootstrap/
     │   ├── .claude-plugin/
     │   │   └── plugin.json       # plugin manifest (semver version)
@@ -158,9 +160,9 @@ Use `/reload-plugins` to pick up local edits without restarting.
 
 Licensed under the [MIT License](LICENSE).
 
-Thirteen of the twenty-one skills are adapted from the [Superpowers](https://github.com/obra/superpowers) project by Jesse Vincent (MIT-licensed): `brainstorming`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
+Fourteen of the twenty-three skills are adapted from the [Superpowers](https://github.com/obra/superpowers) project by Jesse Vincent (MIT-licensed): `brainstorming`, `diagnosing-sessions`, `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`, `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `verification-before-completion`, `writing-plans`, and `writing-skills`.
 
-The remaining skills (`implementer-contract`, `readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`, `using-skills`, `ux-audit`, `writing-agents`) and all seven agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
+The remaining skills (`authoring-beads`, `implementer-contract`, `readme-sync`, `record-decision`, `scripted-browser-verification`, `security-review`, `using-skills`, `ux-audit`, `writing-agents`) and all eight agents are original to this toolkit. Jesse Vincent's copyright notice is retained in `LICENSE` as required by the MIT License.
 
 `joe-magic-design` ships a verbatim copy of the DESIGN.md format specification (`skills/pull-design/spec.md`) from Google's [design.md](https://github.com/google-labs-code/design.md) project, used under the Apache License 2.0; the file carries its attribution.
 

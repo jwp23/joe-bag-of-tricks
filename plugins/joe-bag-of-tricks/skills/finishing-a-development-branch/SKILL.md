@@ -297,7 +297,7 @@ this session's context, which already carries the whole finished branch.
 
 **Called by:**
 - **subagent-driven-development** (Step 7) - After all tasks complete
-- **executing-plans** (Step 5) - After all batches complete
+- **executing-plans** (Finish) - After the final whole-branch review is clean
 
 **Dispatches:**
 - **coderabbit-reviewer** agent (sonnet, escalates to opus) - Auto-apply review suggestions (Step 4.5)

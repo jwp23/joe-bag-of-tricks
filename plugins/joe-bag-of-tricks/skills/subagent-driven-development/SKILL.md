@@ -41,25 +41,25 @@ stop and ask.
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
+    "Partner chose native, or no subagent tool?" [shape=diamond];
     "subagent-driven-development" [shape=box];
     "executing-plans" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
     "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
+    "Tasks mostly independent?" -> "Partner chose native, or no subagent tool?" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
+    "Partner chose native, or no subagent tool?" -> "executing-plans" [label="yes"];
+    "Partner chose native, or no subagent tool?" -> "subagent-driven-development" [label="no"];
 }
 ```
 
-**vs. Executing Plans (parallel session):**
-- Same session (no context switch)
-- Fresh subagent per task (no context pollution)
-- Review after each task (spec compliance + code quality), broad review at the end
-- Faster iteration (no human-in-loop between tasks)
+**vs. Executing Plans (native):**
+- Fresh subagent per task (no context pollution) instead of one context doing every task
+- Review after each task (spec compliance + code quality) instead of only at the end
+- Costs a fresh context per task and per review; native costs one context plus one final reviewer
+- Both run in this session, share the same bd conventions and workspace, and never pause between tasks
 
 ## The Process
 
@@ -779,6 +779,6 @@ Dispatch-by-dispatch walkthrough of two tasks under an epic:
 - **adjudicator** agent (fable) - One-shot ruling when an escalation trigger fires (Escalation)
 
 **Alternative workflow:**
-- **executing-plans** - Use for parallel session instead of same-session execution
+- **executing-plans** - Native execution: the session implements every task itself, one final review; same bd conventions and workspace
 - **dispatching-parallel-agents** - Compose with this skill when an epic's independent tasks
   run inside a parallel batch: each parallel item can itself be an SDD task-brief

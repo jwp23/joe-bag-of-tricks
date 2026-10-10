@@ -1,278 +1,205 @@
 ---
 name: brainstorming
-description: "Use when starting creative work - creating features, building components, adding functionality, or modifying behavior. Also use when in plan mode and the user asks to brainstorm or design. Explores user intent, requirements and design before implementation."
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation). Also use when in plan mode and the user asks to brainstorm or design."
 ---
 
-# Brainstorming Ideas Into Designs
+# Brainstorming
 
-Help turn ideas into fully formed designs through natural collaborative dialogue.
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill is for finding out what they actually want, and why, before
+anything gets built.
 
-Start by classifying how much process the request needs, then work
-through your path: understand the context, refine the idea, present a
-design, and get your human partner's approval.
+People often haven't finished working out what they want. Good questions
+help them think it through. When you understand the why, you make the
+hundred decisions they never mention the way they would have made them.
 
-<HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any
-project, or take any implementation action until you have told your
-human partner what you intend and they have approved it. This applies
-to EVERY task on EVERY path below — the ceremony scales with the task;
-the approval gate never does.
-</HARD-GATE>
+## First: What Do You Actually Know?
 
-## Three Paths
+Before you reply, ask yourself: what do I know about what they want, and
+why?
 
-Before your first question, classify the request and say the
-classification out loud — "this looks bounded, so I'll present a short
-design here rather than write a design doc" — so your human partner can
-override it:
+- **Everything that matters is in the request** ("make the icon cornflower
+  blue"). This is a quick, clear task. Do it, and say what you did.
+- **Something non-trivial is missing.** Start the conversation.
 
-- **Spike** — a feasibility question ("can we...", "is it possible...",
-  "quick and dirty is fine") whose output is an answer, not code you
-  keep. Present the question and what you'll try in 2-3 sentences, get
-  a nod, then find out as cheaply as correctness allows. No design
-  doc, no bd epic. Report findings as a recommendation; anything you
-  built stays labeled throwaway.
-- **Bounded** — a well-scoped change to code that already exists in
-  this repo: a new flag, a small endpoint, a one-file fix.
-  Understanding the kind of app is not enough — bounded means the flow
-  you are changing is already here to read. If there is no existing
-  flow to change, the task is not bounded. Ask the clarifying
-  questions that matter, present a short design IN CHAT (a few
-  sentences to a few short paragraphs), and STOP. Implementation
-  starts only after your human partner says yes to that design — a
-  bounded task's approval is as hard a gate as an architectural
-  one. No design doc edit, no bd epic hierarchy — track the change in
-  a single bd task and implement via the normal development workflow.
-- **Architectural** — new projects, new subsystems, changes that
-  restructure how components fit together or alter interfaces others
-  depend on. Follow the full process: questions, approaches, sectioned
-  design, living design doc, bd epic carrying the spec, then the
-  writing-plans skill.
+## Your First Message
 
-When in doubt between two paths, take the heavier one. The ratchet is
-one-way: hidden complexity discovered mid-task upgrades the path —
-stop, say so, and step up. Nothing downgrades mid-task.
+Your first message is two things, in this order:
 
-## Plan Mode Integration
+1. One line letting them know that if they'd rather skip the questions and
+   have you just start, they can say so. If they take you up on it, this
+   skill is done: state any significant how-it-gets-made choice
+   (platform, language, medium) in one plain line, then do what they
+   asked through the normal workflow.
+2. One open question that gets them describing. Ask about a real moment
+   or a concrete picture: "What's the moment you find yourself wishing
+   this existed?" or "Tell me about the people who'll be in the room."
 
-When you are in plan mode (`EnterPlanMode` / `/plan`) and the user asks to brainstorm or design a feature, this skill still applies. Plan mode limits your tools (no Write/Edit), so the workflow adapts:
+That's the whole message.
 
-**In plan mode:**
+## The Conversation
 
-1. Classify the path first, out loud, exactly as the Three Paths section requires — spike and bounded work runs its (fully conversational) path inside plan mode and exits via `ExitPlanMode` with the probe plan or short design as the plan
-2. On the architectural path, run checklist steps 1-5 normally (explore context, visual companion, clarify, propose approaches, present design) — these are conversational and work with available tools
-3. When the design is approved, write a summary to the plan file: design overview, components, key decisions, and note that next steps are design doc writing + bd epic creation
-4. Call `ExitPlanMode` to present the design for approval
-5. After approval (now outside plan mode with full tools): continue with architectural steps 6-10 — write design doc, design self-review, user review, create bd epic, invoke writing-plans
+Each message ends with one question: a single sentence with no list of
+example answers hanging off it. Use plain language, pitched just a little
+above where your human partner is. Match their vocabulary; never use
+process jargon.
 
-**The conversational design IS the plan mode output.** File operations happen after exiting plan mode.
+Be clear and concise. Lead with what matters. Avoid jargon. When you
+report what you found, give them the most important findings and offer
+the rest.
 
-**Red flags — you are doing it wrong if:**
-- You skip brainstorming because "Write isn't available in plan mode"
-- You jump to writing-plans ad-hoc path without a design or design doc
-- You do freeform design discussion without invoking this skill
-- You exit plan mode without presenting the design summary first
+**Get them describing.** Open questions come first. Their own words carry
+intent that your options can't. Offer a short menu only when they're
+stuck. When they say "just guess" or "what do you think?", propose
+something concrete.
 
-## Anti-Pattern: "Too Simple To Need Approval"
+**How it gets made.** Every project rests on choices about medium, tools,
+materials, and resources: the platform, programming language, and
+libraries for an app; the medium for a piece of art. Find out early which
+of those choices they want to make, which they're handing to you, and what
+they already have to work with. Someone with strong views or skills will
+want to talk it through. Someone counting on you needs sensible defaults,
+said in plain words. When there's existing work, build on what it already
+uses. Any choice you make goes in the design as your call, never as
+something they agreed to. When they choose between approaches you
+compared, invoke **record-decision** to capture the choice and its
+trade-offs.
 
-Every path ends with your human partner approving your intent before
-implementation. A todo list, a single-function utility, a config
-change — the design may be two sentences in chat, but you MUST present
-it and get approval. "Simple" tasks are where unexamined assumptions
-cause the most wasted work. What scales with simplicity is the
-artifact, never the approval.
+**Ground to cover.** This is territory, not a script. Never read these
+out as questions:
 
-## Red Flags
+- what kind of thing this is, and what makes it special
+- why now, and what success looks like to them
+- goals, non-goals, and anti-goals (what would make this a failure even
+  if it technically works)
+- prior art: what they've seen elsewhere, loved or hated
+- current state: what exists now, what they've tried — in a repo, that
+  includes whether `docs/designs/` already holds a design for this area
+- the details they care about
 
-| Thought | Reality |
-|---------|---------|
-| "This is too simple to need a design" | Simple means a short design, not no design. Two sentences in chat, then approval. |
-| "I'll call it bounded and skip the design doc and epic" | Reaching for a label to skip work IS the doubt — take the heavier path. |
-| "It's bounded and the design is obvious — I'll start while they read it" | The gate is the approval, not the design's length. Present, then stop until you hear yes. |
-| "I understand this kind of app, so it's bounded" | Bounded measures the repo, not your familiarity. A new project has no existing flow — it is architectural. |
-| "The spike works, so I'll keep the code" | A spike's output is an answer. Keeping the code is a new request — classify it. |
-| "It grew, but I'm almost done — no need to re-classify" | Hidden complexity upgrades the path mid-task. Stop and say so. |
-| "They approved the spike, so the follow-up change is approved too" | Each task gets its own classification and its own approval. |
+**Questions that work** anchor in specifics: "Walk me through the last
+time...", "If it could only do one of these well, which?", "What would
+make you wince if I got it wrong?" A guess they can correct ("I'm
+guessing this is because X keeps biting you?") often beats a question.
 
-## Checklist
+**Offer recon.** Once you have a bit of grounding and looking would help,
+offer to go look: their codebase or project, their own files and data,
+or the web. Say what you'd look for. They decide whether you go.
 
-Classify first, announce the path, then create a task for each item on
-your path and complete them in order.
+**Think wide privately.** Before you propose anything, come up with
+several ideas and drop the weak ones, including any that fight what
+they've told you about why. YAGNI ruthlessly. Show the comparison only
+when it helps them decide.
 
-**Spike:**
-1. **Explore project context** — enough to frame the probe
-2. **Present question + probe plan** — 2-3 sentences
-3. **Get approval** — a nod is enough
-4. **Investigate** — as cheaply as correctness allows
-5. **Report findings** — a recommendation; label anything built as throwaway
+**Show, don't tell.** Offer the visual companion (below) whenever seeing
+would help more than reading:
 
-**Bounded:**
-1. **Explore project context** — check files, docs, recent commits
-2. **Ask clarifying questions** — one at a time, the ones that matter
-3. **Present short design in chat** — approach, files touched, testing
-4. **Get approval** — STOP and wait for an explicit yes; presenting the design and starting in the same breath is skipping the gate
-5. **Implement** — create a single bd task for the change, then proceed with the normal development workflow (TDD applies); no design doc, no epic. If this session's context is already materially loaded (a long brainstorming dialogue, prior heavy work), hand the task to a dispatched implementer via subagent-driven-development rather than implementing it inline here — the dialogue that produced the design is not free to carry into the code that builds it.
+- something they'll look at: a screen, a page, a printout, a sign
+- a layout or arrangement: of a screen, a room, a schedule
+- a flow or a sequence of steps
+- options that would look different from each other
+- a structure that's easier to see than read: a diagram, a timeline, a map
 
-**Architectural:**
-1. **Explore project context** — check files, docs (including `docs/designs/` for a doc covering this area), recent commits
-2. **Offer the visual companion just-in-time** — NOT upfront. The first time a question would genuinely be clearer shown than described, offer it then (its own message); on approval its browser tab opens for you. If no visual question ever arises, never offer it. See the Visual Companion section below.
-3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-4. **Propose 2-3 approaches** — with trade-offs and your recommendation
-5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Create or update the design doc** — new subsystem: create `docs/designs/<topic>.md`; existing subsystem: update its doc in place. Commit. See Documentation section below.
-7. **Design self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-8. **User reviews the design doc** — ask user to review it before proceeding
-9. **Create bd epic and decompose into features/bugs** — the epic carries this change's spec (requirements/acceptance/trade-offs); see Work Decomposition section below
-10. **Transition to implementation** — invoke writing-plans skill with the epic ID
+Once they've accepted, use it for mockups to react to, side-by-side
+options, and throwaway prototypes they can click.
 
-## Process Flow
+**Spike to feel things out.** Agentic work is waterfall, but very, very
+fast. A quick throwaway build is often the cheapest way to learn what
+they want or whether something works. Offer one when it would help.
+When they just want to spike, get out of the way. Spikes get no tests
+or minimal ones, aren't bulletproof, and skip the plan, implementation,
+and review process. Bring what the spike taught you back into the
+conversation.
 
-```dot
-digraph brainstorming {
-    "Classify: spike / bounded / architectural" [shape=diamond];
-    "Present question + probe (2-3 sentences)" [shape=box];
-    "Ask clarifying questions (bounded)" [shape=box];
-    "Present short design in chat" [shape=box];
-    "Human approves?" [shape=diamond];
-    "Investigate; report recommendation" [shape=doublecircle];
-    "Create single bd task; implement via\nnormal workflow (no design doc, no epic)" [shape=doublecircle];
-    "Hidden complexity? Upgrade path" [shape=box];
-    "Explore project context" [shape=box];
-    "Ask clarifying questions" [shape=box];
-    "Propose 2-3 approaches" [shape=box];
-    "Present design sections" [shape=box];
-    "User approves design?" [shape=diamond];
-    "Design doc exists\nfor this area?" [shape=diamond];
-    "Write design doc\n(create or update)" [shape=box];
-    "Design self-review\n(fix inline)" [shape=box];
-    "User reviews design doc?" [shape=diamond];
-    "Create bd epic\n(spec in --description/--design)" [shape=box];
-    "Decompose into\nfeatures/bugs" [shape=box];
-    "User approves\nhierarchy?" [shape=diamond];
-    "Invoke writing-plans\nwith epic ID" [shape=doublecircle];
+## Play It Back
 
-    "Classify: spike / bounded / architectural" -> "Present question + probe (2-3 sentences)" [label="spike"];
-    "Classify: spike / bounded / architectural" -> "Ask clarifying questions (bounded)" [label="bounded"];
-    "Classify: spike / bounded / architectural" -> "Explore project context" [label="architectural"];
-    "Present question + probe (2-3 sentences)" -> "Human approves?";
-    "Ask clarifying questions (bounded)" -> "Present short design in chat";
-    "Present short design in chat" -> "Human approves?";
-    "Human approves?" -> "Investigate; report recommendation" [label="spike: yes"];
-    "Human approves?" -> "Create single bd task; implement via\nnormal workflow (no design doc, no epic)" [label="bounded: yes"];
-    "Hidden complexity? Upgrade path" -> "Classify: spike / bounded / architectural";
-    "Explore project context" -> "Ask clarifying questions";
-    "Ask clarifying questions" -> "Propose 2-3 approaches";
-    "Propose 2-3 approaches" -> "Present design sections";
-    "Present design sections" -> "User approves design?";
-    "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Design doc exists\nfor this area?" [label="yes"];
-    "Design doc exists\nfor this area?" -> "Write design doc\n(create or update)" [label="yes: update in place"];
-    "Design doc exists\nfor this area?" -> "Write design doc\n(create or update)" [label="no: create new"];
-    "Write design doc\n(create or update)" -> "Design self-review\n(fix inline)";
-    "Design self-review\n(fix inline)" -> "User reviews design doc?";
-    "User reviews design doc?" -> "Write design doc\n(create or update)" [label="changes requested"];
-    "User reviews design doc?" -> "Create bd epic\n(spec in --description/--design)" [label="approved"];
-    "Create bd epic\n(spec in --description/--design)" -> "Decompose into\nfeatures/bugs";
-    "Decompose into\nfeatures/bugs" -> "User approves\nhierarchy?";
-    "User approves\nhierarchy?" -> "Decompose into\nfeatures/bugs" [label="revise"];
-    "User approves\nhierarchy?" -> "Invoke writing-plans\nwith epic ID" [label="approved"];
-}
-```
+Play back as you go. As soon as you understand one part well enough to
+describe it (what it's for and who it serves, say, or how one piece
+behaves), describe that part back in about 200-300 words, then return to
+questions about the next part. Playback and questions alternate through
+the whole conversation; the last chunk covers whatever is left.
 
-**Terminal states are path-bound.** Architectural: the ONLY skill you
-invoke after brainstorming is writing-plans, with the epic ID — never
-frontend-design, mcp-builder, or any other implementation skill. Bounded:
-after approval, implementation proceeds directly through the normal
-development workflow under a single bd task; no design doc, no epic. Spike:
-the terminal state is a reported recommendation.
+Mark anything you're guessing as your guess; only what they said goes in
+as theirs. End each chunk by asking what's wrong or missing.
 
-## The Process
+Before you send a chunk, check it: does it describe something they'll
+look at, like a page, a screen, a schedule, or a printout? If so, and
+they haven't seen the visual companion offer yet, send the offer instead
+(its own message, below) and hold the chunk for the next message. Once
+they've accepted, put a mockup next to the description.
 
-The subsections below serve the bounded and architectural paths (a
-spike stops at "present the probe, get a nod"). Sections from
-**Exploring approaches** onward are architectural-path depth — for
-bounded work, context plus a few questions plus a short in-chat design
-is the whole process.
+## Size the Work
 
-**Understanding the idea:**
+Once you understand what they want, pick a size and say it in plain
+words. They can override it.
 
-- Check out the current project state first (files, docs, recent commits), including whether `docs/designs/` already has a doc covering the area you're about to change
-- Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
-- If the project is too large for a single design doc, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own design doc → plan → implementation cycle.
-- For appropriately-scoped projects, ask questions one at a time to refine the idea
-- Prefer multiple choice questions when possible, but open-ended is fine too
-- Only one question per message - if a topic needs more exploration, break it into multiple questions
-- Focus on understanding: purpose, constraints, success criteria
+| Size | The full description | Then |
+|------|----------------------|------|
+| A quick, clear task | the request itself | do it |
+| A small change | in chat | one bd task, built through the normal workflow (TDD applies) |
+| A project | a written design | the living design doc, a bd epic carrying the spec, then writing-plans |
 
-**Exploring approaches:**
+A small change is one to a flow that already exists in the repo: a new
+flag, a small endpoint, a one-file fix. Understanding the kind of app is
+not enough; if there is no existing flow to change, it is a project. When
+in doubt between two sizes, take the larger. If it grows mid-task, stop,
+say so, and step up a size. Nothing steps down mid-task.
 
-- Propose 2-3 different approaches with trade-offs
-- Present options conversationally with your recommendation and reasoning
-- Lead with your recommended option and explain why
-- YAGNI ruthlessly - remove unnecessary features from every approach and design
-- When the user selects an approach, invoke **record-decision** to capture the choice and trade-offs
+A small change is built in this session unless the session's context is
+already materially loaded (a long brainstorming dialogue, prior heavy
+work); then hand the task to a dispatched implementer via
+subagent-driven-development rather than building it here — the dialogue
+that produced the design is not free to carry into the code that builds
+it.
 
-**Presenting the design:**
+If this is really several independent projects, say so, agree on an
+order, and brainstorm them one at a time.
 
-- Once you believe you understand what you're building, present the design
-- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
-- Ask after each section whether it looks right so far
-- Cover: architecture, components, data flow, error handling, testing
-- Be ready to go back and clarify if something doesn't make sense
+## The Written Design
 
-**Design for isolation and clarity:**
+For a project, write a plain document a talented builder in the domain
+could plan from without going back to your human partner. Cover:
 
-- Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and can be understood and tested independently
-- For each unit, you should be able to answer: what does it do, how do you use it, and what does it depend on?
-- Can someone understand what a unit does without reading its internals? Can you change the internals without breaking consumers? If not, the boundaries need work.
-- Smaller, well-bounded units are also easier for you to work with - you reason better about code you can hold in context at once, and your edits are more reliable when files are focused. When a file grows large, that's often a signal that it's doing too much.
+- intent and the why
+- goals, non-goals, anti-goals
+- constraints
+- the parts of the how they decided, as they decided them
+- what's left to the builder
 
-**Working in existing codebases:**
+**Where it goes:** `docs/designs/` holds **living** design docs, one per
+subsystem or component, describing the system's current design. A change
+updates the relevant doc in place so it reads as the current design; a
+new subsystem gets `docs/designs/<topic>.md` (kebab-case, no date
+prefix). No changelog entries: the doc describes what the system *is*,
+not its history — git and record-decision hold that. Commit it. Outside a
+software repo, ask. Your human partner's preferences override both.
 
-- Explore the current structure before proposing changes. Follow existing patterns.
-- Where existing code has problems that affect the work (e.g., a file that's grown too large, unclear boundaries, tangled responsibilities), include targeted improvements as part of the design - the way a good developer improves code they're working in.
-- Don't propose unrelated refactoring. Stay focused on what serves the current goal.
+The per-change specifics — requirements, acceptance criteria, trade-offs
+for *this* change — don't belong in the doc; they go on the bd epic
+(below). The spec for a change lives in bd, not in a standalone file.
 
-## After the Design (architectural path)
+**Builder check:** dispatch a fresh subagent with
+`builder-check-prompt.md` in this directory. When you tell your human
+partner you're writing it up, say a reviewer will read it first and you
+may come back once with a few questions. Don't hand over the document
+until the check is back. Sort what the builder asks into three piles:
 
-**Documentation:**
+- **Answered already** by the conversation or the project: put the answer
+  in the document.
+- **Minor:** a sensible builder could settle it without changing what gets
+  built. Settle it yourself and mark it in the document as your call.
+- **Theirs:** only your human partner can answer it, and the answer changes
+  what gets built.
 
-`docs/designs/` holds **living** design docs — one per subsystem/component, describing the system's
-current design. A change updates the relevant doc in place; it does not add a new dated file. The
-per-change specifics (requirements, acceptance criteria, trade-offs for *this* change) don't belong
-here — they go into the bd epic (see Work Decomposition below). This is bead-driven development: the
-spec for a change lives in bd, not in a standalone markdown spec file.
+Bring the "theirs" pile in one message, most important first. Update the
+document with their answers, then hand it over with a short list of the
+calls you made so they can check those while reading. That's the only
+round of questions the check produces. Without a subagent tool, read the
+document as that builder yourself.
 
-- Check whether a relevant doc already exists: `ls docs/designs/` (or grep for the subsystem/component name)
-  - **Existing subsystem:** open the doc and edit it in place so it reads as the current design — add,
-    revise, or remove sections as needed. Don't append a changelog entry; the doc describes what the
-    system *is*, not its history (that's what git history and record-decision ADRs are for).
-  - **New subsystem:** create `docs/designs/<topic>.md`, named for the subsystem/component
-    (kebab-case, no date prefix — e.g. `docs/designs/authentication.md`, not
-    `docs/designs/2026-08-08-auth-design.md`)
-- Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design doc change to git
-
-**Design Self-Review:**
-After creating or updating the design doc, look at it with fresh eyes:
-
-1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
-2. **Internal consistency:** Do any sections contradict each other — including parts of the doc you didn't touch this session? Does the architecture match the component descriptions?
-3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
-4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
-
-**User Review Gate:**
-After the design self-review, ask the user to review the design doc before proceeding:
-
-> "Design doc for `<topic>` [created/updated] at `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
-
-Wait for the user's response. If they request changes, make them and re-run the design self-review. Only proceed once the user approves.
-
-**Work Decomposition:**
-
-After the user approves the design doc, create the bd issue hierarchy. The epic carries the spec for
-*this change* — requirements, acceptance criteria, and trade-offs live directly in bd now, not in a
-separate spec file:
+**Work decomposition:** after your human partner approves the document,
+create the bd hierarchy. The epic carries the spec for this change:
 
 1. Create the epic:
    ```bash
@@ -292,10 +219,12 @@ separate spec file:
    )" \
      --spec-id="docs/designs/<topic>.md" --json
    ```
-   `--spec-id` links the epic back to the living design doc it's built on — a reference pointer, not
-   the spec for this change (that's the `--description`/`--design` content above).
+   `--spec-id` links the epic back to the living design doc it's built on — a
+   reference pointer, not the spec for this change (that's the
+   `--description`/`--design` content above).
 
-2. Decompose into features (or bugs) as children of the epic. Each feature represents a component or subsystem from the design:
+2. Decompose into features (or bugs) as children of the epic, one per
+   component or subsystem from the design:
    ```bash
    bd create "<component name>" -t feature \
      --parent <epic-id> \
@@ -303,34 +232,77 @@ separate spec file:
      --acceptance="<acceptance criteria>" --json
    ```
 
-3. Present the hierarchy to the user:
-   ```bash
-   bd children <epic-id>
-   ```
-   Ask: "Here's how I've broken down the work. Does this decomposition look right?"
+3. Show the hierarchy (`bd children <epic-id>`) and ask whether the
+   decomposition looks right. Revise until they approve.
 
-4. Revise if the user requests changes. Only proceed once approved.
+<HARD-GATE>
+Nothing gets built until your human partner approves the full
+description: in chat for a small change, the document for a project.
+Building includes writing product code, scaffolding, installing
+dependencies, creating projects, and invoking an implementation skill.
+Reading and exploring are fine.
 
-**Implementation:**
+Two exceptions. If they opted out of the questions, the skill is done
+and the gate goes with it. A spike they said yes to may be built; it
+stays labeled throwaway, and keeping what it produced is a new request
+that comes back through this gate.
 
-- Invoke the writing-plans skill with the epic ID to create detailed tasks
-- Do NOT invoke any other skill. writing-plans is the next step.
+After a project's document and hierarchy are approved, the next step is
+the plan: invoke writing-plans with the epic ID and no other skill.
+</HARD-GATE>
+
+## Plan Mode Integration
+
+When you are in plan mode (`EnterPlanMode` / `/plan`) and the user asks to
+brainstorm or design, this skill still applies. Plan mode limits your
+tools (no Write/Edit), so the workflow adapts:
+
+1. The conversation, playback, and sizing run unchanged — they are
+   conversational and work with available tools.
+2. A quick task or small change exits via `ExitPlanMode` with the
+   description as the plan.
+3. For a project, write a summary to the plan file: intent, goals and
+   non-goals, the how-it-gets-made calls, key decisions, and note that
+   next steps are the design doc, builder check, and bd epic creation.
+4. Call `ExitPlanMode` to present the design for approval.
+5. After approval (now outside plan mode with full tools): write or
+   update the design doc, run the builder check, create the bd hierarchy,
+   invoke writing-plans.
+
+**The conversation IS the plan mode output.** File operations happen after
+exiting plan mode.
+
+## Red Flags
+
+| Thought | Reality |
+|---------|---------|
+| "I'll offer options to save them effort" | Options steer. Ask them to describe it first. |
+| "I'll fill in sensible defaults" | Good. Say them out loud. A default they never heard is one they couldn't reject. |
+| "I should explain the process first" | Ask your question. The process shows itself. |
+| "They said 'sounds good' to the idea" | Approval covers what you showed them. A description you haven't written isn't approved. |
+| "The spike works, I'll keep building on it" | Keeping it is a new request. Back through the gate. |
+| "I understand this kind of app, so it's a small change" | Size measures the repo, not your familiarity. A new project has no existing flow to change. |
+| "It grew, but I'm almost done — no need to re-size" | Hidden complexity steps the size up mid-task. Stop and say so. |
+| "Write isn't available in plan mode, so skip brainstorming" | The conversation needs no files. Brainstorm, then exit plan mode with the description. |
 
 ## Visual Companion
 
-A browser-based companion for showing mockups, diagrams, and visual options during brainstorming. Available as a tool — not a mode. Accepting the companion means it's available for questions that benefit from visual treatment; it does NOT mean every question goes through the browser.
+A browser tab for showing mockups, diagrams, and prototypes. It's a
+tool, not a mode: accepting it doesn't send every question to the
+browser.
 
-**Offering the companion (just-in-time):** Do NOT offer it upfront. Wait until a question would genuinely be clearer shown than told — a real mockup / layout / diagram question, not merely a UI *topic*. The first time that happens, offer it then, as its own message:
-> "This next part might be easier if I show you — I can put together mockups, diagrams, and comparisons in a browser tab as we go. It's still new and can be token-intensive. Want me to? I'll open it for you."
+**Offer it just-in-time.** Offer it the first time one of the moments
+above comes up, never upfront. The offer is its own message with nothing
+else in it:
 
-**This offer MUST be its own message.** Only the offer — no clarifying question, summary, or other content. Wait for the user's response. If they accept, start the server with `--open` so their browser opens to the first screen automatically. If they decline, continue text-only and don't offer again unless they raise it.
+> "This might be easier if I show you. Want me to open a browser tab with some mockups?"
 
-**Per-question decision:** Even after the user accepts, decide FOR EACH QUESTION whether to use the browser or the terminal. The test: **would the user understand this better by seeing it than reading it?**
+If they decline, stay in text and don't offer again unless they raise it.
 
-- **Use the browser** for content that IS visual — mockups, wireframes, layout comparisons, architecture diagrams, side-by-side visual designs
-- **Use the terminal** for content that is text — requirements questions, conceptual choices, tradeoff lists, A/B/C/D text options, scope decisions
+**Per question, ask: would they understand this better by seeing it?**
+Mockups, layouts, diagrams, and side-by-side designs go in the browser.
+Requirements, scope, tradeoffs, and conceptual choices stay in text. A
+question about a UI topic isn't automatically a visual question.
 
-A question about a UI topic is not automatically a visual question. "What does personality mean in this context?" is a conceptual question — use the terminal. "Which wizard layout works better?" is a visual question — use the browser.
-
-If they agree to the companion, read the detailed guide before proceeding:
-`skills/brainstorming/visual-companion.md`
+If they accept, read `visual-companion.md` in this directory before
+starting the server.
