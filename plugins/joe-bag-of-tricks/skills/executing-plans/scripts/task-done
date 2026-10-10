@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Close one task of a native (inline) plan execution in a single call: run the
+# task's test command, keep its full output in the workspace, print the tail,
+# and — only if the command succeeded — close the bd task with the commit
+# range and the test result as the reason. A failing command records nothing:
+# the task is not complete.
+#
+# Usage: task-done TASK_ID BASE -- TEST_COMMAND [ARGS...]
+#   BASE is the SHA task-start printed; the close reason records BASE..HEAD.
+# Exit: the test command's exit status.
+set -euo pipefail
+
+if [ $# -lt 4 ] || [ "$3" != "--" ]; then
+  echo "usage: task-done TASK_ID BASE -- TEST_COMMAND [ARGS...]" >&2
+  exit 2
+fi
+
+task_id=$1
+base=$2
+shift 3
+sdd="$(cd "$(dirname "$0")/../../subagent-driven-development/scripts" && pwd)"
+
+git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
+# Validate the task ID with bd before it becomes part of a file path.
+bd show "$task_id" --json >/dev/null 2>&1 || { echo "no such task: $task_id" >&2; exit 2; }
+
+# Invoke via bash rather than direct exec: some extractors (Python zipfile)
+# strip Unix exec bits when unpacking marketplace packages.
+dir=$("${BASH:-bash}" "$sdd/sdd-workspace")
+log="$dir/task-${task_id}-tests.log"
+
+# Render the command the way a person would type it, for the close reason.
+cmd=""
+for a in "$@"; do
+  case "$a" in
+    *[[:space:]\"\;\|\&]*) cmd="$cmd '$a'" ;;
+    *) cmd="$cmd $a" ;;
+  esac
+done
+cmd=${cmd# }
+
+rc=0
+"$@" > "$log" 2>&1 || rc=$?
+
+tail -n 5 "$log"
+if [ "$rc" -ne 0 ]; then
+  echo "task-done: test command exited $rc; task $task_id NOT closed (full output: $log)" >&2
+  exit "$rc"
+fi
+
+last=$(grep -v '^[[:space:]]*$' "$log" | tail -n 1) || last="(no output)"
+reason="commits $(git rev-parse --short=7 "$base")..$(git rev-parse --short=7 HEAD), tests: $cmd → $last"
+bd close "$task_id" --reason "$reason" --json >/dev/null
+echo "closed $task_id: $reason"

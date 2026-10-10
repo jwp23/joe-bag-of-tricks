@@ -195,7 +195,7 @@ function isFullDocument(html) {
 }
 
 function wrapInFrame(content) {
-  return frameTemplate.replace('<!-- CONTENT -->', content);
+  return frameTemplate.replace('<!-- CONTENT -->', () => content);
 }
 
 function getNewestScreen() {

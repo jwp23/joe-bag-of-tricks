@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Begin one task of a native (inline) plan execution in a single call: claim
+# the bd task, extract its brief (via subagent-driven-development's task-brief,
+# so both skills share one workspace), and record BASE, the commit the task's
+# review range is cut from. One tool call instead of three, because every call
+# in an inline session is a turn that re-reads the whole context.
+#
+# Usage: task-start TASK_ID
+# Prints:
+#   brief: <path to the task's brief file>
+#   base:  <full SHA of HEAD>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: task-start TASK_ID" >&2
+  exit 2
+fi
+
+task_id=$1
+sdd="$(cd "$(dirname "$0")/../../subagent-driven-development/scripts" && pwd)"
+
+bd update "$task_id" --claim --json >/dev/null
+
+# Invoke via bash rather than direct exec: some extractors (Python zipfile)
+# strip Unix exec bits when unpacking marketplace packages.
+out=$("${BASH:-bash}" "$sdd/task-brief" "$task_id")
+brief=$(printf '%s\n' "$out" | sed -n 's/^wrote \(.*\): [0-9][0-9]* lines$/\1/p')
+[ -n "$brief" ] || { echo "task-brief did not report a path: $out" >&2; exit 1; }
+
+echo "brief: $brief"
+echo "base: $(git rev-parse HEAD)"

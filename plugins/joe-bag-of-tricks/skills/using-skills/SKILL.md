@@ -88,6 +88,10 @@ When multiple skills could apply, use this order:
 
 The skill itself tells you which.
 
+## Claude Code Tool Notes
+
+`references/claude-code-tools.md` — the one opt-in way Claude Code runs a plan cheaper than the skills' default shape (nested orchestrator).
+
 ## User Instructions
 
 Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.

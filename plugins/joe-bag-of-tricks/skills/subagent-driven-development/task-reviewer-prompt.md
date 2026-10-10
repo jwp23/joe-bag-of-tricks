@@ -205,7 +205,7 @@ Subagent (general-purpose):
 
 **Placeholders:**
 - `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection
-- `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief
+- `[BRIEF_FILE]` — REQUIRED: the task brief file (`bash scripts/task-brief
   <task-id>` prints the path; same file the implementer worked from)
 - `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from
   the epic's Global Constraints (`bd show <epic-id>` — the design field
@@ -217,7 +217,7 @@ Subagent (general-purpose):
 - `[BASE_SHA]` — commit before this task
 - `[HEAD_SHA]` — current commit
 - `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
-  package to (`scripts/review-package BASE HEAD` prints the unique path it
+  package to (`bash scripts/review-package BASE HEAD` prints the unique path it
   wrote; the package never enters the controller's context)
 - `[REVIEW_FILE]` — REQUIRED: the path this reviewer writes its full report
   to (brief `…-brief.md` → review `…-review.md`, per SKILL.md's Reviewer

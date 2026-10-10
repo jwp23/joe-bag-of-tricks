@@ -29,7 +29,9 @@ task=$(echo "$json" | jq -c '.[0] // empty')
 if [ $# -eq 2 ]; then
   out=$2
 else
-  dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
+  # Invoke via bash rather than direct exec: some extractors (Python zipfile)
+  # strip Unix exec bits when unpacking marketplace packages.
+  dir=$("${BASH:-bash}" "$(cd "$(dirname "$0")" && pwd)/sdd-workspace")
   out="$dir/task-${task_id}-brief.md"
 fi
 
