@@ -1,0 +1,1 @@
+ok the hierarchy under epic jbot-412 looks right to me. i don't want to pay for a fresh subagent and a reviewer on every one of those six tasks, they're small and the briefs already spell everything out. just implement them yourself in this session, one after another, and have someone look at the whole branch when you're done. go.

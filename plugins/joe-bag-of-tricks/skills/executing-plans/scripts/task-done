@@ -21,6 +21,8 @@ shift 3
 sdd="$(cd "$(dirname "$0")/../../subagent-driven-development/scripts" && pwd)"
 
 git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
+# Validate the task ID with bd before it becomes part of a file path.
+bd show "$task_id" --json >/dev/null 2>&1 || { echo "no such task: $task_id" >&2; exit 2; }
 
 # Invoke via bash rather than direct exec: some extractors (Python zipfile)
 # strip Unix exec bits when unpacking marketplace packages.
